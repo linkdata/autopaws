@@ -1,0 +1,20 @@
+X at usb-1, full speed : USB Audio
+
+Playback:
+  Interface 1
+    Altset 1
+    Format: S16_LE
+    Channels: 8
+    Rates: 44100
+
+Capture:
+  Interface 2
+    Altset 1
+    Format: S16_LE
+    Channels: 1
+    Rates: 8000 - 48000 (continuous)
+  Interface 2
+    Altset 2
+    Format: S16_LE
+    Channels: 2
+    Rates: 32000, 44100, 48000

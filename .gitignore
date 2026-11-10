@@ -1,0 +1,4 @@
+/hid-kvm
+/dist/
+*.test
+*.out
