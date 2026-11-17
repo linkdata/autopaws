@@ -133,7 +133,6 @@ func TestUnavailableProductionCommands(t *testing.T) {
 	}{
 		{[]string{"serve", "-web", ":9330"}, "web viewer is not implemented"},
 		{[]string{"serve", "-api", ":9329", "-web", ":9330"}, "web viewer is not implemented"},
-		{[]string{"list-devices"}, "issue #35"},
 	} {
 		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
 			var stdout, stderr bytes.Buffer

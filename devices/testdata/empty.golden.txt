@@ -1,0 +1,10 @@
+* = auto-selected
+
+Serial ports (CH340/CH341):
+  (none)
+
+Video capture devices:
+  (none)
+
+Audio capture devices:
+  (none)

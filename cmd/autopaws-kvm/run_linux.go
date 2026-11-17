@@ -68,7 +68,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer, hooks com
 			return 0
 		}
 		if hooks.listDevices == nil {
-			hooks.listDevices = listUnavailable
+			hooks.listDevices = func(output io.Writer) error {
+				return listDevicesRuntime(ctx, output)
+			}
 		}
 		if err := hooks.listDevices(stdout); err != nil {
 			fmt.Fprintln(stderr, err)
@@ -101,8 +103,4 @@ func parseSimple(command string, args []string) error {
 		return fmt.Errorf("unexpected arguments: %s", strings.Join(settings.Args(), " "))
 	}
 	return nil
-}
-
-func listUnavailable(io.Writer) error {
-	return errors.New("list-devices is not implemented yet (issue #35)")
 }

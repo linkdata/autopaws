@@ -125,3 +125,21 @@ Fake/pipe-backed tests separately exercise cancellation, a blocked-read close,
 buffer ownership, partial setup failures and descriptor errors under the race
 detector. Live source switching, device-loss recovery and fresh API/MCP snapshots
 remain part of the shared-pipeline and release checks.
+
+## Device discovery development check, 2026-11-17
+
+The production `autopaws-kvm list-devices` command completed successfully against
+the attached hardware without starting video/audio or opening serial transport:
+
+- It selected CH340 `/dev/ttyUSB0`, USB `1a86:7523`, port `1-13`.
+- It selected UGREEN `/dev/video0`, USB `2b89:5389`, port `4-1`, and listed YUYV
+  and MJPG. The metadata sibling `/dev/video1` was omitted.
+- Webcam capture nodes `/dev/video2` and `/dev/video4` remained visible, with
+  their respective MJPG/YUYV and GREY formats. Their metadata siblings were
+  omitted, and the webcam-name rule preferred the HDMI card.
+- It matched `/dev/snd/pcmC1D0c` (`U15389`) to the selected video's same USB
+  ancestor. Non-USB `/dev/snd/pcmC0D1c` and `/dev/snd/pcmC0D4c` were listed and
+  remained unselected.
+
+Fake-tree tests separately cover two identical USB capture cards and selecting
+each one's own audio. Only one physical HDMI capture card is attached here.

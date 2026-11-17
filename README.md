@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, the TCP API, the stdio MCP server and low-level V4L2 capture are implemented. The shared video pipeline, OCR, audio and browser services are still being ported; API capture calls, web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server and low-level V4L2 capture are implemented. The shared video pipeline, OCR, audio and browser services are still being ported; API capture calls and web startup currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -52,6 +52,23 @@ limit, result and error. `apiclient` provides its portable Go client.
 Command help and `version` work without attached hardware or a configuration file.
 Help exits 0; unknown commands, malformed flags and invalid configuration exit 2.
 A runtime startup failure exits 1.
+
+`autopaws-kvm list-devices` lists supported CH340/CH341 serial ports, capture
+video nodes with their pixel formats, and capture PCM devices. It queries video
+capabilities and formats without starting or changing a stream; tty and PCM
+devices are not opened. Metadata-only video nodes and unrelated serial ports
+are omitted. The `*` marker shows automatic defaults. Multiple supported serial
+ports remain ambiguous and require `-serial-device`. Empty inventories are
+successful listings. Listing needs no serve listener or configuration file.
+
+Video selection uses numeric node order, preferring the first name without a
+webcam keyword and otherwise the first capture node. Automatic audio matches the
+selected video's complete USB device path, so identical cards do not select each
+other's audio. With several capture PCMs on that USB device, the lowest numeric
+card/device pair wins. No match means audio unavailable; `audio-device: off`
+disables it and an explicit PCM path stays independent of video selection. Audio
+service startup and switching are wired with the audio work; this command already
+shows the discovery result.
 
 ### Precedence and files
 
@@ -272,12 +289,14 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `cmd/autopaws-mcp/`: portable MCP stdio entry point.
 - `ch9329/`: portable keyboard and mouse frame encoders.
 - `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
+- `devices/`: Linux serial, video and audio inventory and USB-path selection.
+- `v4l2/`: Linux MJPG streaming capture, timestamps and read-only format probes.
 - `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
 - `api/`: Linux daemon API handlers and TCP connection lifecycle.
 - `apiwire/`: portable envelopes, stable error identities and bounded line framing.
 - `apiclient/`: portable API client, independent of daemon/Linux packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
-- Further library packages are added with their implementation issues: `devices`, `v4l2`, `frame`, `web` and `alsa`.
+- Further library packages are added with their implementation issues: `capture`, `web` and `alsa`.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
