@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser viewer are implemented. OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser viewer are implemented. Optional OCR is implemented; audio is still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -253,6 +253,7 @@ autopaws-mcp -api 127.0.0.1:9329
 |---|---|---|
 | `-api host:port` | `127.0.0.1:9329` | KVM API address with a numeric port from 1 through 65535 |
 | `-capture-log DIR` | empty, off | Save unchanged screenshot JPEGs in the selected directory |
+| `-tesseract PATH` | search automatically | Optional Tesseract executable; an explicit missing path disables OCR |
 
 Each agent process has its own MCP session. Tools also isolate screenshot state
 when multiple SDK sessions share one server instance. The server uses the
@@ -266,6 +267,7 @@ exits 0.
 | `type_text`, `send_key`, `send_key_sequence` | Complete keyboard actions through the API |
 | `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions; a drag is one API request |
 | `capture_screen` | Return the daemon's JPEG unchanged plus image dimensions |
+| `get_screen_text`, `execute_and_read` | Optional local English OCR, with command execution through the keyboard |
 | `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Read target/device information and select capture settings |
 
 MCP absolute coordinates are integer pixels in that session's latest successful
@@ -286,7 +288,31 @@ Capture logging is opt-in and has no retention limit. On POSIX systems its
 directory is mode `0700` and files are mode `0600`; platform access controls apply
 on Windows. Temporary-file names include timestamps and random suffixes, so
 captures cannot overwrite each other. These files contain the complete screenshot.
-OCR tools are added with OCR support; they are not registered yet.
+When Tesseract with English language data is installed, two additional tools are
+offered. `get_screen_text` captures a fresh frame and returns recognized text.
+`execute_and_read` types the command plus Enter as one raw keyboard action, waits
+`wait_seconds` (default 1, finite 0 through 60), then captures fresh output for
+OCR. The wait is cancellable; a fresh capture does not prove command completion.
+OCR returns text and never establishes or replaces screenshot coordinates.
+
+Tesseract is resolved once at startup: `-tesseract` wins, otherwise search `PATH`,
+then on Windows `Tesseract-OCR/tesseract.exe` under `ProgramFiles` and
+`ProgramFiles(x86)`. An invalid explicit override disables OCR with a warning on
+stderr and does not fall back. Restart the MCP process after installing the
+engine. The other twelve tools remain available without it.
+
+OCR uses JPEG luminance, inverts dark backgrounds, scales 2× with nearest-neighbor
+sampling, and sends binary PGM over stdin to
+`tesseract stdin stdout --oem 3 --psm 6`. It creates no temporary OCR input/output
+files. Each process has a 15-second timeout; cancellation kills and reaps the
+owned process, with a one-second bound on inherited-pipe waits. OCR/API/process
+failures are reported as MCP tool errors.
+
+The [synthetic corpus](cmd/autopaws-mcp/testdata/ocr/README.md) compares Go against
+the original Python preprocessing. With Tesseract 5.5.0, both recognized 240 of
+241 combined characters, with identical output on all four fixtures. The
+PowerShell-style fixture is synthetic, and does not claim Windows runtime
+validation.
 
 ## Development
 

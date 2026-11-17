@@ -83,7 +83,10 @@ func TestCommandSDKRunAndShutdown(t *testing.T) {
 			serverTransport, clientTransport := mcp.NewInMemoryTransports()
 			var stdout, stderr bytes.Buffer
 			done := make(chan int, 1)
-			go func() { done <- run(ctx, []string{"-api", "127.0.0.1:1"}, serverTransport, &stdout, &stderr) }()
+			missingTesseract := filepath.Join(t.TempDir(), "missing-tesseract")
+			go func() {
+				done <- run(ctx, []string{"-api", "127.0.0.1:1", "-tesseract", missingTesseract}, serverTransport, &stdout, &stderr)
+			}()
 			callCtx, stop := context.WithTimeout(context.Background(), 5*time.Second)
 			defer stop()
 			client := mcp.NewClient(&mcp.Implementation{Name: "command-test", Version: "test"}, nil)
