@@ -44,7 +44,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer, hooks com
 			return 2
 		}
 		if hooks.serve == nil {
-			hooks.serve = serveUnavailable
+			hooks.serve = func(ctx context.Context, cfg config.Config) error {
+				return serveRuntime(ctx, cfg, stderr)
+			}
 		}
 		if err := hooks.serve(ctx, cfg); err != nil {
 			fmt.Fprintln(stderr, err)
@@ -99,17 +101,6 @@ func parseSimple(command string, args []string) error {
 		return fmt.Errorf("unexpected arguments: %s", strings.Join(settings.Args(), " "))
 	}
 	return nil
-}
-
-func serveUnavailable(_ context.Context, cfg config.Config) error {
-	var missing []string
-	if cfg.API != "" {
-		missing = append(missing, "API server (issue #32)")
-	}
-	if cfg.Web != "" {
-		missing = append(missing, "web viewer (issue #37)")
-	}
-	return fmt.Errorf("serve is not implemented yet: %s", strings.Join(missing, ", "))
 }
 
 func listUnavailable(io.Writer) error {

@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Keyboard/mouse control and CLI configuration are implemented; API, MCP and media service startup is still being ported. `serve` and `list-devices` report unavailable until their runtime issues land. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Keyboard/mouse control, CLI configuration and the TCP API are implemented. MCP and media services are still being ported; web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -41,6 +41,14 @@ default. For example, the intended API/web configuration is:
 autopaws-kvm serve -api 127.0.0.1:9329 -web 127.0.0.1:9330 -mouse-button-mode relative
 ```
 
+To run the implemented API on its own:
+
+```sh
+autopaws-kvm serve -api 127.0.0.1:9329 -mouse-button-mode relative
+```
+
+The [API protocol reference](api/PROTOCOL.md) describes every method, validation
+limit, result and error. `apiclient` provides its portable Go client.
 Command help and `version` work without attached hardware or a configuration file.
 Help exits 0; unknown commands, malformed flags and invalid configuration exit 2.
 A runtime startup failure exits 1.
@@ -196,7 +204,11 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `ch9329/`: portable keyboard and mouse frame encoders.
 - `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
 - `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
-- Further library packages are added with their implementation issues: `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
+- `api/`: Linux daemon API handlers and TCP connection lifecycle.
+- `apiwire/`: portable envelopes, stable error identities and bounded line framing.
+- `apiclient/`: portable API client, independent of daemon/Linux packages.
+- `internal/config/`: validated command flags, YAML settings and logging setup.
+- Further library packages are added with their implementation issues: `devices`, `v4l2`, `frame`, `web` and `alsa`.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
