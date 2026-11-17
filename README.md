@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. The repository currently provides build and CI scaffolding; the command binaries are stubs and do not control hardware yet. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core packages are being ported; the command binaries are stubs and do not control hardware yet. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -48,11 +48,21 @@ To build both Linux commands locally:
 go build -o dist/ ./cmd/...
 ```
 
+### Serial I/O and cancellation
+
+The serial package waits for the host output queue to empty, then applies baud-based pacing. This does not confirm CH9329 acknowledgement or target input processing. Request cancellation and a one-second application budget bound write readiness, queue polling and pacing.
+
+An admitted send failure invalidates the current preparation, including cancellation. Release-only cleanup must explicitly call `Prepare` with an uncancelled cleanup context: a changed generation means the reset already released all input and software held state must be cleared. A still-ready generation can send its matching release. Cleanup never replays the interrupted action, and permanent `Close` runs after the cleanup attempt.
+
+Linux USB-serial open, termios configuration and close can wait inside the driver beyond an application deadline. Go contexts cannot interrupt those kernel calls. The package retains ownership until they finish and checks cancellation between calls; it does not abandon blocked goroutines or reuse a descriptor while close is still running. Hardware tests record actual timing rather than asserting a universal kernel shutdown bound.
+
 ## Repository layout
 
 - `cmd/autopaws-kvm/`: Linux KVM daemon entry point (amd64 and arm64).
 - `cmd/autopaws-mcp/`: portable MCP stdio entry point.
-- Library packages are added with their implementation issues: `ch9329`, `serial`, `hid`, `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
+- `ch9329/`: portable keyboard and mouse frame encoders.
+- `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
+- Further library packages are added with their implementation issues: `hid`, `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
