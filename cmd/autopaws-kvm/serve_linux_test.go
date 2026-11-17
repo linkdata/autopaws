@@ -344,7 +344,11 @@ func TestRuntimePreStartupFailures(t *testing.T) {
 	defer listener.Close()
 	cfg = runtimeConfig()
 	cfg.API = listener.Addr().String()
-	if err := serveRuntime(context.Background(), cfg, io.Discard); err == nil {
+	factories := runtimeFactories{
+		newTransport: func(serial.Options) (hid.Transport, error) { return &runtimeTransport{}, nil },
+		listen:       (&net.ListenConfig{}).Listen,
+	}
+	if err := serveWith(context.Background(), cfg, io.Discard, factories); err == nil {
 		t.Fatal("occupied port unexpectedly started a daemon")
 	}
 }

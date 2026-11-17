@@ -1,9 +1,9 @@
 # Hardware validation
 
 This record distinguishes physical observations from builds and unit tests. It
-will be extended with the required video, audio, recovery and MCP checks before
-the first release. The input observations below do not establish that release
-gate by themselves.
+will be extended with the required browser video/audio and recovery checks before
+the first release. The input and API/MCP capture observations below do not
+establish the entire release gate by themselves.
 
 ## Input development checks, 2026-11-17
 
@@ -85,8 +85,8 @@ pointer. The target page recorded movement followed by one down/up pair, at
 
 Closing the MCP client's stdin produced MCP process exit 0. The daemon then
 exited 0 on SIGTERM. This covers the actual stdio/CLI process boundary as well as
-physical input. Screenshot-to-click validation remains pending real capture
-support; canned-JPEG SDK tests cover the conversion contract meanwhile.
+physical input. Screenshot-to-click validation was pending at this stage;
+the shared-pipeline checks below cover it with real capture.
 
 ## V4L2 development checks, 2026-11-17
 
@@ -123,8 +123,8 @@ poller after `STREAMON`. Both subsequent capture runs succeeded.
 
 Fake/pipe-backed tests separately exercise cancellation, a blocked-read close,
 buffer ownership, partial setup failures and descriptor errors under the race
-detector. Live source switching, device-loss recovery and fresh API/MCP snapshots
-remain part of the shared-pipeline and release checks.
+detector. The pipeline checks below cover selection/reopen and fresh API/MCP
+snapshots; physical device-loss recovery remains a release check.
 
 ## Device discovery development check, 2026-11-17
 
@@ -143,3 +143,51 @@ the attached hardware without starting video/audio or opening serial transport:
 
 Fake-tree tests separately cover two identical USB capture cards and selecting
 each one's own audio. Only one physical HDMI capture card is attached here.
+
+## Shared capture and MCP development check, 2026-11-17
+
+The static Go daemon started with automatic video selection, an ephemeral
+loopback API, `/dev/ttyUSB0`, target coordinates 1280×720 and relative button mode.
+The actual stdio MCP binary connected through the SDK client. Before any capture,
+device information selected `/dev/video0` with streaming idle, and an absolute
+mouse action was correctly rejected for lacking a screenshot.
+
+The client reset the target's local event page through Ctrl+R and requested a
+real screenshot. The initial 1920×1080 capture took 2.377 seconds including source
+startup, within the five-second acquisition budget. Four seconds later the warm
+capture took 88 ms. Clicking screenshot pixel (960,540) then produced these
+target-page events, visible in a subsequent real MCP JPEG:
+
+| Event | Buttons | Target viewport position |
+|---|---:|---|
+| mousemove | 0 | (640,360) |
+| mousedown | 1 | (640,360) |
+| mouseup | 0 | (640,360) |
+
+This exercises screenshot-to-target scaling through MCP, API and physical HID.
+The next capture took 85 ms. These are sample call times, including the MCP/API
+path; they do not establish a general latency bound or target-app readiness.
+
+Changing capture resolution to 1280×720 invalidated the session's old screenshot
+coordinates; an absolute move was rejected until the next capture. Subsequent
+JPEGs reported 1280×720. One MCP `mouse_drag` then produced:
+
+| Event | Buttons | Target viewport position |
+|---|---:|---|
+| mousemove | 0 | (320,180) |
+| mousedown | 1 | (320,180) |
+| mousemove | 1 | (960,540) |
+| mouseup | 0 | (960,540) |
+
+The client next selected a deliberately missing capture path. Selection remained
+repairable and its capture request returned `unavailable`. Selecting `/dev/video0`
+again restored screenshots at the retained 1280×720 size and again required a
+new screenshot before absolute input. The recovered JPEG showed the same completed
+drag log. Resized/recovered sample captures took 42–88 ms on this run.
+
+Closing stdin produced MCP exit 0; SIGTERM produced daemon exit 0 with video still
+recently active. No helper or capture process remained. This used one physical
+card and proves a failed-path repair, rather than unplug/replug recovery or a
+second card model. Cold letterbox cropping, stale/corrupt queued frames, blocked
+kernel ownership, concurrent retries and generation-switch races are separately
+covered by fake-source and loopback tests.

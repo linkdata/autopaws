@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -22,8 +21,8 @@ func (server *Server) methods() map[string]handler {
 		"mouse_down": server.mouseDown, "mouse_up": server.mouseUp,
 		"mouse_scroll": server.mouseScroll, "mouse_drag": server.mouseDrag,
 		"get_device_info": server.deviceInfo,
-		"capture_frame":   unavailable, "list_capture_devices": unavailable,
-		"set_capture_device": setCaptureDevice, "set_capture_resolution": setCaptureResolution,
+		"capture_frame":   server.captureFrame, "list_capture_devices": server.listCaptureDevices,
+		"set_capture_device": server.setCaptureDevice, "set_capture_resolution": server.setCaptureResolution,
 	}
 }
 
@@ -251,7 +250,7 @@ func (server *Server) mouseDrag(ctx context.Context, data json.RawMessage) (any,
 	return map[string]bool{"dragged": true}, nil
 }
 
-func (server *Server) deviceInfo(_ context.Context, data json.RawMessage) (any, error) {
+func (server *Server) deviceInfo(ctx context.Context, data json.RawMessage) (any, error) {
 	if err := params(data, &struct{}{}); err != nil {
 		return nil, err
 	}
@@ -263,46 +262,6 @@ func (server *Server) deviceInfo(_ context.Context, data json.RawMessage) (any, 
 			"keyboard_layout": options.KeyboardLayout, "serial_baud": options.SerialBaud,
 			"mouse_button_mode": options.ButtonMode,
 		},
-		"capture": map[string]apiwire.Code{"error": apiwire.ErrUnavailable},
+		"capture": server.captureInfo(ctx),
 	}, nil
-}
-
-func unavailable(_ context.Context, data json.RawMessage) (any, error) {
-	if err := params(data, &struct{}{}); err != nil {
-		return nil, err
-	}
-	return nil, apiwire.ErrUnavailable
-}
-
-func setCaptureDevice(_ context.Context, data json.RawMessage) (any, error) {
-	var request struct {
-		Device *string `json:"device"`
-	}
-	if err := params(data, &request); err != nil {
-		return nil, err
-	}
-	if request.Device == nil {
-		return nil, required("device")
-	}
-	numeric := *request.Device
-	if len(numeric) > 0 && (numeric[0] == '+' || numeric[0] == '-') {
-		numeric = numeric[1:]
-	}
-	if *request.Device == "" || numeric != "" && strings.Trim(numeric, "0123456789") == "" {
-		return nil, fmt.Errorf("%w: device must be a nonempty path, not a numeric index", apiwire.ErrInvalidParams)
-	}
-	return nil, apiwire.ErrUnavailable
-}
-
-func setCaptureResolution(_ context.Context, data json.RawMessage) (any, error) {
-	var request struct {
-		Width, Height *uint32
-	}
-	if err := params(data, &request); err != nil {
-		return nil, err
-	}
-	if request.Width == nil || request.Height == nil || *request.Width == 0 || *request.Height == 0 {
-		return nil, fmt.Errorf("%w: width and height must be positive uint32 values", apiwire.ErrInvalidParams)
-	}
-	return nil, apiwire.ErrUnavailable
 }
