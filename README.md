@@ -27,7 +27,15 @@ The rewrite is underway. Core packages are being ported; the command binaries ar
 
 The hardware, software and host setup needed for development are listed in the [tracking epic](../../issues/23).
 
-Use Go 1.27.4 or newer and the golangci-lint version pinned in [the CI workflow](.github/workflows/ci.yml). From the repository root, run the same gate as CI:
+Use Go 1.27.4 or newer and the golangci-lint version pinned in [the CI workflow](.github/workflows/ci.yml). Install [actionlint](https://github.com/rhysd/actionlint/blob/main/docs/install.md) and [ShellCheck](https://www.shellcheck.net/) locally too, with these tools on `PATH`.
+
+After the final edits and before pushing or starting GitHub Actions, validate the workflow locally:
+
+```sh
+actionlint
+```
+
+Then, from the repository root, run the same Go gate as CI:
 
 ```sh
 CGO_ENABLED=0 go build ./...
@@ -36,8 +44,10 @@ golangci-lint run
 CGO_ENABLED=1 go test -race ./...
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./...
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
-CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /tmp/autopaws-mcp-darwin ./cmd/autopaws-mcp
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /tmp/autopaws-mcp-windows.exe ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
 ```
 
 The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`. The root module's `./...` patterns exclude the nested modules in `research/`. CI deliberately skips those throwaway prototypes; they remain reference material until their replacements land.
@@ -56,13 +66,18 @@ An admitted send failure invalidates the current preparation, including cancella
 
 Linux USB-serial open, termios configuration and close can wait inside the driver beyond an application deadline. Go contexts cannot interrupt those kernel calls. The package retains ownership until they finish and checks cancellation between calls; it does not abandon blocked goroutines or reuse a descriptor while close is still running. Hardware tests record actual timing rather than asserting a universal kernel shutdown bound.
 
+### Keyboard layouts
+
+The `hid` package provides the built-in `us104`, `uk105`, `de105`, `fr105`, `jp106` and `se105` layouts. Layouts describe the target keyboard. See [Creating keyboard layouts](CREATING_LAYOUTS.md) for custom files and override precedence.
+
 ## Repository layout
 
 - `cmd/autopaws-kvm/`: Linux KVM daemon entry point (amd64 and arm64).
 - `cmd/autopaws-mcp/`: portable MCP stdio entry point.
 - `ch9329/`: portable keyboard and mouse frame encoders.
 - `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
-- Further library packages are added with their implementation issues: `hid`, `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
+- `hid/`: portable keycodes and immutable keyboard layouts.
+- Further library packages are added with their implementation issues: `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
