@@ -18,9 +18,14 @@ The first server application message is JSON text:
 {"type":"config","audio":{"status":"unavailable","generation":"0"}}
 ```
 
-Audio is implemented in issue #41. Its status becomes `off`, `unavailable`, or
-`available`; an available configuration includes negotiated `sampleRate` and
-`channels`. Every audio-generation change is sent as configuration before any
+Audio status is `off`, `unavailable`, or `available`. An available configuration
+includes the negotiated `sampleRate` and `channels`; for example,
+`{"type":"config","audio":{"status":"available","generation":"7","sampleRate":48000,"channels":2}}`.
+Audio is captured lazily while web clients are connected. Auto selection follows
+the current selected video USB device; an explicit PCM path stays fixed. Each
+accepted video generation reopens audio, including resolution changes, so all
+queued media starts fresh. Selection/open/read failures make audio unavailable
+without ending video or input. Every audio-generation change is sent as configuration before any
 samples belonging to that generation. JSON uint64 generations are decimal strings
 to preserve precision in JavaScript. Binary uint64 values are exact: clients use
 `DataView.getBigUint64(..., true)`, not Number coercion.
@@ -30,12 +35,12 @@ All multibyte integers are **unsigned little-endian**. Version 1 defines:
 
 | Offset | Type | Meaning |
 |---:|---|---|
-|0|uint8|Kind: `1` video; `2` reserved audio |
+|0|uint8|Kind: `1` video; `2` audio |
 |1|uint8|Protocol version: `1` |
 |2|uint16|Header length: `64` |
 |4|uint32|Common timestamp flags, below |
 |8|uint64|Video settings generation, or audio configuration generation |
-|16|uint64|Video connection delivery sequence, or reserved audio source-block sequence |
+|16|uint64|Video connection delivery sequence, or audio source-block sequence |
 |24|uint64|Capture timestamp in nanoseconds on the server's `CLOCK_MONOTONIC`, or zero if unavailable |
 |32|uint32|Video source JPEG width; zero for audio |
 |36|uint32|Video source JPEG height; zero for audio |
@@ -43,8 +48,8 @@ All multibyte integers are **unsigned little-endian**. Version 1 defines:
 |44|uint32|Video crop y; zero for audio |
 |48|uint32|Video crop width; zero for audio |
 |52|uint32|Video crop height; zero for audio |
-|56|uint32|Reserved audio sample-frame count; zero for video |
-|60|uint32|Reserved audio block duration in nanoseconds; zero for video |
+|56|uint32|Audio sample-frame count; zero for video |
+|60|uint32|Audio block duration in nanoseconds; zero for video |
 
 Timestamp flags have the **same meanings for both media kinds**:
 
@@ -54,14 +59,14 @@ Timestamp flags have the **same meanings for both media kinds**:
   video timestamp denotes end of frame. Audio leaves this bit clear and its
   timestamp denotes the first sample frame of the block.
 * Bit 2 (`4`): the monotonic timestamp is an estimate rather than a device timestamp.
-  Video currently leaves this bit clear. Issue #41 may use it for audio whose first
-  sample time is estimated from a monotonic observation and buffered frame count.
+  Video leaves this bit clear. Audio sets it because its first sample time is
+  estimated from an ALSA monotonic timestamp/delay observation and block frame count.
 * Bits 3–31 are reserved and zero. Estimated timestamps require bit 0 as well.
 
 The browser's performance clock has a different epoch. Do not compare its clock
 directly to server monotonic timestamps. Use sequences, relative timestamps and
 durations for gaps/backlog. An audio sample frame contains one sample per channel;
-the payload in issue #41 is interleaved signed16-bit little-endian PCM, with exactly
+the payload is interleaved signed16-bit little-endian PCM, with exactly
 sampleFrames×channels samples. Audio block duration is below the 200 ms application
 queue budget, so uint32 nanoseconds fits. Its source-block sequence identifies
 dropped blocks; audio configuration generation distinguishes stream restarts.
@@ -84,9 +89,28 @@ Video is paced to the configured `web-fps` limit after each completed write.
 The writer reads a latest-frame slot when ready, so slow readers skip source
 frames. Every configuration/media write has a one-second default application
 deadline. A stalled write closes that connection; it does not grow a per-client
-frame queue or prevent other clients from receiving frames. Issue #41 gives queued
-audio priority over a waiting video frame and sends configuration before new
-audio generations; it does not interrupt a JPEG already being written.
+frame queue or prevent other clients from receiving frames. Queued audio has priority over a waiting video frame. Configuration precedes
+new-generation samples; a JPEG already being written is not interrupted.
+
+Audio uses one ALSA subscriber queue per connection, bounded to100ms of sample
+frames. Stale expiry measures age since the LAST sample in a block was captured,
+separately from acquisition duration. The writer dequeues PCM only immediately
+before its send, never across config/JPEG writes, and rejects obsolete video or
+audio generations. After a JPEG send takes at least100ms, it closes the old audio
+subscription and starts an empty one, discarding the backlog. The browser reserves
+50ms for its worklet ring and at most50ms for one acknowledged PCM transfer, with
+no additional pending PCM slot. While that transfer awaits acknowledgement,
+new arrivals are dropped at admission because posted data cannot be recalled.
+Ring overflow and oversized-block trimming discard oldest samples first. The
+application-queued total is at most200ms.
+Capture/kernel, WebSocket/TCP and output latency remain separate, and issue43
+measures the actual end-to-end result. Browser source-age tracking uses timestamp
+differences and local elapsed time, never a direct clock-epoch comparison.
+An available generation-only change at the same rate/channels resets the running
+worklet in MessagePort order. Any old posted PCM still occupies the sole transfer
+slot until its matching generation/sequence acknowledgement; a late old ACK
+cannot admit an extra transfer or clear a newer one. Rate/status changes rebuild
+the graph, preserving the user's audio choice.
 
 ## Browser input
 

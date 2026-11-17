@@ -8,7 +8,6 @@ import (
 	"context"
 	"embed"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -29,6 +28,7 @@ type Options struct {
 	FPS               int
 	WriteTimeout      time.Duration
 	Logger, KeyLogger *slog.Logger
+	Audio             *AudioOptions // Nil preserves a video/input-only server without probes.
 }
 
 // Server is an http.Handler with tracked WebSocket lifetimes. Close stops
@@ -44,6 +44,7 @@ type Server struct {
 	mu         sync.Mutex
 	closed     bool
 	workers    sync.WaitGroup
+	audio      *audioManager
 }
 
 type socket interface {
@@ -63,7 +64,11 @@ func New(controller *hid.Controller, mouse *hid.Mouse, captures *capture.Manager
 		options.WriteTimeout = time.Second
 	}
 	lifetime, cancel := context.WithCancel(context.Background())
-	return &Server{controller: controller, mouse: mouse, capture: captures, options: options, lifetime: lifetime, cancel: cancel}, nil
+	server := &Server{controller: controller, mouse: mouse, capture: captures, options: options, lifetime: lifetime, cancel: cancel}
+	if options.Audio != nil {
+		server.audio = newAudioManager(lifetime, captures, *options.Audio, options.Logger)
+	}
+	return server, nil
 }
 
 func (server *Server) ServeHTTP(output http.ResponseWriter, request *http.Request) {
@@ -138,10 +143,15 @@ func (server *Server) Close() {
 }
 
 // Wait may be called after Close, when no new connection worker can be admitted.
-func (server *Server) Wait() { server.workers.Wait() }
+func (server *Server) Wait() {
+	server.workers.Wait()
+	if server.audio != nil {
+		<-server.audio.done
+	}
+}
 
 //go:embed assets/index.html assets/viewer.mjs assets/viewer-helpers.mjs assets/viewer.css
-//go:embed assets/manifest.json assets/sw.js assets/icon.svg
+//go:embed assets/manifest.json assets/sw.js assets/icon.svg assets/audio-playback.mjs assets/audio-worklet.mjs
 var pageAssets embed.FS
 
 func serveAsset(output http.ResponseWriter, request *http.Request) {
@@ -152,7 +162,7 @@ func serveAsset(output http.ResponseWriter, request *http.Request) {
 	}
 	path, contentType := request.URL.Path, "text/html; charset=utf-8"
 	switch path {
-	case "/viewer.mjs", "/viewer-helpers.mjs", "/sw.js":
+	case "/viewer.mjs", "/viewer-helpers.mjs", "/sw.js", "/audio-playback.mjs", "/audio-worklet.mjs":
 		contentType = "text/javascript; charset=utf-8"
 	case "/viewer.css":
 		contentType = "text/css; charset=utf-8"
@@ -182,42 +192,4 @@ func (server *Server) writeMessage(ctx context.Context, conn socket, kind websoc
 		}
 	}
 	return writer.Close()
-}
-
-func (server *Server) write(ctx context.Context, conn socket, subscription *capture.Subscription) error {
-	// Audio is not implemented until #41. U64 JSON generations are strings, so
-	// future audio configuration never loses precision in a JavaScript client.
-	if err := server.writeMessage(ctx, conn, websocket.MessageText, []byte(`{"type":"config","audio":{"status":"unavailable","generation":"0"}}`)); err != nil {
-		return err
-	}
-	var sequence uint64
-	var next time.Time
-	for {
-		if delay := time.Until(next); delay > 0 {
-			timer := time.NewTimer(delay)
-			select {
-			case <-ctx.Done():
-				timer.Stop()
-				return ctx.Err()
-			case <-timer.C:
-			}
-		}
-		frame, err := subscription.Next(ctx)
-		if err != nil {
-			if errors.Is(err, capture.ErrClosed) || ctx.Err() != nil {
-				return err
-			}
-			continue // One failure event; keep subscription alive for repair.
-		}
-		metadata := frame.Metadata()
-		if metadata.Generation != server.capture.Info().Generation {
-			continue // This frame was already held outside the flushed slot.
-		}
-		sequence++
-		header := videoHeader(metadata, sequence)
-		if err := server.writeMessage(ctx, conn, websocket.MessageBinary, header[:], frame.JPEG()); err != nil {
-			return fmt.Errorf("write video: %w", err)
-		}
-		next = time.Now().Add(time.Second / time.Duration(server.options.FPS))
-	}
 }

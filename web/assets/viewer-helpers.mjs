@@ -33,8 +33,8 @@ export function mapPointer(clientX, clientY, rect, visibleWidth, visibleHeight) 
 }
 
 // Decode the fixed v1 header without losing uint64 precision. Payload is a view
-// of the supplied buffer; video bytes remain the original JPEG. Audio fields are
-// reserved until the audio viewer is implemented and are not interpreted here.
+// of the supplied buffer; video bytes remain the original JPEG. The audio queue
+// validates PCM length and duration once its negotiated format is known.
 export function decodeMediaMessage(buffer) {
   if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < HEADER_SIZE) {
     throw new RangeError("media message is shorter than its header");
@@ -258,6 +258,172 @@ export function createInputController({send, schedule = setTimeout, cancel = cle
       if (!Array.isArray(shortcutKeys) || shortcutKeys.length === 0 ||
         shortcutKeys.some(code => typeof code !== "string" || code.length === 0)) return false;
       return discrete({type: "shortcut", keys: [...shortcutKeys]});
+    },
+  };
+}
+
+// The browser's 100 ms share is split equally between this ring and one
+// acknowledged MessagePort transfer. The ALSA subscription owns the other
+// 100 ms. Browser/network/output-device buffering is measured separately.
+export const AUDIO_QUEUE_MS = 50;
+
+function audioCapacity(sampleRate, channels) {
+  const capacity = Math.floor(sampleRate * AUDIO_QUEUE_MS / 1000);
+  if (!positiveInteger(sampleRate) || (channels !== 1 && channels !== 2) ||
+    capacity < 1 || capacity > 1 << 20) throw new RangeError("invalid audio format");
+  return capacity;
+}
+
+function audioDuration(frames, sampleRate) {
+  return Number(BigInt(frames) * 1000000000n / BigInt(sampleRate));
+}
+
+function validAudioBlock(block, sampleRate, channels) {
+  return block?.kind === 2 && validID(block.generation) && validID(block.sequence) &&
+    validID(block.timestampNS) && Number.isInteger(block.timestampFlags) &&
+    block.timestampFlags >= 0 && block.timestampFlags <= 0xffffffff &&
+    (block.timestampFlags & 1) !== 0 && (block.timestampFlags & ~5) === 0 &&
+    positiveInteger(block.sampleFrames) && block.sampleFrames <= 1 << 20 &&
+    block.payload instanceof Uint8Array &&
+    block.payload.byteLength === block.sampleFrames * channels * 2 &&
+    block.durationNS === audioDuration(block.sampleFrames, sampleRate);
+}
+
+// Own exactly the newest <=50 ms before transferring its ArrayBuffer. A view
+// alone would also transfer/retain the discarded prefix of an oversized block.
+export function trimAudioBlock(block, sampleRate, channels) {
+  const capacity = audioCapacity(sampleRate, channels);
+  if (!validAudioBlock(block, sampleRate, channels)) return null;
+  const sampleFrames = Math.min(capacity, block.sampleFrames);
+  const skipped = block.sampleFrames - sampleFrames;
+  const timestampNS = block.timestampNS + BigInt(audioDuration(skipped, sampleRate));
+  if (!validID(timestampNS)) return null;
+  return {
+    kind: 2, generation: block.generation, sequence: block.sequence,
+    timestampFlags: block.timestampFlags, timestampNS, sampleFrames,
+    durationNS: audioDuration(sampleFrames, sampleRate),
+    payload: block.payload.slice(skipped * channels * 2),
+  };
+}
+
+// Fixed PCM ring, with no objects allocated by render(). Sample timestamps are
+// relative to the first source timestamp, never browser/server epoch values.
+// The fastest observed source progress anchors source-now to the local clock;
+// local time keeps advancing through an arrival stall, so an old burst expires.
+// postedAtMS and nowMS share the page's monotonic clock epoch. The worklet's
+// fallback maps elapsed wall time onto a refreshed page clock sample, so queue
+// age advances even when the audio rendering timeline pauses. A correction
+// back by >5ms flushes PCM; smaller timer quantization is clamped. The source
+// anchor stays in the page clock epoch, independent of fallback corrections.
+export function createAudioQueue({sampleRate, channels, generation}) {
+  const capacity = audioCapacity(sampleRate, channels);
+  if (!validID(generation)) throw new RangeError("invalid audio generation");
+  const samples = new Float32Array(capacity * channels);
+  const timestamps = new Float64Array(capacity);
+  let read = 0;
+  let queued = 0;
+  let lastSequence = null;
+  let originNS = null;
+  let anchorSourceMS = null;
+  let anchorLocalMS = 0;
+  let lastLocalMS = null;
+  const frameMS = 1000 / sampleRate;
+  const clear = () => {
+    read = 0;
+    queued = 0;
+  };
+  const clock = localMS => {
+    if (lastLocalMS !== null && localMS < lastLocalMS) {
+      if (lastLocalMS - localMS <= 5) return lastLocalMS;
+      // Correct the fallback clock without letting delayed new sequences
+      // establish a fresh source anchor after the correction.
+      clear();
+    }
+    lastLocalMS = localMS;
+    return localMS;
+  };
+  const sourceNow = localMS => anchorSourceMS + localMS - anchorLocalMS;
+  const drop = () => {
+    read = (read + 1) % capacity;
+    queued--;
+  };
+  const expire = localMS => {
+    if (anchorSourceMS === null) return;
+    const cutoff = sourceNow(localMS) - AUDIO_QUEUE_MS;
+    while (queued !== 0 && timestamps[read] < cutoff) drop();
+  };
+  return {
+    get generation() { return generation; },
+    get capacityFrames() { return capacity; },
+    get queuedFrames() { return queued; },
+    get durationMS() { return queued * frameMS; },
+    push(block, nowMS, postedAtMS = nowMS) {
+      if (!Number.isFinite(nowMS) || !Number.isFinite(postedAtMS) || nowMS < postedAtMS ||
+        !validAudioBlock(block, sampleRate, channels) || block.generation !== generation ||
+        (lastSequence !== null && block.sequence <= lastSequence)) return false;
+      nowMS = clock(nowMS);
+      lastSequence = block.sequence;
+      const transitMS = nowMS - postedAtMS;
+      if (transitMS > AUDIO_QUEUE_MS) {
+        expire(nowMS);
+        return false;
+      }
+      if (originNS === null) originNS = block.timestampNS;
+      const firstSourceMS = Number(block.timestampNS - originNS) / 1000000;
+      const observedSourceMS = firstSourceMS + block.sampleFrames * frameMS + transitMS;
+      if (anchorSourceMS === null || observedSourceMS > sourceNow(nowMS)) {
+        anchorSourceMS = observedSourceMS;
+        anchorLocalMS = nowMS;
+      }
+      expire(nowMS);
+      const cutoff = sourceNow(nowMS) - AUDIO_QUEUE_MS;
+      const data = new DataView(block.payload.buffer, block.payload.byteOffset, block.payload.byteLength);
+      let accepted = false;
+      for (let frame = Math.max(0, block.sampleFrames - capacity); frame < block.sampleFrames; frame++) {
+        const timestamp = firstSourceMS + frame * frameMS;
+        if (timestamp < cutoff) continue;
+        if (queued === capacity) drop();
+        const write = (read + queued) % capacity;
+        timestamps[write] = timestamp;
+        for (let channel = 0; channel < channels; channel++) {
+          samples[write * channels + channel] = data.getInt16((frame * channels + channel) * 2, true) / 32768;
+        }
+        queued++;
+        accepted = true;
+      }
+      return accepted;
+    },
+    render(outputs, nowMS) {
+      for (const output of outputs) if (output instanceof Float32Array) output.fill(0);
+      if (!Number.isFinite(nowMS) || outputs.length !== channels) return 0;
+      for (const output of outputs) {
+        if (!(output instanceof Float32Array) || output.length !== outputs[0].length) return 0;
+      }
+      nowMS = clock(nowMS);
+      const cutoff = anchorSourceMS === null ? -Infinity : sourceNow(nowMS) - AUDIO_QUEUE_MS;
+      let count = 0;
+      while (queued !== 0 && count < outputs[0].length) {
+        // Capture-time estimates may overlap across blocks. Stale samples can
+        // occur behind a fresh prefix, so recheck each head before rendering.
+        if (timestamps[read] >= cutoff) {
+          for (let channel = 0; channel < channels; channel++) outputs[channel][count] = samples[read * channels + channel];
+          count++;
+        }
+        drop();
+      }
+      return count;
+    },
+    reset(nextGeneration = generation, {preserveClock = false} = {}) {
+      if (!validID(nextGeneration)) throw new RangeError("invalid audio generation");
+      generation = nextGeneration;
+      clear();
+      lastSequence = null;
+      if (!preserveClock) {
+        originNS = null;
+        anchorSourceMS = null;
+        anchorLocalMS = 0;
+        lastLocalMS = null;
+      }
     },
   };
 }

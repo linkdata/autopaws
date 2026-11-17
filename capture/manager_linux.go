@@ -190,13 +190,19 @@ func managerUnavailable(closed bool) error {
 // or settings change preserves the subscription so a later repair can resume it.
 type Subscription struct {
 	manager *Manager
-	frames  chan subscriptionResult
+	frames  chan Event
 }
 
-type subscriptionResult struct {
-	frame *Frame
-	err   error
+// Event is one latest-frame slot result. Failure events preserve a subscription
+// so a later settings repair can resume it. A closed channel means ErrClosed.
+type Event struct {
+	Frame *Frame
+	Err   error
 }
+
+// Events exposes the existing one-slot delivery channel for a combined media
+// select loop. Use either Events or Next as the subscription's sole consumer.
+func (subscription *Subscription) Events() <-chan Event { return subscription.frames }
 
 func (manager *Manager) Subscribe() (*Subscription, error) {
 	manager.mu.Lock()
@@ -204,12 +210,12 @@ func (manager *Manager) Subscribe() (*Subscription, error) {
 	if manager.closed {
 		return nil, ErrClosed
 	}
-	subscription := &Subscription{manager: manager, frames: make(chan subscriptionResult, 1)}
+	subscription := &Subscription{manager: manager, frames: make(chan Event, 1)}
 	manager.subscribers[subscription] = struct{}{}
 	if manager.options.Device == "" {
-		subscription.frames <- subscriptionResult{err: ErrUnavailable}
+		subscription.frames <- Event{Err: ErrUnavailable}
 	} else if manager.run != nil && manager.run.failed {
-		subscription.frames <- subscriptionResult{err: manager.lastErr}
+		subscription.frames <- Event{Err: manager.lastErr}
 	}
 	manager.startLocked()
 	return subscription, nil
@@ -224,7 +230,7 @@ func (subscription *Subscription) Next(ctx context.Context) (*Frame, error) {
 		if !ok {
 			return nil, ErrClosed
 		}
-		return result.frame, result.err
+		return result.Frame, result.Err
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
@@ -328,6 +334,18 @@ func (manager *Manager) waitOpen(ctx context.Context, generation uint64) error {
 func (manager *Manager) Info() Info {
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
+	return manager.infoLocked()
+}
+
+// Watch returns a coherent settings/status snapshot and its change notification.
+// Read a fresh snapshot after the returned channel closes; never poll Info.
+func (manager *Manager) Watch() (Info, <-chan struct{}) {
+	manager.mu.Lock()
+	defer manager.mu.Unlock()
+	return manager.infoLocked(), manager.changed
+}
+
+func (manager *Manager) infoLocked() Info {
 	err := manager.lastErr
 	if manager.closed || manager.options.Device == "" {
 		err = managerUnavailable(manager.closed)
@@ -427,7 +445,7 @@ func (manager *Manager) produce(run *stream) {
 		if closeErr != nil {
 			manager.lastErr = unavailableError(closeErr)
 			manager.failPendingLocked(manager.lastErr)
-			manager.publishLocked(subscriptionResult{err: manager.lastErr})
+			manager.publishLocked(Event{Err: manager.lastErr})
 		}
 	}
 	manager.notifyLocked()
@@ -445,12 +463,12 @@ func (manager *Manager) reportFailureLocked(run *stream, err error) {
 		run.failed = true
 		manager.lastErr = unavailableError(err)
 		manager.failPendingLocked(manager.lastErr)
-		manager.publishLocked(subscriptionResult{err: manager.lastErr})
+		manager.publishLocked(Event{Err: manager.lastErr})
 		manager.notifyLocked()
 	}
 }
 
-func (manager *Manager) publishLocked(result subscriptionResult) {
+func (manager *Manager) publishLocked(result Event) {
 	for subscription := range manager.subscribers {
 		select {
 		case <-subscription.frames:
@@ -509,7 +527,7 @@ func (manager *Manager) read(run *stream, source Source) error {
 			manager.mu.Unlock()
 			return context.Canceled
 		}
-		manager.publishLocked(subscriptionResult{frame: processed})
+		manager.publishLocked(Event{Frame: processed})
 		if needSnapshot {
 			for waiter := range manager.pending {
 				if timestamp > waiter.arrival {

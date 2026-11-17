@@ -1,5 +1,6 @@
 import {mapPointer, decodeMediaMessage, createFrameGuard, createInputController}
   from "./viewer-helpers.mjs";
+import {createAudioPlayback} from "./audio-playback.mjs";
 
 const byID = id => document.getElementById(id);
 const toolbar = byID("toolbar");
@@ -22,6 +23,21 @@ let fpsSince = performance.now();
 let hideTimer = null;
 let dragging = null;
 const capabilityMessages = new Map();
+const audio = createAudioPlayback({
+  AudioContext: window.AudioContext ?? window.webkitAudioContext,
+  AudioWorkletNode: window.AudioWorkletNode,
+  secureContext: window.isSecureContext,
+  onState(state) {
+    const button = byID("audio");
+    button.hidden = state.status !== "available";
+    button.setAttribute("aria-pressed", String(state.playing));
+    button.textContent = state.enabled && !state.playing ? (state.retryable ? "Retry audio" : "Cancel audio") : "Audio";
+    button.title = state.playing ? "Mute audio" : state.enabled ?
+      (state.retryable ? "Enable audio again to resume" : "Cancel enabling audio") : "Enable audio";
+    explainCapability("audio", state.explanation);
+    if (state.explanation) byID("capabilities").open = true;
+  },
+});
 
 function showMessage(text) {
   message.textContent = text;
@@ -163,6 +179,7 @@ function connect() {
   clearTimeout(reconnectTimer);
   reconnectTimer = null;
   input.setConnected(false);
+  void audio.reset();
   pendingVideo = null;
   frames.reset();
   updateControls();
@@ -187,13 +204,14 @@ function connect() {
       if (typeof event.data === "string") {
         const config = JSON.parse(event.data);
         if (config.type !== "config") throw new Error("Unexpected configuration");
-        // Audio configuration is consumed when audio playback is available.
+        void audio.configure(config.audio);
         return;
       }
       const data = event.data instanceof ArrayBuffer ? event.data : await event.data.arrayBuffer();
       if (socket !== connection) return;
       const frame = decodeMediaMessage(data);
       if (frame.kind === 1) videoFrame(frame);
+      else audio.push(frame);
     } catch {
       connection.close(1002, "Invalid stream data");
     }
@@ -202,6 +220,7 @@ function connect() {
   connection.addEventListener("close", () => {
     if (socket !== connection) return;
     input.setConnected(false);
+    void audio.reset();
     pendingVideo = null;
     frames.reset();
     renderedFrames = 0;
@@ -282,6 +301,13 @@ byID("view-only").addEventListener("click", async () => {
   input.setViewOnly(!input.viewOnly); // The helper releases before closing its gate.
   updateControls();
   await keyboardLock();
+  focusScreen();
+});
+byID("audio").addEventListener("click", () => {
+  // A loading graph can be cancelled; a suspended/failed graph needs a fresh
+  // enable gesture. The visible label distinguishes those two actions.
+  const state = audio.state;
+  void audio.setEnabled(!state.enabled || state.retryable);
   focusScreen();
 });
 byID("cursor").addEventListener("click", () => {
@@ -399,6 +425,7 @@ window.addEventListener("pagehide", () => {
   clearTimeout(reconnectTimer);
   input.release();
   input.setConnected(false);
+  void audio.reset();
   socket?.close(1000, "Viewer closing");
 });
 window.addEventListener("pageshow", event => {

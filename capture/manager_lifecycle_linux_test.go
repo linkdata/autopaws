@@ -107,6 +107,9 @@ func TestManagerFailedOpenResolutionRepair(t *testing.T) {
 				} else if _, err := manager.Snapshot(context.Background()); !errors.Is(err, failure) {
 					t.Fatalf("failed idle startup=%v", err)
 				}
+				// Failure is reported before the old producer retires. Let that
+				// owner finish before exercising idle/subscribed repair.
+				synctest.Wait()
 				before := attempts.Load()
 				if err := manager.SetResolution(context.Background(), 128, 96); err != nil {
 					t.Fatal(err)
