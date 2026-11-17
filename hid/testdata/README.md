@@ -8,6 +8,19 @@ using its `src/serial_hid_kvm/hid_keycodes.py` and built-in layout files.
 Go intentionally rejects Python's permissive hexadecimal underscore and trailing
 whitespace forms; the local tests cover that stricter contract explicitly.
 
+`python_tokenizer.json` records 34 tokenizer examples and 15 tag-validity calls
+from that revision's `hid_keyboard.py` and `tests/test_hid_keyboard.py`, including
+the docstring examples and added Unicode, brace and control-character cases.
+Python represents a tag with a U+0001 prefix; Go uses a separate token kind so a
+literal U+0001 remains literal.
+
+`keyboard_actions.json` records ten successful keyboard operations from
+the same revision. A recording device expanded each keyboard send into its real
+encoder's press/release frames; sleeps were recorded rather than performed.
+Tests compare frames and emission times under `testing/synctest`, including
+delays after the final character or sequence step. Python's partial typing on
+invalid input is deliberately superseded by whole-request validation.
+
 `xkb_layouts.json` contains factual character-to-stroke mappings evaluated against
 installed xkeyboard-config (`xkb-data` 2.46-2) using libxkbcommon 1.13.1-1, with
 `evdev` rules, `pc105` model, `basic` variants and no options. The source definitions

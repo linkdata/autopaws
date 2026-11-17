@@ -1,4 +1,4 @@
-// Package hid provides keyboard layouts and HID keycode lookup.
+// Package hid provides keyboard control and immutable target keyboard layouts.
 package hid
 
 import (

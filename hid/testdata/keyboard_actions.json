@@ -1,0 +1,958 @@
+{
+  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
+  "source": "src/serial_hid_kvm/hid_keyboard.py",
+  "note": "Calls were executed against an I/O-free recording device; all application sleeps were recorded rather than waited. Each fake send_keyboard expands the documented Python send_keyboard behavior using the real encoder: press, 10ms hold, release.",
+  "cases": [
+    {
+      "name": "plain_ascii",
+      "method": "type_text",
+      "args": [
+        "aA1!"
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab000208000004000000000010"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208020004000000000012"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001e00000000002a"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020802001e00000000002c"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "inline_tags",
+      "method": "type_text",
+      "args": [
+        "A{ctrl+c}{shift+0x87}{enter}"
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab000208020004000000000012"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208010006000000000013"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208020087000000000095"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "escaped_tag",
+      "method": "type_text",
+      "args": [
+        "{{enter}}"
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab00020802002f00000000003d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000008000000000014"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001100000000001d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000017000000000023"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000008000000000014"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000015000000000021"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020802003000000000003e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "literal_unknown_tag",
+      "method": "type_text",
+      "args": [
+        "awk '{print $1}'{enter}"
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab000208000004000000000010"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001a000000000026"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000e00000000001a"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800002c000000000038"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000034000000000040"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020802002f00000000003d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001300000000001f"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000015000000000021"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000c000000000018"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001100000000001d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000017000000000023"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800002c000000000038"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020802002100000000002f"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001e00000000002a"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020802003000000000003e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000034000000000040"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "raw_line_endings",
+      "method": "type_text",
+      "args": [
+        "a\r\nb\rc\n"
+      ],
+      "kwargs": {
+        "raw": true
+      },
+      "events": [
+        {
+          "frame_hex": "57ab000208000004000000000010"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000005000000000011"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000006000000000012"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "raw_backslash_sequences",
+      "method": "type_text",
+      "args": [
+        "echo hello\\necho world\\n"
+      ],
+      "kwargs": {
+        "raw": true
+      },
+      "events": [
+        {
+          "frame_hex": "57ab000208000008000000000014"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000006000000000012"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000b000000000017"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001200000000001e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800002c000000000038"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000b000000000017"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000008000000000014"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000f00000000001b"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000f00000000001b"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001200000000001e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800003100000000003d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001100000000001d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000008000000000014"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000006000000000012"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000b000000000017"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001200000000001e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800002c000000000038"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001a000000000026"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001200000000001e"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000015000000000021"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800000f00000000001b"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab000208000007000000000013"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800003100000000003d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        },
+        {
+          "frame_hex": "57ab00020800001100000000001d"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 20
+        }
+      ]
+    },
+    {
+      "name": "zero_character_delay",
+      "method": "type_text",
+      "args": [
+        "ab{tab}"
+      ],
+      "kwargs": {
+        "char_delay": 0
+      },
+      "events": [
+        {
+          "frame_hex": "57ab000208000004000000000010"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "frame_hex": "57ab000208000005000000000011"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "frame_hex": "57ab00020800002b000000000037"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        }
+      ]
+    },
+    {
+      "name": "single_uppercase_with_modifiers",
+      "method": "send_key",
+      "args": [
+        "A",
+        [
+          "ctrl"
+        ]
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab000208030004000000000013"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        }
+      ]
+    },
+    {
+      "name": "single_zero_hex_key",
+      "method": "send_key",
+      "args": [
+        "0x00"
+      ],
+      "kwargs": {},
+      "events": [
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        }
+      ]
+    },
+    {
+      "name": "sequence_delays",
+      "method": "send_key_sequence",
+      "args": [
+        [
+          {
+            "key": "a"
+          },
+          {
+            "key": "enter",
+            "delay_ms": 0
+          },
+          {
+            "key": "b",
+            "modifiers": [
+              "ralt"
+            ],
+            "delay_ms": 25
+          }
+        ]
+      ],
+      "kwargs": {
+        "default_delay_ms": 100
+      },
+      "events": [
+        {
+          "frame_hex": "57ab000208000004000000000010"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 100
+        },
+        {
+          "frame_hex": "57ab000208000028000000000034"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 0
+        },
+        {
+          "frame_hex": "57ab000208400005000000000051"
+        },
+        {
+          "delay_ms": 10
+        },
+        {
+          "frame_hex": "57ab00020800000000000000000c"
+        },
+        {
+          "delay_ms": 25
+        }
+      ]
+    }
+  ]
+}
