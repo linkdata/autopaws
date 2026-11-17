@@ -1,0 +1,230 @@
+//go:build linux && (amd64 || arm64)
+
+// Package web serves the browser viewer and forwards ordered physical input.
+package web
+
+import (
+	"bytes"
+	"context"
+	_ "embed"
+	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/coder/websocket"
+	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/hid"
+)
+
+var ErrOptions = errors.New("invalid web options")
+
+// Options uses the daemon's frame limit and independent debug-key logger.
+// Zero FPS uses 20; zero WriteTimeout uses one second. No send has an unbounded
+// application wait. Nil loggers disable their respective records.
+type Options struct {
+	FPS               int
+	WriteTimeout      time.Duration
+	Logger, KeyLogger *slog.Logger
+}
+
+// Server is an http.Handler with tracked WebSocket lifetimes. Close stops
+// admission and cancels every connection before Wait joins any HID cleanup.
+// The runtime owns Controller.Close and capture.Manager.Close separately.
+type Server struct {
+	controller *hid.Controller
+	mouse      *hid.Mouse
+	capture    *capture.Manager
+	options    Options
+	lifetime   context.Context
+	cancel     context.CancelFunc
+	mu         sync.Mutex
+	closed     bool
+	workers    sync.WaitGroup
+}
+
+type socket interface {
+	Read(context.Context) (websocket.MessageType, []byte, error)
+	Writer(context.Context, websocket.MessageType) (io.WriteCloser, error)
+	CloseNow() error
+}
+
+func New(controller *hid.Controller, mouse *hid.Mouse, captures *capture.Manager, options Options) (*Server, error) {
+	if controller == nil || mouse == nil || captures == nil || options.FPS < 0 || options.FPS > 120 || options.WriteTimeout < 0 {
+		return nil, ErrOptions
+	}
+	if options.FPS == 0 {
+		options.FPS = 20
+	}
+	if options.WriteTimeout == 0 {
+		options.WriteTimeout = time.Second
+	}
+	lifetime, cancel := context.WithCancel(context.Background())
+	return &Server{controller: controller, mouse: mouse, capture: captures, options: options, lifetime: lifetime, cancel: cancel}, nil
+}
+
+func (server *Server) ServeHTTP(output http.ResponseWriter, request *http.Request) {
+	output.Header().Set("Cache-Control", "no-cache")
+	if request.URL.Path != "/ws" {
+		serveAsset(output, request)
+		return
+	}
+	server.mu.Lock()
+	if server.closed {
+		server.mu.Unlock()
+		http.Error(output, "viewer is closing", http.StatusServiceUnavailable)
+		return
+	}
+	server.workers.Add(1)
+	server.mu.Unlock()
+	defer server.workers.Done()
+	conn, err := websocket.Accept(output, request, nil) // Keep default origin checks.
+	if err != nil {
+		return // Accept already wrote its HTTP error response.
+	}
+	server.serveConnection(conn)
+}
+
+func (server *Server) serveConnection(conn socket) {
+	ctx, cancel := context.WithCancel(server.lifetime)
+	defer cancel()
+	defer conn.CloseNow()
+	server.mu.Lock()
+	if server.closed {
+		server.mu.Unlock()
+		return
+	}
+	server.mu.Unlock()
+	subscription, err := server.capture.Subscribe()
+	if err != nil {
+		return
+	}
+	defer subscription.Close()
+	browser := hid.NewBrowser(server.controller, server.mouse)
+	written := make(chan error, 1)
+	go func() {
+		err := server.write(ctx, conn, subscription)
+		cancel()
+		_ = conn.CloseNow() // Wake Read even while the client sends no input.
+		written <- err
+	}()
+	readErr := server.read(ctx, conn, browser)
+	cancel()
+	_ = conn.CloseNow()
+	writeErr := <-written
+	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), time.Second)
+	defer stop()
+	cleanupErr := browser.Release(cleanup)
+	shutdownOwnsRelease := server.lifetime.Err() != nil && errors.Is(cleanupErr, hid.ErrClosed)
+	if cleanupErr != nil && !shutdownOwnsRelease && server.options.Logger != nil {
+		server.options.Logger.Warn("Web input cleanup failed", "error", cleanupErr)
+	}
+	if server.options.Logger != nil {
+		server.options.Logger.Debug("Web client ended", "error", errors.Join(readErr, writeErr))
+	}
+}
+
+// Close stops admission and cancels all clients together. Each client's writer
+// closes its socket as cancellation arrives, independently of retained HID I/O.
+// Start shared Controller.Close promptly, then call Wait to join the handlers.
+func (server *Server) Close() {
+	server.mu.Lock()
+	defer server.mu.Unlock()
+	server.closed = true
+	server.cancel()
+}
+
+// Wait may be called after Close, when no new connection worker can be admitted.
+func (server *Server) Wait() { server.workers.Wait() }
+
+//go:embed assets/index.html
+var indexHTML []byte
+
+//go:embed assets/app.js
+var pageJS []byte
+
+//go:embed assets/manifest.json
+var manifest []byte
+
+//go:embed assets/sw.js
+var serviceWorker []byte
+
+//go:embed assets/icon.svg
+var icon []byte
+
+func serveAsset(output http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet && request.Method != http.MethodHead {
+		output.Header().Set("Allow", "GET, HEAD")
+		http.Error(output, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	data, contentType := indexHTML, "text/html; charset=utf-8"
+	switch request.URL.Path {
+	case "/app.js":
+		data, contentType = pageJS, "text/javascript; charset=utf-8"
+	case "/manifest.json":
+		data, contentType = manifest, "application/manifest+json"
+	case "/sw.js":
+		data, contentType = serviceWorker, "text/javascript; charset=utf-8"
+	case "/icon.svg":
+		data, contentType = icon, "image/svg+xml"
+	}
+	output.Header().Set("Content-Type", contentType)
+	http.ServeContent(output, request, "", time.Time{}, bytes.NewReader(data))
+}
+
+func (server *Server) writeMessage(ctx context.Context, conn socket, kind websocket.MessageType, parts ...[]byte) error {
+	ctx, cancel := context.WithTimeout(ctx, server.options.WriteTimeout)
+	defer cancel()
+	writer, err := conn.Writer(ctx, kind)
+	if err != nil {
+		return err
+	}
+	for _, part := range parts {
+		if _, err := writer.Write(part); err != nil {
+			return errors.Join(err, writer.Close())
+		}
+	}
+	return writer.Close()
+}
+
+func (server *Server) write(ctx context.Context, conn socket, subscription *capture.Subscription) error {
+	// Audio is not implemented until #41. U64 JSON generations are strings, so
+	// future audio configuration never loses precision in a JavaScript client.
+	if err := server.writeMessage(ctx, conn, websocket.MessageText, []byte(`{"type":"config","audio":{"status":"unavailable","generation":"0"}}`)); err != nil {
+		return err
+	}
+	var sequence uint64
+	var next time.Time
+	for {
+		if delay := time.Until(next); delay > 0 {
+			timer := time.NewTimer(delay)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return ctx.Err()
+			case <-timer.C:
+			}
+		}
+		frame, err := subscription.Next(ctx)
+		if err != nil {
+			if errors.Is(err, capture.ErrClosed) || ctx.Err() != nil {
+				return err
+			}
+			continue // One failure event; keep subscription alive for repair.
+		}
+		metadata := frame.Metadata()
+		if metadata.Generation != server.capture.Info().Generation {
+			continue // This frame was already held outside the flushed slot.
+		}
+		sequence++
+		header := videoHeader(metadata, sequence)
+		if err := server.writeMessage(ctx, conn, websocket.MessageBinary, header[:], frame.JPEG()); err != nil {
+			return fmt.Errorf("write video: %w", err)
+		}
+		next = time.Now().Add(time.Second / time.Duration(server.options.FPS))
+	}
+}

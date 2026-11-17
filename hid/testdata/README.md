@@ -51,3 +51,13 @@ can be valid; changing a fixture requires checking the replacement against XKB.
 
 These files are committed test data. Go tests do not need Python, XKB or
 libxkbcommon installed.
+
+`browser_codes.json` records all 104 physical `KeyboardEvent.code` mappings and
+eight modifier bits from the same pinned revision's `_web_viewer.py`. It covers
+the complete mapping tested by `tests/test_web_viewer_keycodes.py`; no display or
+Python import is needed by the Go tests. Browser input regressions also preserve
+the web-specific packet sequences from `tests/test_viewer_input.py`, with two
+deliberate corrections: movement carries held button bits in both modes to match
+the physically verified Go Mouse behavior, and scroll preserves held buttons in
+absolute mode too. Deterministic six-key press order, whole shortcut actions and
+release-only disconnect cleanup are new Go behavior covered by direct tests.

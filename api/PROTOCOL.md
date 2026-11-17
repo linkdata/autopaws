@@ -58,7 +58,7 @@ error detail. Linux serial kernel calls already executing can outlast that budge
 
 Shutdown closes listeners/connections and starts shared controller cleanup before
 waiting for handlers. Keyboard and mouse are released before permanent transport
-close. API-only and later web-only/combined service startup share this ownership;
+close. API-only and web-only/combined service startup share this ownership;
 there is no universal kernel shutdown deadline.
 
 ## Input methods

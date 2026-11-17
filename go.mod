@@ -3,6 +3,7 @@ module github.com/linkdata/autopaws
 go 1.27.4
 
 require (
+	github.com/coder/websocket v1.8.15
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	go.yaml.in/yaml/v3 v3.0.6
 )

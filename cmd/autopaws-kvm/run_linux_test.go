@@ -125,20 +125,3 @@ func TestCommandHooks(t *testing.T) {
 		}
 	}
 }
-
-func TestUnavailableProductionCommands(t *testing.T) {
-	for _, vector := range []struct {
-		args []string
-		text string
-	}{
-		{[]string{"serve", "-web", ":9330"}, "web viewer is not implemented"},
-		{[]string{"serve", "-api", ":9329", "-web", ":9330"}, "web viewer is not implemented"},
-	} {
-		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
-			var stdout, stderr bytes.Buffer
-			if code := run(context.Background(), vector.args, &stdout, &stderr, commandHooks{}); code != 1 || stdout.Len() != 0 || !strings.Contains(stderr.String(), vector.text) {
-				t.Fatalf("placeholder = code %d, stdout %q, stderr %q", code, stdout.String(), stderr.String())
-			}
-		})
-	}
-}
