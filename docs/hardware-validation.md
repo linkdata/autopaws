@@ -72,3 +72,18 @@ Go client/TCP API dispatch, physical keyboard/mouse control and ordinary signal
 shutdown together. Separate recording-transport tests cover active cancellation,
 shared cleanup deadlines and slow kernel-operation ownership; this physical run
 does not claim a universal shutdown bound or complete the media/MCP release gate.
+
+### Actual stdio MCP process
+
+The SDK client launched the static `autopaws-mcp` binary over its real stdin/stdout
+pipes, connected to the configured daemon above, and listed all twelve non-OCR
+tools. `capture_screen` returned an MCP tool error while capture is unavailable;
+an absolute move before any successful screenshot was rejected. The client then
+sent Ctrl+R, an unscaled relative move (-20,-10), and a click at the current
+pointer. The target page recorded movement followed by one down/up pair, at
+(892,546). Relative HID deltas are subject to the target OS's pointer processing.
+
+Closing the MCP client's stdin produced MCP process exit 0. The daemon then
+exited 0 on SIGTERM. This covers the actual stdio/CLI process boundary as well as
+physical input. Screenshot-to-click validation remains pending real capture
+support; canned-JPEG SDK tests cover the conversion contract meanwhile.

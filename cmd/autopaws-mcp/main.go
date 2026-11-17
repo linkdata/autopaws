@@ -1,11 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func main() {
-	fmt.Fprintln(os.Stderr, "autopaws-mcp is not implemented yet")
-	os.Exit(1)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	code := run(ctx, os.Args[1:], &mcp.StdioTransport{}, os.Stdout, os.Stderr)
+	stop()
+	os.Exit(code)
 }

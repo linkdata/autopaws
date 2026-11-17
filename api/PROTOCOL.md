@@ -131,7 +131,7 @@ parameter shapes. The frame pipeline will supply their operational behavior:
 
 | Method | Parameters | Current result / later contract |
 |---|---|---|
-| `capture_frame` | none | Currently unavailable; later JPEG base64 and image dimensions |
+| `capture_frame` | none | Currently unavailable; later `{"jpeg_b64":"...","width":W,"height":H}` |
 | `list_capture_devices` | none | Currently unavailable; later a `devices` array, empty when none exist |
 | `set_capture_device` | nonempty string `device` path, not a signed/unsigned numeric index | Currently unavailable; later selects a device even when none is open |
 | `set_capture_resolution` | integer `width`, `height`, each 1…4294967295 | Currently unavailable; later updates the selected device's requested size |

@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Keyboard/mouse control, CLI configuration and the TCP API are implemented. MCP and media services are still being ported; web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, the TCP API and the stdio MCP server are implemented. Video, OCR, audio and browser services are still being ported; capture calls, web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -135,6 +135,54 @@ SIGINT and SIGTERM initiate shutdown. The shared input controller stops normal
 actions and attempts release before permanently closing serial transport. The
 one-second cleanup context bounds application waits; it cannot interrupt a Linux
 driver call already executing, as described in [serial I/O and cancellation](#serial-io-and-cancellation).
+
+## MCP server
+
+Configure an MCP client to start `autopaws-mcp` over stdio. It connects to a running
+KVM API and owns no hardware:
+
+```sh
+autopaws-mcp -api 127.0.0.1:9329
+```
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `-api host:port` | `127.0.0.1:9329` | KVM API address with a numeric port from 1 through 65535 |
+| `-capture-log DIR` | empty, off | Save unchanged screenshot JPEGs in the selected directory |
+
+Each agent process has its own MCP session. Tools also isolate screenshot state
+when multiple SDK sessions share one server instance. The server uses the
+[official MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk) and reserves
+stdout for MCP messages; logs go to stderr. Help exits 0, invalid flags exit 2 and
+an unexpected transport failure exits 1. Normal client exit or signal shutdown
+exits 0.
+
+| Tools | Purpose |
+|---|---|
+| `type_text`, `send_key`, `send_key_sequence` | Complete keyboard actions through the API |
+| `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions; a drag is one API request |
+| `capture_screen` | Return the daemon's JPEG unchanged plus image dimensions |
+| `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Read target/device information and select capture settings |
+
+MCP absolute coordinates are integer pixels in that session's latest successful
+`capture_screen` image. Capture first before an absolute move, positioned click
+or drag. Both screenshot endpoints map to the target endpoints, including cropped
+or scaled images; a one-pixel image or target axis maps to zero. Relative deltas
+remain unscaled and a click at the current pointer needs no screenshot. A capture
+device/resolution change attempt invalidates the old screenshot even when the API
+reports failure. Capture support becomes available with the frame pipeline; the
+keyboard, relative-movement and current-pointer tools work through the API now.
+
+Cancelling a tool or closing its MCP connection closes the active API call,
+allowing the daemon to finish its release-only cleanup. Complete input actions
+share the daemon's gate. V1 supports one operator; independent agents do not merge
+held keys/buttons.
+
+Capture logging is opt-in and has no retention limit. On POSIX systems its
+directory is mode `0700` and files are mode `0600`; platform access controls apply
+on Windows. Temporary-file names include timestamps and random suffixes, so
+captures cannot overwrite each other. These files contain the complete screenshot.
+OCR tools are added with OCR support; they are not registered yet.
 
 ## Development
 
