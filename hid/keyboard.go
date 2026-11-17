@@ -169,7 +169,7 @@ func (keyboard *Keyboard) play(ctx context.Context, plan []keyGroup) error {
 	if len(plan) == 0 {
 		return ctx.Err()
 	}
-	return keyboard.controller.run(ctx, func(current *action) error {
+	return keyboard.controller.run(ctx, releaseKeyboard, func(current *action) error {
 		for _, group := range plan {
 			for _, stroke := range group.strokes {
 				if err := current.ctx.Err(); err != nil {

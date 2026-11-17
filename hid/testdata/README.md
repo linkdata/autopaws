@@ -21,6 +21,19 @@ Tests compare frames and emission times under `testing/synctest`, including
 delays after the final character or sequence step. Python's partial typing on
 invalid input is deliberately superseded by whole-request validation.
 
+`mouse_actions.json` records 44 Python mouse cases from that revision, including
+frames, delays and held-button state. Where coordinates matter, the 4096×4096
+reference screen makes the Python and Go formulas identical. Go rejects unknown
+buttons and out-of-range relative motion, uses one optional position rather than
+partial coordinates, and keeps Click's wire and stored button state consistent.
+Python-only cases exhibiting those superseded behaviors are excluded.
+
+`mouse_coordinates.json` records 21 boundary comparisons for Go's deliberate
+coordinate correction: round each valid screen axis onto HID 0…4095 using the
+last valid pixel as the denominator; a one-pixel axis maps to zero. The fixture
+also records Python's different results for context. Tests check the Go results
+and rejection decisions, with additional exact-rounding and extreme-int cases.
+
 `xkb_layouts.json` contains factual character-to-stroke mappings evaluated against
 installed xkeyboard-config (`xkb-data` 2.46-2) using libxkbcommon 1.13.1-1, with
 `evdev` rules, `pc105` model, `basic` variants and no options. The source definitions

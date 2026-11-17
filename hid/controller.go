@@ -60,13 +60,21 @@ type action struct {
 	dirty      bool
 }
 
+type releaseMask byte
+
+const (
+	releaseKeyboard releaseMask = 1 << iota
+	releaseMouse
+	releaseBoth = releaseKeyboard | releaseMouse
+)
+
 func (controller *Controller) isClosing() bool {
 	controller.mu.Lock()
 	defer controller.mu.Unlock()
 	return controller.closing
 }
 
-func (controller *Controller) run(ctx context.Context, execute func(*action) error) error {
+func (controller *Controller) run(ctx context.Context, release releaseMask, execute func(*action) error) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -98,7 +106,10 @@ func (controller *Controller) run(ctx context.Context, execute func(*action) err
 	}
 	if err != nil && current.dirty {
 		attempt := controller.beginCleanup(ctx)
-		cleanupErr := controller.cleanup(attempt, controller.isClosing())
+		if controller.isClosing() {
+			release = releaseBoth
+		}
+		cleanupErr := controller.cleanup(attempt, release)
 		controller.endCleanup(attempt)
 		err = errors.Join(err, cleanupErr)
 	}
@@ -160,8 +171,8 @@ func (controller *Controller) endCleanup(attempt *cleanupAttempt) {
 }
 
 // cleanup runs only with the gate held. One preparation and at most one attempt
-// per release report are shared if shutdown overlaps ordinary keyboard cleanup.
-func (controller *Controller) cleanup(attempt *cleanupAttempt, all bool) error {
+// per release report are shared if shutdown overlaps an ordinary input cleanup.
+func (controller *Controller) cleanup(attempt *cleanupAttempt, release releaseMask) error {
 	if !attempt.prepared {
 		attempt.prepared = true
 		changed, err := controller.prepare(attempt.ctx)
@@ -175,7 +186,7 @@ func (controller *Controller) cleanup(attempt *cleanupAttempt, all bool) error {
 	if attempt.failed {
 		return attempt.err
 	}
-	if !attempt.keyboard {
+	if release&releaseKeyboard != 0 && !attempt.keyboard {
 		attempt.keyboard = true
 		err := controller.transport.WriteFrame(attempt.ctx, ch9329.Keyboard(0))
 		if err != nil {
@@ -184,7 +195,7 @@ func (controller *Controller) cleanup(attempt *cleanupAttempt, all bool) error {
 			controller.modifier, controller.keys = 0, nil
 		}
 	}
-	if all && !attempt.mouse {
+	if release&releaseMouse != 0 && !attempt.mouse {
 		attempt.mouse = true
 		err := controller.transport.WriteFrame(attempt.ctx, ch9329.MouseRelative(0, 0, 0, 0))
 		if err != nil {
@@ -215,7 +226,7 @@ func (controller *Controller) Close() error {
 			if attempt == nil {
 				attempt = controller.beginCleanup(context.Background())
 			}
-			controller.closeErr = controller.cleanup(attempt, true)
+			controller.closeErr = controller.cleanup(attempt, releaseBoth)
 			attempt.cancel()
 		}
 		controller.closeErr = errors.Join(controller.closeErr, controller.transport.Close())
