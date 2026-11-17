@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is in the planning stage. The [tracking epic](../../issues/23) lists the planning issues in execution order.
+The rewrite is underway. The repository currently provides build and CI scaffolding; the command binaries are stubs and do not control hardware yet. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -27,8 +27,32 @@ The rewrite is in the planning stage. The [tracking epic](../../issues/23) lists
 
 The hardware, software and host setup needed for development are listed in the [tracking epic](../../issues/23).
 
+Use Go 1.27.4 or newer and the golangci-lint version pinned in [the CI workflow](.github/workflows/ci.yml). From the repository root, run the same gate as CI:
+
+```sh
+CGO_ENABLED=0 go build ./...
+CGO_ENABLED=0 go build -o /dev/null ./cmd/autopaws-kvm
+golangci-lint run
+CGO_ENABLED=1 go test -race ./...
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./...
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /tmp/autopaws-mcp-darwin ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /tmp/autopaws-mcp-windows.exe ./cmd/autopaws-mcp
+```
+
+The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`. The root module's `./...` patterns exclude the nested modules in `research/`. CI deliberately skips those throwaway prototypes; they remain reference material until their replacements land.
+
+To build both Linux commands locally:
+
+```sh
+go build -o dist/ ./cmd/...
+```
+
 ## Repository layout
 
+- `cmd/autopaws-kvm/`: Linux KVM daemon entry point (amd64 and arm64).
+- `cmd/autopaws-mcp/`: portable MCP stdio entry point.
+- Library packages are added with their implementation issues: `ch9329`, `serial`, `hid`, `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
