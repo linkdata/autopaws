@@ -1,0 +1,1717 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-17",
+  "release_acceptance": "incomplete",
+  "scope": "Available Linux host/target and Chromium; Firefox and physical USB recovery remain pending.",
+  "measurement": {
+    "method": "../audio-measurement.md",
+    "from": "ALSA first-sample CLOCK_MONOTONIC timestamp estimate",
+    "to": "Browser getOutputTimestamp-interpolated device-output estimate for the first real sample of each rendered quantum",
+    "target_ms": 200,
+    "limits": [
+      "Not an acoustic measurement or formal bound on hardware/driver/browser timestamp error.",
+      "Reported engineering allowance is RTT/2 + half output bracket + nearby calibration drift + 1ms.",
+      "Application queue capacity excludes kernel, WebSocket/TCP and output-device buffering.",
+      "Context state fields are from the last completed report before shutdown, not live-process state."
+    ]
+  },
+  "environment": {
+    "host": {
+      "model": "Dell XPS 17 9700",
+      "os": "Ubuntu 26.04.1 LTS",
+      "kernel": "7.0.0-43-generic",
+      "architecture": "amd64"
+    },
+    "target": {
+      "model": "ThinkPad T14 Gen 1",
+      "os": "Ubuntu 26.04.1 LTS",
+      "kernel": "7.0.0-43-generic",
+      "logical_viewport": [
+        1280,
+        720
+      ],
+      "device_pixel_ratio": 1
+    },
+    "serial": {
+      "usb_id": "1a86:7523",
+      "path": "/dev/ttyUSB0",
+      "baud": 9600,
+      "button_mode": "relative"
+    },
+    "capture": {
+      "model": "UGREEN U15389 / MACROSILICON",
+      "usb_id": "2b89:5389",
+      "usb_path": "4-1",
+      "video_path": "/dev/video0",
+      "pcm_path": "/dev/snd/pcmC1D0c"
+    },
+    "audio": {
+      "format": "S16_LE",
+      "sample_rate": 48000,
+      "channels": 2,
+      "period_frames": 960,
+      "buffer_frames": 7680,
+      "wireplumber_policy_changed": false
+    },
+    "browser_user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+  },
+  "implementation": {
+    "audio_pull_request": "https://github.com/linkdata/autopaws/pull/61",
+    "source_hashes": {
+      "viewer-helpers.mjs": {
+        "source_sha256": "8d6338604983d52e331e540e284b45016a1ffad31083c8ed2487c34a625a7192",
+        "instrumented_sha256": "1044e9d05f2df7fbe21c9351aa99fa155ece289468a2bd89b8e58b4f12e806c3"
+      },
+      "audio-worklet.mjs": {
+        "source_sha256": "dd0ce5db2729fa3bae30ada11e666708e4f2e572fb24194eddf58944eff66db8",
+        "instrumented_sha256": "2ce3394f9c30453cd78ea8365bb3471b1b4964bb6332554738f6878d07f577d4"
+      },
+      "audio-playback.mjs": {
+        "source_sha256": "f0b8a9b6d813fadc07b6cedb522e4f41ddd5039bd135b4e6da1ba24d13bc2c9d",
+        "instrumented_sha256": "f6b3b02b989871ebacce862efac85b78181f7af8ed579b2d9463e77f5b59d831"
+      }
+    },
+    "later_authentication_smoke": "Issue42 token-enabled successor; audio DSP implementation unchanged.",
+    "test_binaries": [
+      {
+        "role": "ordinary_run_4_daemon",
+        "filename": "autopaws-kvm-audio41",
+        "sha256": "a7417d8b340df62a64aa57b7a8926620152e1e955ef22733bb2924e238f51245",
+        "go_build_metadata": [
+          "\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm",
+          "\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261117185639-d5940d4e4d61+dirty\t",
+          "\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=",
+          "\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=",
+          "\tbuild\t-buildmode=exe",
+          "\tbuild\t-compiler=gc",
+          "\tbuild\tCGO_ENABLED=0",
+          "\tbuild\tGOARCH=amd64",
+          "\tbuild\tGOOS=linux",
+          "\tbuild\tGOAMD64=v1",
+          "\tbuild\tvcs=git",
+          "\tbuild\tvcs.revision=d5940d4e4d61b70276afb29ac701cf94231b2853",
+          "\tbuild\tvcs.time=2026-11-17T18:56:39Z",
+          "\tbuild\tvcs.modified=true"
+        ]
+      },
+      {
+        "role": "token_ssh_smoke_daemon",
+        "filename": "autopaws-kvm-token42",
+        "sha256": "e2aff22bb7aac52ade538e146d50f10800e7ff4cc44c59740e8b219367e740e2",
+        "go_build_metadata": [
+          "\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm",
+          "\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261117204251-f10767eff60d+dirty\t",
+          "\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=",
+          "\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=",
+          "\tbuild\t-buildmode=exe",
+          "\tbuild\t-compiler=gc",
+          "\tbuild\tCGO_ENABLED=0",
+          "\tbuild\tGOARCH=amd64",
+          "\tbuild\tGOOS=linux",
+          "\tbuild\tGOAMD64=v1",
+          "\tbuild\tvcs=git",
+          "\tbuild\tvcs.revision=f10767eff60de5f741bdb08dcbf891882f0800f8",
+          "\tbuild\tvcs.time=2026-11-17T20:42:51Z",
+          "\tbuild\tvcs.modified=true"
+        ]
+      },
+      {
+        "role": "token_ssh_smoke_mcp",
+        "filename": "autopaws-mcp-token42",
+        "sha256": "0854ec1fd754a143f336500aac3fb1b77620e71a6951fb5f992db28921177501",
+        "go_build_metadata": [
+          "\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-mcp",
+          "\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261117204251-f10767eff60d+dirty\t",
+          "\tdep\tgithub.com/google/jsonschema-go\tv0.4.3\th1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=",
+          "\tdep\tgithub.com/modelcontextprotocol/go-sdk\tv1.8.0\th1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=",
+          "\tdep\tgithub.com/segmentio/asm\tv1.1.3\th1:WM03sfUOENvvKexOLp+pCqgb/WDjsi7EK8gIsICtzhc=",
+          "\tdep\tgithub.com/segmentio/encoding\tv0.5.4\th1:OW1VRern8Nw6ITAtwSZ7Idrl3MXCFwXHPgqESYfvNt0=",
+          "\tdep\tgithub.com/yosida95/uritemplate/v3\tv3.0.2\th1:Ed3Oyj9yrmi9087+NczuL5BwkIc4wvTb5zIM+UJPGz4=",
+          "\tdep\tgolang.org/x/oauth2\tv0.35.0\th1:Mv2mzuHuZuY2+bkyWXIHMfhNdJAdwW3FuWeCPYN5GVQ=",
+          "\tdep\tgolang.org/x/sync\tv0.20.0\th1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=",
+          "\tdep\tgolang.org/x/sys\tv0.41.0\th1:Ivj+2Cp/ylzLiEU89QhWblYnOE9zerudt9Ftecq2C6k=",
+          "\tdep\tgolang.org/x/time\tv0.15.0\th1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=",
+          "\tbuild\t-buildmode=exe",
+          "\tbuild\t-compiler=gc",
+          "\tbuild\tCGO_ENABLED=0",
+          "\tbuild\tGOARCH=amd64",
+          "\tbuild\tGOOS=linux",
+          "\tbuild\tGOAMD64=v1",
+          "\tbuild\tvcs=git",
+          "\tbuild\tvcs.revision=f10767eff60de5f741bdb08dcbf891882f0800f8",
+          "\tbuild\tvcs.time=2026-11-17T20:42:51Z",
+          "\tbuild\tvcs.modified=true"
+        ]
+      }
+    ],
+    "build_identity_note": "Test binaries were built from the reviewed implementation before its commit; their embedded parent revisions are marked modified. The audio module hashes identify the frozen run4 source; no claim is made that these are release artifacts."
+  },
+  "ordinary_run_4": {
+    "status": "completed; observed estimates plus allowance below 200 ms for this run",
+    "run_id": "90d5e825-6536-40c6-b47d-b784647d0e28",
+    "started_utc": "2026-11-17T20:39:11.860651103Z",
+    "stopped_and_joined": true,
+    "observed_output_span_seconds": 644.8873707704619,
+    "real_pcm_seconds": 641.4185208333333,
+    "stats": {
+      "quanta": 241127,
+      "realQuanta": 240541,
+      "realFrames": 30788089,
+      "underrunQuanta": 605,
+      "underrunFrames": 76167,
+      "mappedQuanta": 240541,
+      "unmappedQuanta": 0,
+      "negativeLatencies": 0,
+      "over60s": 0,
+      "over200MS": 0,
+      "over200WithUncertainty": 0,
+      "queueMaxMS": 49.875,
+      "minMS": 66.03170616179705,
+      "maxMS": 102.9405284896493,
+      "maxUpperMS": 115.58707683160901,
+      "maxUncertaintyMS": 22.443758003413677,
+      "firstOutputPerformanceMS": 6389.926926795968,
+      "lastOutputPerformanceMS": 651277.2976972578,
+      "p95UpperMS": 87,
+      "histogramResolutionMS": 1
+    },
+    "report_errors": [],
+    "skipped_reports": 0,
+    "latest_clock_calibrations": [
+      {
+        "performanceMS": 635067.8999999985,
+        "rttMS": 1.7999999970197678,
+        "offsetMS": 47726600.769627005,
+        "lowerMS": 47726599.86962701,
+        "upperMS": 47726601.669627
+      },
+      {
+        "performanceMS": 640066.9499999955,
+        "rttMS": 2.2999999970197678,
+        "offsetMS": 47726600.699636005,
+        "lowerMS": 47726599.54963601,
+        "upperMS": 47726601.849636
+      },
+      {
+        "performanceMS": 645061.2499999963,
+        "rttMS": 2.100000001490116,
+        "offsetMS": 47726600.759239,
+        "lowerMS": 47726599.709239006,
+        "upperMS": 47726601.80923901
+      },
+      {
+        "performanceMS": 650066.25,
+        "rttMS": 1.5,
+        "offsetMS": 47726600.746449,
+        "lowerMS": 47726599.996449,
+        "upperMS": 47726601.496449
+      }
+    ],
+    "contexts": [
+      {
+        "id": 1,
+        "nodeID": 1,
+        "sampleRate": 48000,
+        "state": "closed",
+        "ended": true,
+        "generation": "3",
+        "generationHistory": [
+          {
+            "generation": "2",
+            "previousGeneration": null,
+            "firstContextSeconds": 0,
+            "lastContextSeconds": 120.52,
+            "firstObservedPerformanceMS": 7338.79999999702,
+            "lastObservedPerformanceMS": 126857.39999999851,
+            "resetContextSeconds": null,
+            "batches": 121,
+            "quanta": 45196,
+            "realQuanta": 45050,
+            "realFrames": 5766324,
+            "firstSourceMS": 47732909.059501335,
+            "lastSourceMS": 47853041.747946665
+          },
+          {
+            "generation": "3",
+            "previousGeneration": "2",
+            "firstContextSeconds": 120.52266666666667,
+            "lastContextSeconds": 329,
+            "firstObservedPerformanceMS": 126863.19999999553,
+            "lastObservedPerformanceMS": 335327.69999999553,
+            "resetContextSeconds": 120.52266666666667,
+            "batches": 209,
+            "quanta": 78180,
+            "realQuanta": 77747,
+            "realFrames": 9950534,
+            "firstSourceMS": 47853453.382026,
+            "lastSourceMS": 48060815.176254
+          }
+        ],
+        "generationHistoryRetired": 0,
+        "workletCapabilities": {
+          "type": "qa-capabilities",
+          "generation": "2",
+          "sampleRate": 48000,
+          "clocks": {
+            "dateNowMS": 1794947964784,
+            "performanceNowMS": null,
+            "timeOriginMS": null,
+            "currentTimeSeconds": 0
+          }
+        },
+        "outlierCount": 0,
+        "outputUnavailable": "",
+        "outputPairs": 1000,
+        "discontinuities": 0,
+        "pendingQuanta": 0,
+        "baseLatency": 0.010666666666666666,
+        "outputLatency": 0.04,
+        "stats": {
+          "quanta": 123376,
+          "realQuanta": 122797,
+          "realFrames": 15716858,
+          "underrunQuanta": 597,
+          "underrunFrames": 75270,
+          "mappedQuanta": 122797,
+          "unmappedQuanta": 0,
+          "negativeLatencies": 0,
+          "over60s": 0,
+          "over200MS": 0,
+          "over200WithUncertainty": 0,
+          "queueMaxMS": 48.958333333333336,
+          "minMS": 66.03170616179705,
+          "maxMS": 100.75363954156637,
+          "maxUpperMS": 113.13173155486584,
+          "maxUncertaintyMS": 22.443758003413677,
+          "firstOutputPerformanceMS": 6389.926926795968,
+          "lastOutputPerformanceMS": 334295.2628711825,
+          "p95UpperMS": 87,
+          "histogramResolutionMS": 1
+        },
+        "pollProgress": {
+          "polls": 16518,
+          "maxPollGapMS": 41.69999999552965,
+          "maxPerfMinusContextAdvanceMS": 20.100000001490116,
+          "minPerfMinusContextAdvanceMS": -15.399999998492149,
+          "maxOutputPerfMinusContextAdvanceMS": 11.123333328862984,
+          "minOutputPerfMinusContextAdvanceMS": -10.569999997017845,
+          "contextPhaseMinMS": 6325.166666666657,
+          "contextPhaseMaxMS": 6346,
+          "outputPhaseMinMS": 6368.13599999851,
+          "outputPhaseMaxMS": 6398.347666665177,
+          "contextPhaseRangeMS": 20.833333333343035,
+          "outputPhaseRangeMS": 30.211666666667043,
+          "eventCount": 0
+        }
+      },
+      {
+        "id": 2,
+        "nodeID": 2,
+        "sampleRate": 48000,
+        "state": "running",
+        "ended": false,
+        "generation": "4",
+        "generationHistory": [
+          {
+            "generation": "4",
+            "previousGeneration": null,
+            "firstContextSeconds": 0,
+            "lastContextSeconds": 314,
+            "firstObservedPerformanceMS": 338242.19999999553,
+            "lastObservedPerformanceMS": 651234.5,
+            "resetContextSeconds": null,
+            "batches": 314,
+            "quanta": 117751,
+            "realQuanta": 117744,
+            "realFrames": 15071231,
+            "firstSourceMS": 48063811.508057006,
+            "lastSourceMS": 48377798.613954
+          }
+        ],
+        "generationHistoryRetired": 0,
+        "workletCapabilities": {
+          "type": "qa-capabilities",
+          "generation": "4",
+          "sampleRate": 48000,
+          "clocks": {
+            "dateNowMS": 1794948295682,
+            "performanceNowMS": null,
+            "timeOriginMS": null,
+            "currentTimeSeconds": 0
+          }
+        },
+        "outlierCount": 0,
+        "outputUnavailable": "",
+        "outputPairs": 1000,
+        "discontinuities": 0,
+        "pendingQuanta": 0,
+        "baseLatency": 0.010666666666666666,
+        "outputLatency": 0.04,
+        "stats": {
+          "quanta": 117751,
+          "realQuanta": 117744,
+          "realFrames": 15071231,
+          "underrunQuanta": 8,
+          "underrunFrames": 897,
+          "mappedQuanta": 117744,
+          "unmappedQuanta": 0,
+          "negativeLatencies": 0,
+          "over60s": 0,
+          "over200MS": 0,
+          "over200WithUncertainty": 0,
+          "queueMaxMS": 49.875,
+          "minMS": 73.49130742251873,
+          "maxMS": 102.9405284896493,
+          "maxUpperMS": 115.58707683160901,
+          "maxUncertaintyMS": 18.268355004489422,
+          "firstOutputPerformanceMS": 337294.98607552634,
+          "lastOutputPerformanceMS": 651277.2976972578,
+          "p95UpperMS": 89,
+          "histogramResolutionMS": 1
+        },
+        "pollProgress": {
+          "polls": 15765,
+          "maxPollGapMS": 28.5,
+          "maxPerfMinusContextAdvanceMS": 20.200000002980232,
+          "minPerfMinusContextAdvanceMS": -12.000000000000028,
+          "maxOutputPerfMinusContextAdvanceMS": 11.157333339293798,
+          "minOutputPerfMinusContextAdvanceMS": -10.40033333482399,
+          "contextPhaseMinMS": 337228.7333333318,
+          "contextPhaseMaxMS": 337251.19999999553,
+          "outputPhaseMinMS": 337273.156999994,
+          "outputPhaseMaxMS": 337304.3636666622,
+          "contextPhaseRangeMS": 22.466666663705837,
+          "outputPhaseRangeMS": 31.206666668178514,
+          "eventCount": 0
+        }
+      }
+    ],
+    "proxy_events": [
+      {
+        "monotonic_ns": "47719546469370",
+        "type": "proxy-started",
+        "utc": "2026-11-17T20:39:11.860921465Z"
+      },
+      {
+        "monotonic_ns": "47726661695029",
+        "type": "websocket-connected",
+        "utc": "2026-11-17T20:39:18.976146241Z"
+      },
+      {
+        "monotonic_ns": "48060824658281",
+        "type": "transport-stall-start",
+        "utc": "2026-11-17T20:44:53.139110774Z"
+      },
+      {
+        "monotonic_ns": "48062833958119",
+        "type": "websocket-ended",
+        "utc": "2026-11-17T20:44:55.148408724Z"
+      },
+      {
+        "monotonic_ns": "48062842097157",
+        "type": "transport-stall-end-force-reconnect",
+        "utc": "2026-11-17T20:44:55.156548524Z"
+      },
+      {
+        "monotonic_ns": "48063339444003",
+        "type": "websocket-connected",
+        "utc": "2026-11-17T20:44:55.653897973Z"
+      },
+      {
+        "monotonic_ns": "48379578540237",
+        "type": "websocket-ended",
+        "utc": "2026-11-17T20:50:11.892991256Z"
+      },
+      {
+        "monotonic_ns": "48399980327040",
+        "type": "proxy-stopped",
+        "utc": "2026-11-17T20:50:32.294779127Z"
+      }
+    ],
+    "recovery_checks": {
+      "alsa_overrun": {
+        "reader_pause_seconds": 0.40032380299817305,
+        "generation_before": "2",
+        "generation_after": "3",
+        "context_id": 1,
+        "node_id": 1,
+        "new_audio_enable_gesture": false,
+        "browser_errors": []
+      },
+      "transport_stall": {
+        "requested_seconds": 2,
+        "forced_reconnect": true,
+        "new_context_id": 2,
+        "new_node_id": 2,
+        "audio_choice_retained": true,
+        "view_only_retained": true,
+        "browser_errors": [],
+        "not_a_blocked_server_writer_measurement": true
+      }
+    }
+  },
+  "historical_runs": {
+    "run_2": {
+      "status": "FAIL: measured quanta exceed200ms",
+      "observed_output_span_seconds": 853.4542978143386,
+      "real_pcm_seconds": 852.3454791666667,
+      "stats": {
+        "quanta": 319876,
+        "realQuanta": 319662,
+        "realFrames": 40912583,
+        "underrunQuanta": 291,
+        "underrunFrames": 31545,
+        "mappedQuanta": 319648,
+        "unmappedQuanta": 14,
+        "negativeLatencies": 0,
+        "over60s": 0,
+        "over200MS": 8,
+        "over200WithUncertainty": 8,
+        "queueMaxMS": 50,
+        "minMS": 57.62901187688112,
+        "maxMS": 555.5117234885693,
+        "maxUpperMS": 568.0848364941776,
+        "maxUncertaintyMS": 19.35181500017643,
+        "firstOutputPerformanceMS": 4445.760297440298,
+        "lastOutputPerformanceMS": 857900.0581117789,
+        "p95UpperMS": 90,
+        "histogramResolutionMS": 1
+      },
+      "interpretation": "Observed about 490 ms audio-timeline/elapsed-time pause. Exact physical mechanism and queue replay unproved because old raw output brackets were absent. It exposed an aging risk; synthetic tests validate the clock/anchor fixes."
+    },
+    "run_3_diagnostic": {
+      "status": "not a latency pass; deliberately forced 500 ms worklet pause",
+      "observed_output_span_seconds": 172.45055727034796,
+      "real_pcm_seconds": 171.75525,
+      "stats": {
+        "quanta": 64497,
+        "realQuanta": 64420,
+        "realFrames": 8244252,
+        "underrunQuanta": 101,
+        "underrunFrames": 11364,
+        "mappedQuanta": 64409,
+        "unmappedQuanta": 11,
+        "negativeLatencies": 0,
+        "over60s": 0,
+        "over200MS": 6,
+        "over200WithUncertainty": 6,
+        "queueMaxMS": 49.5,
+        "minMS": 62.89785160124302,
+        "maxMS": 553.8166670948267,
+        "maxUpperMS": 566.5582693479955,
+        "maxUncertaintyMS": 28.43198098987341,
+        "firstOutputPerformanceMS": 144428.75017786084,
+        "lastOutputPerformanceMS": 316879.3074482088,
+        "p95UpperMS": 89,
+        "histogramResolutionMS": 1
+      },
+      "pause_events": [
+        {
+          "serial": 1,
+          "type": "qa-pause",
+          "id": "1",
+          "phase": "forwarded",
+          "durationMS": 500,
+          "receivedPerformanceMS": 192071.90000000596,
+          "mainDateNowMS": 1794947810138,
+          "mainTimeOriginMS": 1794947618066.8,
+          "contextTimeSeconds": 47.712
+        },
+        {
+          "type": "qa-pause",
+          "id": "1",
+          "phase": "before",
+          "durationMS": 500,
+          "clockName": "date",
+          "before": {
+            "dateNowMS": 1794947810140,
+            "performanceNowMS": null,
+            "timeOriginMS": null,
+            "currentTimeSeconds": 47.712
+          },
+          "serial": 2,
+          "receivedPerformanceMS": 192083.6000000015,
+          "mainDateNowMS": 1794947810150,
+          "mainTimeOriginMS": 1794947618066.8,
+          "mainContextTimeSeconds": 47.712
+        },
+        {
+          "type": "qa-pause",
+          "id": "1",
+          "phase": "after",
+          "durationMS": 500,
+          "clockName": "date",
+          "before": {
+            "dateNowMS": 1794947810140,
+            "performanceNowMS": null,
+            "timeOriginMS": null,
+            "currentTimeSeconds": 47.712
+          },
+          "after": {
+            "dateNowMS": 1794947810640,
+            "performanceNowMS": null,
+            "timeOriginMS": null,
+            "currentTimeSeconds": 47.712
+          },
+          "outcome": "completed",
+          "iterations": 8921504,
+          "elapsedSelectedClockMS": 500,
+          "serial": 3,
+          "receivedPerformanceMS": 192573.5,
+          "mainDateNowMS": 1794947810640,
+          "mainTimeOriginMS": 1794947618066.8,
+          "mainContextTimeSeconds": 47.72266666666667
+        }
+      ],
+      "over200_outliers": [
+        {
+          "id": 1,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.696,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577774.03448367,
+          "renderedFrames": 128,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 712,
+          "queuedAfterFrames": 584,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192596.90000000596,
+          "contextTimeAtDecision": 47.754666666666665,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.695900333333334,
+              "performanceTime": 192574.90000000596,
+              "observedPerformanceMS": 192576.30000000447,
+              "contextCurrentTime": 47.744
+            },
+            "right": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.706773,
+            "performanceTime": 192586.40000000596,
+            "observedPerformanceMS": 192596.30000000447,
+            "contextCurrentTime": 47.754666666666665
+          },
+          "latencyMS": 553.2012195885181,
+          "uncertaintyMS": 7.979511994868517,
+          "mappedOutputPerformanceMS": 192575.00541726022,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        },
+        {
+          "id": 2,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.69866666666667,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577776.701150335,
+          "renderedFrames": 128,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 584,
+          "queuedAfterFrames": 456,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192597.1000000015,
+          "contextTimeAtDecision": 47.76533333333333,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.695900333333334,
+              "performanceTime": 192574.90000000596,
+              "observedPerformanceMS": 192576.30000000447,
+              "contextCurrentTime": 47.744
+            },
+            "right": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.706773,
+            "performanceTime": 192586.40000000596,
+            "observedPerformanceMS": 192596.30000000447,
+            "contextCurrentTime": 47.754666666666665
+          },
+          "latencyMS": 553.3550814688206,
+          "uncertaintyMS": 7.979511994868517,
+          "mappedOutputPerformanceMS": 192577.82594580276,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        },
+        {
+          "id": 3,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.70133333333333,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577779.367817,
+          "renderedFrames": 128,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 456,
+          "queuedAfterFrames": 328,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192597.1000000015,
+          "contextTimeAtDecision": 47.76533333333333,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.695900333333334,
+              "performanceTime": 192574.90000000596,
+              "observedPerformanceMS": 192576.30000000447,
+              "contextCurrentTime": 47.744
+            },
+            "right": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.706773,
+            "performanceTime": 192586.40000000596,
+            "observedPerformanceMS": 192596.30000000447,
+            "contextCurrentTime": 47.754666666666665
+          },
+          "latencyMS": 553.508943349123,
+          "uncertaintyMS": 7.979511994868517,
+          "mappedOutputPerformanceMS": 192580.64647434527,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        },
+        {
+          "id": 4,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.704,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577782.03448367,
+          "renderedFrames": 128,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 328,
+          "queuedAfterFrames": 200,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192597.20000000298,
+          "contextTimeAtDecision": 47.76533333333333,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.695900333333334,
+              "performanceTime": 192574.90000000596,
+              "observedPerformanceMS": 192576.30000000447,
+              "contextCurrentTime": 47.744
+            },
+            "right": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.706773,
+            "performanceTime": 192586.40000000596,
+            "observedPerformanceMS": 192596.30000000447,
+            "contextCurrentTime": 47.754666666666665
+          },
+          "latencyMS": 553.6628052219748,
+          "uncertaintyMS": 7.979511994868517,
+          "mappedOutputPerformanceMS": 192583.4670028878,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        },
+        {
+          "id": 5,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.70666666666666,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577784.701150335,
+          "renderedFrames": 128,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 200,
+          "queuedAfterFrames": 72,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192597.20000000298,
+          "contextTimeAtDecision": 47.76533333333333,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.695900333333334,
+              "performanceTime": 192574.90000000596,
+              "observedPerformanceMS": 192576.30000000447,
+              "contextCurrentTime": 47.744
+            },
+            "right": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.706773,
+            "performanceTime": 192586.40000000596,
+            "observedPerformanceMS": 192596.30000000447,
+            "contextCurrentTime": 47.754666666666665
+          },
+          "latencyMS": 553.8166670948267,
+          "uncertaintyMS": 7.979511994868517,
+          "mappedOutputPerformanceMS": 192586.28753143034,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        },
+        {
+          "id": 6,
+          "reason": "latency-over150ms",
+          "generation": "1",
+          "quantumSeconds": 47.70933333333333,
+          "firstOutputFrame": 0,
+          "sourceMS": 47577787.367817,
+          "renderedFrames": 72,
+          "quantumFrames": 128,
+          "queuedBeforeFrames": 72,
+          "queuedAfterFrames": 0,
+          "sampleRate": 48000,
+          "receivedPerformanceMS": 192081.5,
+          "decisionPerformanceMS": 192616.5,
+          "contextTimeAtDecision": 47.776,
+          "outputBracket": {
+            "left": {
+              "contextTime": 47.706773,
+              "performanceTime": 192586.40000000596,
+              "observedPerformanceMS": 192596.30000000447,
+              "contextCurrentTime": 47.754666666666665
+            },
+            "right": {
+              "contextTime": 47.728242333333334,
+              "performanceTime": 192607.5,
+              "observedPerformanceMS": 192616.20000000298,
+              "contextCurrentTime": 47.776
+            }
+          },
+          "latestOutputPair": {
+            "contextTime": 47.728242333333334,
+            "performanceTime": 192607.5,
+            "observedPerformanceMS": 192616.20000000298,
+            "contextCurrentTime": 47.776
+          },
+          "latencyMS": 553.7787573561072,
+          "uncertaintyMS": 12.779511991888285,
+          "mappedOutputPerformanceMS": 192588.91628835452,
+          "calibration": {
+            "performanceMS": 190065.15000000224,
+            "rttMS": 2.100000001490116,
+            "offsetMS": 47385752.230286,
+            "lowerMS": 47385751.180286,
+            "upperMS": 47385753.280286
+          },
+          "observedCalibrationDriftMS": 0.17951199412345886
+        }
+      ],
+      "unmapped_quanta": 11,
+      "unmapped_quantum_seconds_range": [
+        47.666666666666664,
+        47.693333333333335
+      ],
+      "all_over200_quantum_ends_at_or_before_pause_context_seconds": 47.712,
+      "observed_post_pause_latency_outliers_over150ms": 0,
+      "interpretation": "All 6 over 200 ms quanta were rendered before the pause. Already-handed-off browser output was delayed or ambiguously mapped across the output-clock discontinuity; no stale post-pause application rendering was observed."
+    }
+  },
+  "hdmi_signal": {
+    "started_utc": "2026-11-17T19:54:27.327182088Z",
+    "elapsed_seconds": 90.000809299,
+    "application_writes": 0,
+    "config_messages": 1,
+    "video_messages_ignored": 1771,
+    "audio_blocks": 4500,
+    "audio_frames": 4320000,
+    "samples": 8640000,
+    "nonzero_samples": 478792,
+    "peak_abs_s16": 128,
+    "matched_tone_hz": 440,
+    "generations": [
+      {
+        "generation": "3",
+        "sample_rate": 48000,
+        "channels": 2,
+        "blocks": 4500,
+        "frames": 4320000,
+        "samples": 8640000,
+        "nonzero_samples": 478792,
+        "peak_abs_s16": 128,
+        "first_sequence": "9512",
+        "last_sequence": "14011",
+        "missing_source_blocks": 0,
+        "first_source_timestamp_ns": "45035008332126",
+        "last_source_timestamp_ns": "45124988997706",
+        "per_channel": [
+          {
+            "nonzero_samples": 239396,
+            "peak_abs_s16": 128,
+            "rms_normalized": 0.0006505984996755746,
+            "active_block_seconds": 5.019999999999981,
+            "active_positive_zero_crossings": 2200,
+            "active_zero_crossing_hz": 438.2470119521929,
+            "approx_matched_tone_power_ratio": 0.999928059533011,
+            "samples": 4320000
+          },
+          {
+            "nonzero_samples": 239396,
+            "peak_abs_s16": 128,
+            "rms_normalized": 0.0006505984496398389,
+            "active_block_seconds": 5.019999999999981,
+            "active_positive_zero_crossings": 2200,
+            "active_zero_crossing_hz": 438.2470119521929,
+            "approx_matched_tone_power_ratio": 0.9999282051770987,
+            "samples": 4320000
+          }
+        ]
+      }
+    ],
+    "last_audio_status": "available",
+    "completed_requested_duration": true
+  },
+  "other_physical_observations": {
+    "serial": {
+      "second_prepare_busy_microseconds": 161.209,
+      "second_prepare_error": "ErrBusy",
+      "second_prepare_generation": 0,
+      "second_prepare_input_admitted": false,
+      "prepare_open_configure_reset_pacing_ms": 31.71986,
+      "joined_close_microseconds": 518.406,
+      "kernel_call_wallclock_bound_claimed": false
+    },
+    "token_ssh_smoke": {
+      "web_url": "http://localhost:9330",
+      "api_address": "127.0.0.1:9329",
+      "video_fps_approximately": 20,
+      "audio_sample_rate": 48000,
+      "audio_channels": 2,
+      "audio_enable_mute_unmute_observed": true,
+      "fragment_removed_and_cookie_auth_worked": true,
+      "missing_or_wrong_api_token": "unauthorized",
+      "browser_errors": []
+    },
+    "token_mcp_smoke": {
+      "approximate_call_ms": {
+        "fresh_screenshot": 63,
+        "typed_key": 79,
+        "click": 72,
+        "drag": 180,
+        "ocr": 743
+      },
+      "stdin_eof_exit_code": 0,
+      "center_target": [
+        640,
+        360
+      ],
+      "drag_target_endpoints": [
+        [
+          320,
+          180
+        ],
+        [
+          960,
+          540
+        ]
+      ],
+      "full_drag_event_sequence_claimed_by_this_smoke": false,
+      "note": "The first follow-up OCR did not yet establish the final mouseup; earlier dedicated physical drag checks record all four events."
+    },
+    "mcp_corners": {
+      "screenshot_dimensions": [
+        1920,
+        1080
+      ],
+      "target_dimensions": [
+        1280,
+        720
+      ],
+      "autocrop": true,
+      "button_mode": "relative",
+      "target_page": "local-file Firefox kiosk INPUT TEST recorder, initialized before input",
+      "screenshot_corners": [
+        [
+          0,
+          0
+        ],
+        [
+          1919,
+          0
+        ],
+        [
+          1919,
+          1079
+        ],
+        [
+          0,
+          1079
+        ]
+      ],
+      "observed_target_corners": [
+        [
+          0,
+          0
+        ],
+        [
+          1279,
+          0
+        ],
+        [
+          1279,
+          719
+        ],
+        [
+          0,
+          719
+        ]
+      ],
+      "observed_event_count": 12,
+      "events_per_corner": [
+        "mousemove buttons0",
+        "mousedown buttons1",
+        "mouseup buttons0"
+      ],
+      "mcp_eof_exit_code": 0,
+      "local_proof_image": {
+        "filename": "autopaws-mcp-corners-2026-11-17.jpg",
+        "sha256": "877f2873e6051f66550d0eea28ecf7745491a0f682423fbd380b7a4d7e60554d",
+        "committed": false
+      },
+      "initial_attempt_limit": "Normal browser-window corner attempts reached native desktop controls. Reloading the page also requires a target-readiness wait; no Go coordinate code change was made."
+    }
+  },
+  "pending_release_checks": [
+    "Physical serial unplug/replug and interrupted-input recovery.",
+    "Physical capture/audio unplug/replug.",
+    "Native Firefox browser validation."
+  ],
+  "evidence_archive": {
+    "archive": "autopaws-audio-validation-2026-11-17.tar.gz",
+    "sha256": "0b89ebad5daeb51ef70aa6108ebdf6c235517d8343f223f7734eb5cc4bb93717",
+    "bytes": 626324,
+    "files": 62,
+    "location": "Owner local validation artifacts; raw stream and exact harness/copies archived, compact metadata only committed.",
+    "contains_pcm_images_or_secrets": false
+  },
+  "native_browser_fixtures": {
+    "dht_repair_and_crop": {
+      "browser": "Chromium157",
+      "source_and_hid": "synthetic",
+      "result": {
+        "raw_source_jpeg": {
+          "bytes": 116218,
+          "dht_segments": 0,
+          "width": 1280,
+          "height": 800,
+          "sha256": "bde6ab62dcc1d0017c1f271350a366815f729ccd375e9c14397e6bb1a0d0ae4a",
+          "decodable": false,
+          "crop": {
+            "Min": {
+              "X": 0,
+              "Y": 0
+            },
+            "Max": {
+              "X": 0,
+              "Y": 0
+            }
+          }
+        },
+        "production_frame_jpeg": {
+          "bytes": 116638,
+          "dht_segments": 1,
+          "width": 1280,
+          "height": 800,
+          "sha256": "001859f449cb36f54f16a244db7b350e1e078a429670c360b9511d0fcf408b42",
+          "decodable": true,
+          "crop": {
+            "Min": {
+              "X": 40,
+              "Y": 40
+            },
+            "Max": {
+              "X": 1240,
+              "Y": 760
+            }
+          }
+        },
+        "expected_crop": {
+          "Min": {
+            "X": 40,
+            "Y": 40
+          },
+          "Max": {
+            "X": 1240,
+            "Y": 760
+          }
+        },
+        "hid_reports": [
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 1,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 1,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 1,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 4095,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 1,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 4095,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          }
+        ],
+        "hid_report_count": 20,
+        "hid_prepares": 12,
+        "hid_closes": 0,
+        "source_opens": 2,
+        "source_closes": 2
+      },
+      "visually_rendered_label": "DHT REPAIR - 1200 X 720",
+      "display_css_rect": {
+        "left": 113,
+        "top": 76,
+        "width": 1053,
+        "height": 632
+      },
+      "observed_hid_corners": [
+        [
+          0,
+          0
+        ],
+        [
+          4095,
+          0
+        ],
+        [
+          4095,
+          4095
+        ],
+        [
+          0,
+          4095
+        ]
+      ],
+      "browser_console_warnings_or_errors": []
+    },
+    "insecure_context": {
+      "browser": "Chromium157",
+      "origin": "private non-loopback HTTP",
+      "audio_source": "synthetic available48000Hz stereo configuration; no PCM, no hardware",
+      "message": "AudioWorklet needs a compatible browser and secure context. A localhost SSH tunnel is sufficient.",
+      "video_fps": 20,
+      "keyboard_down_up_delivered": true,
+      "browser_console_warnings_or_errors": [],
+      "result": {
+        "raw_source_jpeg": {
+          "bytes": 116218,
+          "dht_segments": 0,
+          "width": 1280,
+          "height": 800,
+          "sha256": "bde6ab62dcc1d0017c1f271350a366815f729ccd375e9c14397e6bb1a0d0ae4a",
+          "decodable": false,
+          "crop": {
+            "Min": {
+              "X": 0,
+              "Y": 0
+            },
+            "Max": {
+              "X": 0,
+              "Y": 0
+            }
+          }
+        },
+        "production_frame_jpeg": {
+          "bytes": 116638,
+          "dht_segments": 1,
+          "width": 1280,
+          "height": 800,
+          "sha256": "001859f449cb36f54f16a244db7b350e1e078a429670c360b9511d0fcf408b42",
+          "decodable": true,
+          "crop": {
+            "Min": {
+              "X": 40,
+              "Y": 40
+            },
+            "Max": {
+              "X": 1240,
+              "Y": 760
+            }
+          }
+        },
+        "expected_crop": {
+          "Min": {
+            "X": 40,
+            "Y": 40
+          },
+          "Max": {
+            "X": 1240,
+            "Y": 760
+          }
+        },
+        "hid_reports": [
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 2051,
+            "y": 2051,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 2051,
+            "y": 2051,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 1,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "absolute mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 2051,
+            "y": 2051,
+            "wheel": 0
+          },
+          {
+            "kind": "relative mouse",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "keyboard",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 1,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          },
+          {
+            "kind": "keyboard",
+            "buttons": 0,
+            "modifier": 0,
+            "key_count": 0,
+            "x": 0,
+            "y": 0,
+            "wheel": 0
+          }
+        ],
+        "hid_report_count": 7,
+        "hid_prepares": 5,
+        "hid_closes": 0,
+        "source_opens": 2,
+        "source_closes": 2,
+        "audio_fixture": true,
+        "audio_opens": 1,
+        "audio_closes": 1,
+        "audio_subscriptions": 1,
+        "audio_subscription_closes": 1
+      }
+    }
+  },
+  "supplementary_browser_archive": {
+    "filename": "autopaws-browser-recovery-validation-2026-11-17.tar.gz",
+    "sha256": "d173e80ad481a2fbc5891848aefd3911c36653c8cfdc0407e1d788d2ffdf1d0c",
+    "bytes": 71298,
+    "files": 36,
+    "contents": "Exact synthetic DHT/insecure-context and real-media injected-writer fixtures, current observation sources and metadata; no PCM, target screenshots, credentials or binaries."
+  },
+  "native_writer_recovery_probe": {
+    "before": {
+      "armed": false,
+      "delay_count": 0,
+      "signature_offset": 0,
+      "jpeg_marker_prefix_hex": "",
+      "write_bytes": 0,
+      "delay_elapsed_ns": 0,
+      "total_write_elapsed_ns": 0,
+      "write_completed": false,
+      "audio_opens": 1,
+      "audio_closes": 0,
+      "audio_subscriptions": 1,
+      "audio_subscription_closes": 0,
+      "active_audio_subscriptions": 1
+    },
+    "after_write": {
+      "armed": false,
+      "delay_count": 1,
+      "signature_offset": 76,
+      "jpeg_marker_prefix_hex": "ffd8ffdb",
+      "write_bytes": 4096,
+      "delay_elapsed_ns": 201051804,
+      "total_write_elapsed_ns": 201072963,
+      "write_completed": true,
+      "audio_opens": 1,
+      "audio_closes": 0,
+      "audio_subscriptions": 2,
+      "audio_subscription_closes": 1,
+      "active_audio_subscriptions": 1
+    },
+    "after_viewer_and_owner_close": {
+      "armed": false,
+      "delay_count": 1,
+      "signature_offset": 76,
+      "jpeg_marker_prefix_hex": "ffd8ffdb",
+      "write_bytes": 4096,
+      "delay_elapsed_ns": 201051804,
+      "total_write_elapsed_ns": 201072963,
+      "write_completed": true,
+      "audio_opens": 1,
+      "audio_closes": 1,
+      "audio_subscriptions": 2,
+      "audio_subscription_closes": 2,
+      "active_audio_subscriptions": 0
+    },
+    "timing": {
+      "backend": "http://127.0.0.1:40881",
+      "proxy_events": [
+        {
+          "monotonic_ns": "50207456898774",
+          "type": "proxy-started",
+          "utc": "2026-11-17T21:20:39.771351043Z"
+        },
+        {
+          "monotonic_ns": "50219827338634",
+          "type": "websocket-connected",
+          "utc": "2026-11-17T21:20:52.141789397Z"
+        },
+        {
+          "monotonic_ns": "50307526480586",
+          "type": "websocket-ended",
+          "utc": "2026-11-17T21:22:19.84093068Z"
+        },
+        {
+          "monotonic_ns": "50328686164350",
+          "type": "proxy-stopped",
+          "utc": "2026-11-17T21:22:41.000618014Z"
+        }
+      ],
+      "browser_runs": [
+        {
+          "run_id": "ecf09f45-3a49-4169-ab17-22d0da6fb966",
+          "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "observed_output_span_seconds": 75.96537249150505,
+          "at_least600_seconds": false,
+          "estimates_with_allowance_within200ms": true,
+          "stats": {
+            "quanta": 28497,
+            "realQuanta": 28421,
+            "realFrames": 3637647,
+            "underrunQuanta": 80,
+            "underrunFrames": 9969,
+            "mappedQuanta": 28421,
+            "unmappedQuanta": 0,
+            "negativeLatencies": 0,
+            "over60s": 0,
+            "over200MS": 0,
+            "over200WithUncertainty": 0,
+            "queueMaxMS": 49.791666666666664,
+            "minMS": 65.14854327589273,
+            "maxMS": 91.63661089539528,
+            "maxUpperMS": 104.29733588919044,
+            "maxUncertaintyMS": 17.927612993866205,
+            "firstOutputPerformanceMS": 10937.319159161054,
+            "lastOutputPerformanceMS": 86902.69165066611,
+            "p95UpperMS": 88,
+            "histogramResolutionMS": 1
+          },
+          "contexts": [
+            {
+              "id": 1,
+              "nodeID": 1,
+              "sampleRate": 48000,
+              "state": "running",
+              "ended": false,
+              "generation": "1",
+              "generationHistory": [
+                {
+                  "generation": "1",
+                  "previousGeneration": null,
+                  "firstContextSeconds": 0,
+                  "lastContextSeconds": 76,
+                  "firstObservedPerformanceMS": 11866.69999999553,
+                  "lastObservedPerformanceMS": 86868.29999999702,
+                  "resetContextSeconds": null,
+                  "batches": 76,
+                  "quanta": 28497,
+                  "realQuanta": 28421,
+                  "realFrames": 3637647,
+                  "firstSourceMS": 50230613.93410934,
+                  "lastSourceMS": 50306598.294725
+                }
+              ],
+              "generationHistoryRetired": 0,
+              "workletCapabilities": {
+                "type": "qa-capabilities",
+                "generation": "1",
+                "sampleRate": 48000,
+                "clocks": {
+                  "dateNowMS": 1794950462481,
+                  "performanceNowMS": null,
+                  "timeOriginMS": null,
+                  "currentTimeSeconds": 0
+                }
+              },
+              "pauseEvents": [],
+              "outlierCount": 0,
+              "outliers": [],
+              "pollProgress": {
+                "polls": 3834,
+                "maxPollGapMS": 23.899999998509884,
+                "maxPerfMinusContextAdvanceMS": 20.600000001490116,
+                "minPerfMinusContextAdvanceMS": -12.000000000000028,
+                "maxOutputPerfMinusContextAdvanceMS": 13.604666663685492,
+                "minOutputPerfMinusContextAdvanceMS": -10.02299999999525,
+                "contextPhaseMinMS": 10853.19999999553,
+                "contextPhaseMaxMS": 10875.966666663688,
+                "outputPhaseMinMS": 10891.181,
+                "outputPhaseMaxMS": 10916.023333328863,
+                "contextPhaseRangeMS": 22.766666668157995,
+                "outputPhaseRangeMS": 24.84233332886288,
+                "eventCount": 0,
+                "events": [],
+                "previous": {
+                  "performanceMS": 87049.29999999702,
+                  "contextTime": 76.192,
+                  "outputContextTime": 76.14370233333332,
+                  "outputPerformanceMS": 87046
+                }
+              },
+              "outputUnavailable": "",
+              "outputPairs": 1000,
+              "discontinuities": 0,
+              "pendingQuanta": 0,
+              "baseLatency": 0.010666666666666666,
+              "outputLatency": 0.04,
+              "stats": {
+                "quanta": 28497,
+                "realQuanta": 28421,
+                "realFrames": 3637647,
+                "underrunQuanta": 80,
+                "underrunFrames": 9969,
+                "mappedQuanta": 28421,
+                "unmappedQuanta": 0,
+                "negativeLatencies": 0,
+                "over60s": 0,
+                "over200MS": 0,
+                "over200WithUncertainty": 0,
+                "queueMaxMS": 49.791666666666664,
+                "minMS": 65.14854327589273,
+                "maxMS": 91.63661089539528,
+                "maxUpperMS": 104.29733588919044,
+                "maxUncertaintyMS": 17.927612993866205,
+                "firstOutputPerformanceMS": 10937.319159161054,
+                "lastOutputPerformanceMS": 86902.69165066611,
+                "p95UpperMS": 88,
+                "histogramResolutionMS": 1
+              }
+            }
+          ],
+          "clock_calibrations": [
+            {
+              "performanceMS": 70058.64999999851,
+              "rttMS": 1.5,
+              "offsetMS": 50219768.163578,
+              "lowerMS": 50219767.413578,
+              "upperMS": 50219768.913578
+            },
+            {
+              "performanceMS": 75062.35000000149,
+              "rttMS": 1.5,
+              "offsetMS": 50219768.094163,
+              "lowerMS": 50219767.344163,
+              "upperMS": 50219768.844163
+            },
+            {
+              "performanceMS": 80063.94999999925,
+              "rttMS": 1.6999999955296516,
+              "offsetMS": 50219768.166409,
+              "lowerMS": 50219767.316409,
+              "upperMS": 50219769.016408995
+            },
+            {
+              "performanceMS": 85062.44999999925,
+              "rttMS": 1.6999999955296516,
+              "offsetMS": 50219768.187704,
+              "lowerMS": 50219767.337704,
+              "upperMS": 50219769.037704
+            }
+          ],
+          "report_errors": [],
+          "skipped_reports": 0
+        }
+      ]
+    },
+    "scope": "Real capture/ALSA and production server/browser; userspace injected pre-write delay, no-op HID, no kernel-stall or USB-unplug claim."
+  },
+  "installation_reader_check": {
+    "source": "/tmp/autopaws-release-reader-20261117/reader-validation.json",
+    "scope": "Independent authenticated clone/build and isolated-prefix installation on the existing Linux setup; followed by a real foreground local viewer/video/audio, physical keyboard reload,1920x1080MCP capture and scaled640360click. No service/udev installation or clean-room claim.",
+    "native_foreground_result": {
+      "api": "127.0.0.1:9329",
+      "web": "http://localhost:9330",
+      "video_fps": 20,
+      "audio_enabled": true,
+      "physical_keyboard_reload": true,
+      "mcp_capture_dimensions": [
+        1920,
+        1080
+      ],
+      "mcp_screenshot_click": [
+        960,
+        540
+      ],
+      "observed_target_click": [
+        640,
+        360
+      ],
+      "mcp_eof_exit_code": 0
+    }
+  },
+  "local_preparation_checks": {
+    "complete_local_gate": "PASS",
+    "check_count": 19,
+    "node_tests": 85,
+    "go_race_lint_native_and_supported_cross_builds": "PASS",
+    "actionlint_bash_syntax_shellcheck": "PASS",
+    "release_builds": {
+      "version": "v0.0.0-validation",
+      "published": false,
+      "binary_count": 8,
+      "checksums_verified": true,
+      "native_kvm_version": "v0.0.0-validation",
+      "native_mcp_initialize_version": "v0.0.0-validation",
+      "native_mcp_eof_exit": 0,
+      "formats": [
+        "4 statically linked Linux ELF",
+        "2 macOS Mach-O",
+        "2 Windows PE"
+      ]
+    },
+    "limit": "Preparation checks only. Repeat after final release edits; actual tagged release identity is still pending required core validation."
+  }
+}

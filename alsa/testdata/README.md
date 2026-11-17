@@ -4,7 +4,10 @@
 `<sound/asound.h>`. `abi-linux-amd64.txt` records 89 measurements from GCC 15.2.0
 on the development host, with Linux UAPI headers whose SHA-256 was
 `8386524aad49b022dcb4f49b947a47b7caf7cbbc3bdb05baf718dfdb98585a01`.
-No PCM was opened to collect ABI evidence.
+No PCM was opened to collect ABI evidence. The
+[original feasibility probe](https://github.com/linkdata/autopaws/blob/7d36615b51e406bf45a8a98f8635decbdbd2e0d6/research/alsa/c/sz.c)
+remains available in source history; the retained probe covers the production
+mirrors, including the additional status and timestamp fields.
 
 The recorded mask/interval representation includes the interval bitfield word
 at offset 8. The C probe sets all four bits and records their combined value.
@@ -12,11 +15,12 @@ at offset 8. The C probe sets all four bits and records their combined value.
 through the ioctl. Pointer conversion to `uintptr` happens only in the actual
 syscall call.
 
-Reproduce on a Linux host with development headers:
+From the repository root, reproduce on a Linux host with development headers:
 
 ```sh
-gcc -std=c11 -Wall -Wextra -Werror sz.c -o /tmp/autopaws-alsa-abi
-/tmp/autopaws-alsa-abi
+gcc -std=c11 -Wall -Wextra -Werror alsa/testdata/sz.c -o /tmp/autopaws-alsa-abi
+/tmp/autopaws-alsa-abi > /tmp/autopaws-alsa-abi.txt
+diff -u alsa/testdata/abi-linux-amd64.txt /tmp/autopaws-alsa-abi.txt
 ```
 
 Compile-time assertions and tests compare every recorded named field, alignment,

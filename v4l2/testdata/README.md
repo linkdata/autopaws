@@ -1,8 +1,9 @@
 # V4L2 ABI evidence
 
-`sz.c` carries the V4L2 C layout probe forward from
-`research/v4l2/c/sz.c`. It includes `<time.h>` before `<linux/videodev2.h>` for
-strict C11 builds and now prints every named field used by the production
+`sz.c` retains the V4L2 C layout probe, evolved from the
+[original feasibility probe](https://github.com/linkdata/autopaws/blob/7d36615b51e406bf45a8a98f8635decbdbd2e0d6/research/v4l2/c/sz.c).
+It includes `<time.h>` before `<linux/videodev2.h>` for strict C11 builds and
+prints every named field used by the production
 mirrors, their sizes and alignments, and all used ioctl/flag constants. It only
 prints header definitions; it opens no device and executes no ioctl.
 

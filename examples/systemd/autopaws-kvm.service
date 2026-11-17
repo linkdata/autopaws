@@ -1,0 +1,18 @@
+[Unit]
+Description=autopaws KVM host
+After=network.target
+
+[Service]
+Type=simple
+User=autopaws
+Group=autopaws
+SupplementaryGroups=dialout video audio
+ExecStart=/usr/local/bin/autopaws-kvm serve -config /etc/autopaws/autopaws.yaml
+Restart=on-failure
+RestartSec=2
+# Let owned serial/video/audio kernel calls finish; they cannot promise a wall-clock
+# shutdown deadline. Application cleanup still uses its documented short budget.
+TimeoutStopSec=infinity
+
+[Install]
+WantedBy=multi-user.target
