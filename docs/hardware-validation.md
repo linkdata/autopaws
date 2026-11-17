@@ -310,3 +310,175 @@ ownership, cancellation between read admission and DROP, suspend recovery,
 subscriber independence. GCC measurements verify 89 LP64 UAPI values on amd64;
 arm64 is cross-built, with no claim of separate ARM hardware execution. Browser
 playback, end-to-end timing and the ten-minute audio run remain separate checks.
+
+
+## Release validation draft, 2026-11-17
+
+**INCOMPLETE — issue 43 and first-release acceptance remain open.** This section
+records current evidence and pending work, not a blanket latency or browser pass.
+The owner-scoped release checks use the available Linux host and target;
+Windows/macOS target tests and ARM64 physical hardware are not required by
+`AGENTS.md`. Chromium and Firefox are the required available browser engines;
+Safari and other platform browsers are optional. Keep supported cross-builds.
+
+### Current setup and build identity
+
+| Item | Recorded setup |
+|---|---|
+| KVM/development host | Dell XPS 17 9700, Linux amd64, Ubuntu 26.04.1 LTS, kernel 7.0.0-43-generic |
+| Target | ThinkPad T14 Gen 1, Ubuntu 26.04.1 LTS, kernel 7.0.0-43-generic, GNOME |
+| Target display | Owner-confirmed mirrored/single output, fullscreen 1280×720 logical viewport, DPR 1 |
+| Serial input | CH340/CH9329, USB `1a86:7523`, `/dev/ttyUSB0`, 9600 baud, relative button mode |
+| HDMI capture/audio | UGREEN U15389/MACROSILICON `2b89:5389`, USB path `4-1`; `/dev/video0`, `/dev/snd/pcmC1D0c` |
+| Video reference | MJPG 1920×1080; native driver rate, viewer limit 20 fps; negotiated source metadata and dimensions were checked during capture/WS/MCP runs |
+| Negotiated audio | S16_LE, 48,000 Hz stereo, 960-frame/20 ms periods, 7,680-frame/160 ms kernel buffer |
+| Exclusive PCM access | No competing PCM owner at test start; no PipeWire/WirePlumber policy change applied |
+| Browser under validation | Linux Chromium 157; exact saved user agent is in each QA record |
+| Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Final release artifact identity remains pending. |
+
+The earlier input section's unspecified OS versions describe the same lab setup;
+this table records the subsequently obtained exact versions. It does not turn
+historical component observations into a completed release matrix.
+
+### Current core evidence and pending checks
+
+| Check | Result/evidence |
+|---|---|
+| Linux keyboard/API input and relative drag | Observed on real hardware. Latest Ctrl+R, move `(120,110)` and drag `(240,180)` → `(1040,560)` produced the expected five mouse events in a fresh OCR read; no coordinate code change was required. Earlier screenshot-to-click and scaled drag evidence is above. |
+| 9600-baud timing, exclusivity and cancellation | Physical flock passed: a second `Port.Prepare` returned `ErrBusy` in 161.209 µs, generation 0, with no input admitted. Successful `Prepare` (open/configure, release-all reset and baud pacing together) took 31.71986 ms; joined `Close` took 518.406 µs. Component tests cover host-queue wait/baud guard and cancellation of application waits. These observations do not impose a universal Linux kernel-call bound. |
+| Ordinary shutdown and input release | Earlier actual API/MCP/WebSocket runs exited 0; controlling disconnect released held buttons, while passive disconnect did not. **PENDING final physical interrupted-input/recovery record**; synthetic cancellation tests are separate. |
+| Serial physical unplug/replug | **PENDING owner-assisted check.** Verify held-state reset/release and no interrupted-action replay, then fresh input after replug. |
+| Capture/audio physical unplug/replug | **PENDING owner-assisted check.** Verify unavailable status, retained ownership, reopen/repair, fresh video/audio and generation/config order. A missing path and a forced reader pause are not this check. |
+| 1080p MJPG, timestamp/format listing and live size/device repair | Physical component checks above pass; valid acquisition black/noisy images were not content-filtered. Corrupt-frame/DHT normalization is covered synthetically. A native Chromium fixture additionally displayed production-normalized DHT-less input: raw 1280×800 JPEG with zero DHT segments became a decodable one-DHT frame, cropped to `(40,40,1200,720)`. Its displayed corners produced exact fake-HID endpoints 0/4095. This fixture used synthetic source/HID, not another physical card. |
+| Real HDMI audio content | Observed: a target-generated quiet 440 Hz tone reached both captured channels for about five seconds. Details below. |
+| Real ALSA overrun and same-format playback recovery | Run 4 paused the owned reader for 0.400324 s: generation 2 → 3 retained context 1/node 1, with no new gesture or reported browser error. The final result is recorded below and in the compact JSON. |
+| Chromium video/audio, mute/unmute and reconnect | The completed run 4 recorded 644.887 s of mapped output span and 641.419 s of real PCM, including overrun and transport-stall recovery. All measured estimates plus their engineering allowance remained below 200 ms on this run. Component crop/toolbar/denied-lock results are above; this is not an all-browser or acoustic guarantee. |
+| Firefox video/audio, mute/unmute/reconnect/crop | **PENDING authorized native browser check.** No synthetic or Chromium result substitutes for it. |
+| SSH viewer/API access | Token-protected `http://localhost:9330` displayed video near 20 fps and 48 kHz stereo audio; enable/mute/unmute worked without browser errors. The fragment was removed, cookie authentication worked, and API port 9329 rejected missing/wrong tokens. Both ports were forwarded; no secret is in the evidence. |
+| AudioWorklet unavailable explanation | Native Chromium loaded the synthetic fixture over a private non-loopback HTTP address. Enabling its advertised audio displayed “AudioWorklet needs a compatible browser and secure context. A localhost SSH tunnel is sufficient.” Video continued at 20 fps; a click and key down/up reached the fake HID controller, with no browser errors. The fixture supplied no PCM and opened no hardware. |
+| MCP screenshot coordinates and endpoints | Earlier real screenshot `(960,540)` → target `(640,360)`, resize invalidation and scaled drag pass. Token-enabled MCP again showed center `(640,360)` and drag endpoints `(320,180)` → `(960,540)`; this smoke's first OCR did not establish the complete event sequence. All four physical corners subsequently passed in a local-file Firefox kiosk recorder: screenshot pixels `(0,0)`, `(1919,0)`, `(1919,1079)`, `(0,1079)` produced target `(0,0)`, `(1279,0)`, `(1279,719)`, `(0,719)`, with all twelve move/down/up events. Autocrop was enabled. The harness first waited for the page to finish reloading; API completion alone does not establish target-page readiness. Earlier normal-window attempts hit desktop controls. No coordinate code change was needed. |
+| Local gate and release packaging | The preparation gate includes actionlint, release-script syntax/ShellCheck, 85 Node cases, Go race/lint and supported cross-builds. Eight CGO-disabled release-scheme binaries are checked locally with a validation version; these are not published release artifacts. Repeat after final release edits and record the actual tagged identity before publication. |
+
+Physical input checks remain one-operator tests. Multiple passive viewers do not
+establish concurrent-operator support. The old transient coordinate concern was
+rechecked after restarting the same-code daemon and did not reproduce; it is not
+recorded as an active product defect.
+
+### HDMI signal content
+
+A 90.001-second metadata-only WebSocket observer received 4,500 audio blocks,
+4,320,000 stereo sample frames at 48 kHz, with no missing source blocks. A bounded
+quiet tone generated on the target's explicit HDMI output produced 2,200 positive
+zero crossings per channel over approximately 5.02 seconds, with a 440 Hz matched
+power ratio of approximately 0.999928 in each channel. Peak magnitude was 128 in
+signed 16-bit PCM; the valid surrounding stream was quiet. This establishes real
+HDMI signal content through capture, not acoustic output latency or loudness.
+The target's default speaker route was not changed to infer success.
+
+The observer sent no application input and stored metadata/counters only. Source
+lab evidence `real-signal-hdmi-clean.json` is retained alongside the separate
+latency harness and its raw metadata in the local
+`autopaws-audio-validation-2026-11-17.tar.gz` archive
+(626,324 bytes, 62 files). Its SHA256 is
+`0b89ebad5daeb51ef70aa6108ebdf6c235517d8343f223f7734eb5cc4bb93717`.
+The repository retains [compact result JSON](validation/audio-2026-11-17.json);
+the archive contains the exact latency harness/copies and raw runs 1–4, with
+no PCM, images or secrets. The passive signal checker source is not included
+in that archive.
+
+### Audio timing and diagnostic history
+
+Follow [the measurement procedure](audio-measurement.md) for the timestamp domains,
+calibration, output-position interpolation, allowance, gaps and reproducible lab
+commands. Application queues are 100 ms server + 50 ms worklet + at most one
+50 ms acknowledged transfer. That limit excludes kernel, TCP/WebSocket and
+output-device buffering and does not itself prove the 200 ms end-to-end target.
+
+- Historical run 1 measured about 883 seconds with low estimates, but used an
+  earlier implementation and is not final-code acceptance.
+- Run 2 failed: maximum 555.512 ms, eight quanta above 200 ms and 14 unmapped.
+  An audio timeline pause relative to elapsed time was observed, but old raw
+  output brackets were absent: the exact physical mechanism and queue replay
+  are unproved. This exposed a currentTime-based aging risk; synthetic tests
+  validate the retained elapsed-clock and timing-anchor fixes.
+- Diagnostic run 3 forced a 500 ms worklet pause. Six already-rendered pre-pause
+  quanta mapped near 553 ms; 11 earlier quanta were unmapped. No post-pause stale
+  rendering was observed. Already-rendered browser output cannot be recalled;
+  this is a downstream output/measurement limitation, not a latency pass.
+- Final ordinary run 4 completed and its proxy was stopped and joined. At
+  48 kHz stereo it recorded 644.887 seconds between mapped output observations
+  and 30,788,089 real sample frames (641.419 seconds). It included the controlled
+  0.400324-second ALSA-reader pause, followed later by a roughly two-second proxy
+  transport stall and automatic reconnect. That reconnect created context 2/node
+  2; Audio and view-only choices were retained, with no reported browser error.
+
+| Run 4 metric | Completed observation |
+|---|---:|
+| Mapped / unmapped real quanta | 240,541 / 0 |
+| Negative / above-200-ms estimates | 0 / 0 |
+| Above 200 ms with paired engineering allowance | 0 |
+| Minimum / maximum estimate | 66.032 / 102.941 ms |
+| 95th percentile, upper 1 ms histogram bin | 87 ms |
+| Maximum estimate plus its paired allowance | 115.587 ms |
+| Largest individual engineering allowance | 22.444 ms |
+| Maximum observed worklet ring | 49.875 ms |
+| Underrun quanta / sample frames | 605 / 76,167 |
+| Report errors / skipped reports | 0 / 0 |
+
+Underruns and the intentional reconnect gap are retained in these counts;
+dropped audio is not counted as fast playback. Context 2 was still running in
+the last completed report saved before shutdown. That report state does not
+mean a QA process was left running. The [compact result](validation/audio-2026-11-17.json)
+retains context/generation history, clock statistics, the historical failures and
+precise pre-pause outliers. These source-to-estimated-output observations meet
+the stated target on this Chromium run, within the method's limits. They do not
+close the remaining physical unplug/replug, Firefox or other pending core checks.
+
+The subsequent token-enabled MCP smoke completed fresh screenshot, typed-key,
+click, drag and OCR calls in approximately 63, 79, 72, 180 and 743 ms respectively;
+stdin EOF exited 0. These are sample call times, not general latency bounds.
+Earlier dedicated physical checks above establish complete drag sequences;
+the first OCR after this newer smoke had not yet shown its final mouseup.
+
+### Optional or explicitly unrequired coverage not run
+
+| Coverage | Status |
+|---|---|
+| ARM64 physical host | Not run; not required by the current owner scope. Linux arm64 cross-build remains required. |
+| Windows/macOS physical target layouts/input | Not run; not required by the current owner scope. Their layout fixtures and portable MCP builds are separate evidence. |
+| Safari and other platform browser engines | Not run; optional under the current issue 43 scope. No video/audio compatibility claim is made. |
+| Second capture chipset / two identical physical cards | Not run; one UGREEN card only. USB-path matching has fake-tree coverage. |
+| CH9329 configured for 115200 baud | Not run; physical serial observations use 9600 baud. |
+| BIOS/UEFI target | Not run. |
+| Claude Code/Desktop launcher/platform matrix; MCP Inspector | Not run as a release matrix; SDK stdio/loopback process tests are documented above. |
+| Remote laptop MCP/API use | Not run as a separate client-host check. Localhost SSH forwarding was exercised. |
+| Extended cross-platform OCR accuracy/performance | Not run; the required controlled corpus and Linux Tesseract 5.5.0 hardware observation are above. |
+| ARM64 CPU/input-latency performance survey | Not run; no ARM64 physical setup is claimed. The measured 9600-baud movement throughput is above. |
+
+Optional unrun coverage must be stated in release notes or linked follow-ups.
+Unfinished core checks and any observed wrong/stuck input keep first-release
+acceptance open; an optional label does not waive a core failure.
+
+### Native injected-writer recovery and reader check
+
+The separate real-media writer probe inserted a userspace delay in one actual
+production JPEG write. The 4,096-byte write had its JPEG marker at offset 76,
+waited 201.052 ms and completed in 201.073 ms. The old audio subscription closed
+and a new one opened while the PCM owner stayed open once. Chromium kept its
+running context 1/node 1, audio generation 1 and enabled audio choice. Across
+75.965 seconds it recorded 28,421 mapped real quanta, zero unmapped or above
+200 ms, a 91.637 ms maximum estimate and 104.297 ms maximum with paired allowance.
+All subscriptions/PCM ownership joined on shutdown. This is an injected writer
+wait, separate from physical USB loss or a blocked kernel syscall; see the
+[procedure](audio-measurement.md#native-server-writer-recovery-probe).
+
+A reader who did not write the installation section followed its authenticated
+private clone, exact CGO-disabled build and isolated-prefix installation on the
+existing Linux development setup. Both static native commands were produced;
+help/version, strict configuration validation and MCP initialization/EOF passed.
+The freshly installed binaries then ran the documented foreground configuration
+on the real setup: localhost video/audio near 20 fps, physical keyboard reload,
+a 1920×1080 MCP screenshot and a click at target `(640,360)` all worked; MCP EOF
+exited zero. No system service or udev rule was installed. Example
+rule/unit syntax checks and the real foreground/SSH checks are separate evidence;
+this is not a clean-room distribution installation claim.

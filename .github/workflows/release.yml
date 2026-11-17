@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Require completed release validation notes
+        run: |
+          if grep -qF RELEASE_VALIDATION_PENDING docs/release-notes.md; then
+            echo "::error::Complete issue #43 and replace the pending release notes before tagging."
+            exit 1
+          fi
+      - name: Build all eight binaries and checksums
+        run: bash .github/scripts/build-release.sh "$VERSION"
+      - name: Publish private-repository release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "$VERSION" dist/* \
+            --verify-tag --title "$VERSION" --generate-notes \
+            --notes-file docs/release-notes.md

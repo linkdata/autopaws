@@ -1,0 +1,4 @@
+# CH340/CH341 IDs supported by autopaws serial discovery.
+# Debian/Ubuntu group names; adapt dialout to the tty device group on your distro.
+# Keep stable /dev/serial/by-id or by-path names supplied by the system's rules.
+SUBSYSTEM=="tty", KERNEL=="ttyUSB*", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="752[23]", GROUP="dialout", MODE="0660"

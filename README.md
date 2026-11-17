@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Keyboard/mouse control, device discovery, CLI configuration, the API and MCP server, browser video/audio and optional OCR are implemented. Optional shared-token access is implemented; final release validation is next. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, browser video/audio, optional OCR and shared-token access are implemented. First-release validation is still pending; see [tested configurations and limits](#tested-configurations-and-limits). The [tracking epic](../../issues/23) records the port.
 
 ## Components
 
@@ -22,6 +22,163 @@ The rewrite is underway. Keyboard/mouse control, device discovery, CLI configura
 - The same hardware as serial-hid-kvm: a CH9329 behind a CH340/CH341 USB-UART, and UVC HDMI capture cards with their USB audio.
 - Targets can run any OS. The CH9329 appears to them as a standard USB keyboard and mouse.
 - No compatibility with the Python projects' command lines, configuration or wire formats.
+
+## Hardware and wiring
+
+The KVM host runs Linux amd64 or arm64. Use a CH9329 HID emulator behind a
+supported CH340/CH341 USB-UART and a UVC HDMI capture card with USB audio:
+
+1. Connect the target's HDMI output to the capture card's HDMI input.
+2. Connect the capture card's USB side to the Linux KVM host.
+3. Connect the CH340/CH341 serial USB side to the KVM host, and the CH9329 HID
+   USB side to the target. The target sees a normal keyboard and mouse.
+
+Combined boards expose separate host-serial and target-HID connections. Follow
+the board's pinout when its UART components are separate. Configure the target
+as a single display or mirrored displays so the capture represents the complete
+screen used by absolute input. Set the target's actual keyboard layout and
+coordinate dimensions; they need not equal the card's capture resolution.
+
+## Installation
+
+The repository is private. Your GitHub account needs access to clone it or
+download release assets. Install the [GitHub CLI](https://cli.github.com/) and
+authenticate:
+
+```sh
+gh auth login
+gh auth setup-git
+```
+
+### Build from source now
+
+This path works before the first release. With Go 1.27.4 or newer, clone the
+repository and build the commands for your computer:
+
+```sh
+gh repo clone linkdata/autopaws
+cd autopaws
+CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
+```
+
+On Windows PowerShell, replace the build line with:
+
+```powershell
+$env:CGO_ENABLED = "0"
+go build -trimpath -o dist/ ./cmd/...
+```
+
+Linux builds produce both commands. macOS and Windows builds produce only
+`autopaws-mcp`; the KVM daemon runs on Linux. Source builds without release
+linker flags report version `devel`. On the Linux KVM host, install both commands:
+
+```sh
+sudo install -m 0755 dist/autopaws-kvm dist/autopaws-mcp /usr/local/bin/
+autopaws-kvm version
+```
+
+For MCP on another computer, use the absolute path to the built binary, or
+install it at a stable location such as `C:\Tools\autopaws\autopaws-mcp.exe` on
+Windows. GUI clients may not inherit your shell's `PATH`.
+
+On macOS or Linux, an alternative MCP-only installation uses the private module:
+
+```sh
+GOPRIVATE=github.com/linkdata/autopaws CGO_ENABLED=0 go install \
+  github.com/linkdata/autopaws/cmd/autopaws-mcp@main
+```
+
+This installs the current `main` source, not a release, into `GOBIN` or
+`$(go env GOPATH)/bin` when `GOBIN` is unset. The authenticated Git setup above
+is still required; [GOPRIVATE](https://go.dev/ref/mod#private-modules) does not
+grant repository access itself.
+
+### Install a published release
+
+Once a release is available, list it through the authenticated CLI:
+
+```sh
+gh release list --repo linkdata/autopaws
+```
+
+Choose a tag shown in that list. If there are no releases yet, use the source
+build above. For a Linux amd64 KVM host, run the following in Bash and enter the
+published tag when prompted:
+
+```bash
+read -r -p "Published release tag: " autopaws_version
+autopaws_asset="autopaws-kvm_${autopaws_version}_linux_amd64"
+autopaws_download=$(mktemp -d)
+gh release download "$autopaws_version" --repo linkdata/autopaws \
+  --pattern "$autopaws_asset" --pattern SHA256SUMS --dir "$autopaws_download"
+(
+  cd "$autopaws_download"
+  awk -v file="$autopaws_asset" '$2 == file' SHA256SUMS | sha256sum --check - &&
+    sudo install -m 0755 "$autopaws_asset" /usr/local/bin/autopaws-kvm
+)
+autopaws-kvm version
+```
+
+Use `linux_arm64` for an arm64 KVM host. Download the matching `autopaws-mcp`
+asset for the MCP computer and install it as `autopaws-mcp` or `autopaws-mcp.exe`.
+
+| Command | Release OS/architecture pairs |
+|---|---|
+| `autopaws-kvm` | `linux_amd64`, `linux_arm64` |
+| `autopaws-mcp` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
+
+Filenames are `COMMAND_TAG_OS_ARCH`, with `.exe` on Windows. `SHA256SUMS` covers
+all eight binaries. On macOS, use `shasum -a 256 --check -` for verification.
+On Windows, compare the selected checksum with
+`Get-FileHash -Algorithm SHA256 .\autopaws-mcp_TAG_windows_ARCH.exe` before
+installing it. [Release downloads](https://cli.github.com/manual/gh_release_download)
+require repository access; there is no anonymous install URL.
+
+macOS binaries are not notarized. If a browser download carries quarantine and
+macOS blocks it, verify the binary first, then remove its quarantine attribute:
+
+```sh
+xattr -d com.apple.quarantine /absolute/path/to/autopaws-mcp
+```
+
+## Quick start on the KVM host
+
+On Debian/Ubuntu-style systems, grant your login user device access, then sign
+out and back in:
+
+```sh
+sudo usermod --append --groups dialout,video,audio "$USER"
+```
+
+Group names vary by distribution. See [Linux setup](docs/linux-setup.md) for
+device permissions, stable paths, the example udev rule and an optional systemd
+service. List devices and start the daemon in the foreground. Replace the serial
+path, screen dimensions and layout with the target's actual settings:
+
+```sh
+autopaws-kvm list-devices
+autopaws-kvm serve \
+  -serial-device /dev/serial/by-id/REPLACE_WITH_YOUR_CH340_OR_CH341 \
+  -serial-baud 9600 -screen-width 1920 -screen-height 1080 \
+  -target-layout us104 -mouse-button-mode relative \
+  -api 127.0.0.1:9329 -web 127.0.0.1:9330
+```
+
+Prefer `/dev/serial/by-id`; use `/dev/serial/by-path` when the adapter has no
+unique ID. Replugging can change `ttyUSBn`. Discovery chooses the default video
+and its matching USB audio; specify `-capture-device` when needed. The
+`relative` button mode above is used by the tested Linux target. Use one
+operator at a time.
+
+Open `http://localhost:9330` on the KVM host and click the image to focus input.
+For a remote host, follow [Security](#security) to forward both API and web ports
+through SSH and open the forwarded localhost URL. Use the [Audio control](#browser-audio)
+to start playback with a user gesture. If the capture PCM is busy, follow the
+canonical [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).
+
+Authentication is off in this foreground example. To enable it, follow
+[Security](#security) and configure `-token-file PATH` or the YAML setting. Each
+MCP process needs its own readable file containing the same secret.
 
 ## Commands and configuration
 
@@ -349,6 +506,43 @@ the original Python preprocessing. With Tesseract 5.5.0, both recognized 240 of
 PowerShell-style fixture is synthetic, and does not claim Windows runtime
 validation.
 
+### MCP client configuration
+
+`autopaws-mcp` is a local stdio process. Its `-api` address is the KVM JSON Lines
+service, not an HTTP MCP endpoint. Each client starts its own process against
+the shared daemon.
+
+For Claude Code, register the installed binary with server flags after `--`:
+
+```sh
+claude mcp add --transport stdio --scope user autopaws -- \
+  /absolute/path/to/autopaws-mcp -api 127.0.0.1:9329
+```
+
+For Claude Desktop, open Settings → Developer → Edit Config and add the entry
+under `mcpServers`, preserving any other servers:
+
+```json
+{
+  "mcpServers": {
+    "autopaws": {
+      "command": "/absolute/path/to/autopaws-mcp",
+      "args": ["-api", "127.0.0.1:9329"]
+    }
+  }
+}
+```
+
+On Windows the JSON command can be `C:\\Tools\\autopaws\\autopaws-mcp.exe`.
+Restart the client after changing its configuration. When authentication is
+enabled, append `-token-file` and the matching local file path to the command
+or `args` array; keep the secret value in that file. For a remote KVM, use the
+local API port from the [SSH tunnel](#security).
+
+These examples follow the [Claude Code stdio instructions](https://code.claude.com/docs/en/mcp#option-3-add-a-local-stdio-server)
+and [local MCP client setup](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
+They do not claim runtime validation of every client and OS combination.
+
 ## Security
 
 Both the API and web viewer can type on and click on the connected computer.
@@ -393,6 +587,30 @@ features. Direct LAN browser audio, built-in HTTPS and supported reverse-proxy
 setups are outside v1 scope. See the [Web Audio specification](https://webaudio.github.io/web-audio-api/#audioworklet)
 and [Secure Contexts specification](https://www.w3.org/TR/secure-contexts/#is-origin-trustworthy).
 
+## Coming from the Python projects
+
+Use `autopaws-kvm serve` in place of `serial-hid-kvm`, and `autopaws-mcp` in place
+of `mcp-serial-hid-kvm`. Python CLI flags, YAML keys, environment variables, wire
+formats and MCP tool signatures are not compatible with this redesign. Start
+with the Go help and references rather than copying the old configuration.
+The browser replaces the native preview.
+
+## Tested configurations and limits
+
+The [hardware validation record](docs/hardware-validation.md) identifies the
+tested Linux host, target, hardware and browser configurations and their actual
+results. [Release notes](docs/release-notes.md) track the first-release gate.
+Physical serial/video unplug/replug recovery and the available Firefox checks
+remain pending. First-release validation is incomplete; required Linux HID,
+video/audio, recovery and MCP screenshot-coordinate checks must pass before
+publication.
+
+Separate Windows/macOS target tests, physical ARM64 hardware, Safari and browser
+checks on other operating systems have not been run and are optional extended
+coverage. Supported-platform cross-builds remain required; they do not establish
+runtime or hardware validation. Extended card/OCR coverage and known limits are
+recorded separately from the required Linux results.
+
 ## Development
 
 The hardware, software and host setup needed for development are listed in the [tracking epic](../../issues/23).
@@ -403,6 +621,8 @@ After the final edits and before pushing or starting GitHub Actions, validate th
 
 ```sh
 actionlint
+bash -n .github/scripts/build-release.sh
+shellcheck .github/scripts/build-release.sh
 ```
 
 Browser checks use Node's built-in test runner and Web APIs; no npm install is
@@ -431,7 +651,7 @@ The browser interaction tests import the actual page module with a small DOM,
 WebSocket, timer and deferred-image harness. Physical and real-browser checks
 are recorded in [the hardware validation document](docs/hardware-validation.md).
 
-The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`. The root module's `./...` patterns exclude the nested modules in `research/`. CI deliberately skips those throwaway prototypes; they remain reference material until their replacements land.
+The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`.
 
 To build both Linux commands locally:
 
@@ -498,7 +718,6 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `apiclient/`: portable API client, independent of daemon/Linux packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
 - `alsa/`: raw Linux PCM capture, negotiation, recovery and bounded subscriber queues.
-- `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
 
