@@ -1,0 +1,14 @@
+* = auto-selected
+
+Serial ports (CH340/CH341):
+  * /dev/ttyUSB0 [USB 1a86:7523, port 1-13]
+
+Video capture devices:
+  * /dev/video0: UGREEN 15389 [USB 2b89:5389, port 4-1]
+      Formats: MJPG (Motion-JPEG), YUYV (YUYV 4:2:2)
+    /dev/video2: Integrated_Webcam_HD [USB 0bda:5510, port 1-5]
+      Formats: MJPG (Motion-JPEG), YUYV (YUYV 4:2:2)
+
+Audio capture devices:
+    /dev/snd/pcmC0D0c: sofsoundwire
+  * /dev/snd/pcmC1D0c: U15389 [USB 2b89:5389, port 4-1]
