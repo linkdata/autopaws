@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Linux amd64 checks and cross-builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          go build ./...
+          go build -o /dev/null ./cmd/autopaws-kvm
+      - name: Race tests
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race ./...
+      - name: Cross-build Linux arm64
+        env:
+          CGO_ENABLED: "0"
+          GOOS: linux
+          GOARCH: arm64
+        run: |
+          go build ./...
+          go build -o /dev/null ./cmd/autopaws-kvm
+      - name: Cross-build portable MCP binary
+        run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
