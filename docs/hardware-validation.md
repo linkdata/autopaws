@@ -226,3 +226,39 @@ Separate fake/loopback tests verify shared API/shortcut serialization, exact
 cleanup-deadline handoff, retained kernel ownership, listener-failure cleanup,
 slow-client isolation and source-generation flushing. The complete browser
 interface and its browser-runtime checks are tracked separately.
+
+
+## Browser client development checks, 2026-11-17
+
+A loopback-only fixture served the actual embedded client with the production
+WebSocket server, capture manager and HID coordinator. Generated 1280×800 JPEGs
+contained a 1280×720 or 1120×640 visible rectangle, labels and black borders;
+transport and capture devices were fakes. These checks exercised a real Chromium
+browser without sending input to the physical target.
+
+- All four visible image corners produced exactly `(0,0)`, `(4095,0)`,
+  `(0,4095)` and `(4095,4095)` in the server's received input and encoded HID
+  reports. Integer CSS origins and dimensions make endpoint pixels reachable.
+- View-only mode disabled shortcuts and sent no input for clicks or keys.
+  Both shortcut buttons produced one complete chord message each.
+- Fit/original-size and cursor toggles changed the actual canvas geometry and
+  cursor style. Fullscreen, toolbar dragging, auto-hide and top-edge reveal
+  worked. Keyboard Lock was exposed but denied by this browser; the viewer
+  displayed the fallback explanation and kept toolbar shortcuts available.
+- A source change was triggered only after the server observed a held mouse
+  press. The client sent `release_all` on the new generation and suppressed the
+  later mouseup, with matching relative-button release in the HID trace.
+- Restarting the fixture reconnected the viewer while preserving view-only mode.
+  No held input was replayed. No browser console warnings or errors appeared.
+
+The built-in Node tests separately exercise slow/deferred image decoding,
+generation and sequence rejection, focus/visibility cleanup, multibutton input,
+ordered movement coalescing and optional-capability fallbacks. They are not a
+substitute for browser-engine validation. Firefox and the remaining release
+checks are tracked in the release matrix.
+
+With the real CH340 transport at 9600 baud, 120 complete warm absolute moves took
+1.994 seconds: mean 16.616 ms, median 16.653 ms, p95 17.080 ms and maximum
+17.516 ms (60.18 moves/second). The browser sends coalesced movement at 30 Hz,
+leaving serial capacity for keys and button transitions. This is a measured
+configuration choice, not a universal transport throughput guarantee.

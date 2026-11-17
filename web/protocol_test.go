@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -127,12 +128,27 @@ func TestBoundedMessageWriterFailureIdentity(t *testing.T) {
 
 func TestStaticAssetsAndAdmission(t *testing.T) {
 	fixture := newFixture(t, Options{})
-	for _, path := range []string{"/", "/fallback/path", "/app.js", "/manifest.json", "/sw.js", "/icon.svg"} {
+	for _, asset := range []struct{ path, file, contentType string }{
+		{"/", "index.html", "text/html; charset=utf-8"},
+		{"/fallback/path", "index.html", "text/html; charset=utf-8"},
+		{"/index.html", "index.html", "text/html; charset=utf-8"},
+		{"/app.js", "index.html", "text/html; charset=utf-8"},
+		{"/viewer.mjs", "viewer.mjs", "text/javascript; charset=utf-8"},
+		{"/viewer-helpers.mjs", "viewer-helpers.mjs", "text/javascript; charset=utf-8"},
+		{"/viewer.css", "viewer.css", "text/css; charset=utf-8"},
+		{"/manifest.json", "manifest.json", "application/manifest+json"},
+		{"/sw.js", "sw.js", "text/javascript; charset=utf-8"},
+		{"/icon.svg", "icon.svg", "image/svg+xml"},
+	} {
+		want, err := os.ReadFile("assets/" + asset.file)
+		if err != nil {
+			t.Fatal(err)
+		}
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
 			output := httptest.NewRecorder()
-			fixture.server.ServeHTTP(output, httptest.NewRequest(method, path, nil))
-			if output.Code != 200 || output.Header().Get("Cache-Control") != "no-cache" || output.Header().Get("Content-Type") == "" || method == http.MethodGet && output.Body.Len() == 0 || method == http.MethodHead && output.Body.Len() != 0 {
-				t.Fatalf("asset%s%s:%+v", method, path, output)
+			fixture.server.ServeHTTP(output, httptest.NewRequest(method, asset.path, nil))
+			if output.Code != 200 || output.Header().Get("Cache-Control") != "no-cache" || output.Header().Get("Content-Type") != asset.contentType || method == http.MethodGet && !bytes.Equal(output.Body.Bytes(), want) || method == http.MethodHead && output.Body.Len() != 0 {
+				t.Fatalf("asset%s%s:%+v", method, asset.path, output)
 			}
 		}
 	}

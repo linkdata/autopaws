@@ -16,6 +16,16 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26.13.1"
+          package-manager-cache: false
+      - name: Browser syntax and interaction tests
+        run: |
+          node --check web/assets/viewer-helpers.mjs
+          node --check web/assets/viewer.mjs
+          node --check web/assets/sw.js
+          node --test web/*.test.mjs
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.15.0

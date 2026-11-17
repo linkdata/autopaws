@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser server protocol are implemented. The browser interface, OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser viewer are implemented. OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -198,7 +198,7 @@ daemon. Missing capture hardware leaves keyboard and mouse usable. Initial valid
 black/noisy HDMI acquisition pictures are possible on the tested card; another
 capture can observe the established picture without restarting the warm source.
 
-## Browser server
+## Browser viewer
 
 `-web host:port` enables HTTP assets and one WebSocket per viewer at `/ws`.
 It works on its own or alongside `-api`. All requested addresses bind before
@@ -219,10 +219,26 @@ hold the action gate across press and release; raw key/button events remain
 ordered. Browser mouse coordinates are normalized HID values 0 through 4095,
 with held-button movement matching the API in both button modes.
 
-The embedded page is currently a shell; the canvas, toolbar and browser controls
-arrive with the next client issue. Audio configuration reports unavailable until
-the audio work lands. The protocol already reserves audio timing and generation
-fields for that integration.
+The embedded viewer draws each frame's crop rectangle on a canvas and maps the
+visible pixel endpoints to the target's full mouse range. Click the video to
+send physical key positions and mouse input. The toolbar sends complete
+Ctrl+Alt+Delete and Alt+Tab actions, toggles view-only mode and the local cursor,
+and switches between fit and original pixel size. Fullscreen has an auto-hiding,
+draggable toolbar; moving to the top edge reveals it. The frame counter measures
+rendered frames. Lost connections reconnect automatically without replaying input.
+
+Entering view-only mode, losing focus, hiding the page or changing video
+streams releases this viewer's held input. A viewer with no held input sends no
+global release. Mouse movement retains only the latest pending position at 30 Hz;
+button, key and wheel events flush that position first to preserve their order.
+The rate leaves room for discrete actions on the measured 9600-baud serial link.
+
+Browser capabilities are detected at runtime. Keyboard Lock is attempted in
+fullscreen when available; if it is denied, toolbar shortcuts remain usable.
+The installable app uses an online-only service worker and caches no assets or
+media. A localhost SSH tunnel provides a secure context for compatible browser
+APIs. Audio configuration reports unavailable until audio playback is enabled by
+the audio implementation.
 
 ## MCP server
 
@@ -276,7 +292,7 @@ OCR tools are added with OCR support; they are not registered yet.
 
 The hardware, software and host setup needed for development are listed in the [tracking epic](../../issues/23).
 
-Use Go 1.27.4 or newer and the golangci-lint version pinned in [the CI workflow](.github/workflows/ci.yml). Install [actionlint](https://github.com/rhysd/actionlint/blob/main/docs/install.md) and [ShellCheck](https://www.shellcheck.net/) locally too, with these tools on `PATH`.
+Use Go 1.27.4 or newer, Node.js 26.13.1, and the golangci-lint version pinned in [the CI workflow](.github/workflows/ci.yml). Install [actionlint](https://github.com/rhysd/actionlint/blob/main/docs/install.md) and [ShellCheck](https://www.shellcheck.net/) locally too, with these tools on `PATH`.
 
 After the final edits and before pushing or starting GitHub Actions, validate the workflow locally:
 
@@ -284,9 +300,14 @@ After the final edits and before pushing or starting GitHub Actions, validate th
 actionlint
 ```
 
-Then, from the repository root, run the same Go gate as CI:
+Browser checks use Node's built-in test runner and Web APIs; no npm install is
+needed. From the repository root, run the same browser and Go gate as CI:
 
 ```sh
+node --check web/assets/viewer-helpers.mjs
+node --check web/assets/viewer.mjs
+node --check web/assets/sw.js
+node --test web/*.test.mjs
 CGO_ENABLED=0 go build ./...
 CGO_ENABLED=0 go build -o /dev/null ./cmd/autopaws-kvm
 golangci-lint run
@@ -298,6 +319,10 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
 ```
+
+The browser interaction tests import the actual page module with a small DOM,
+WebSocket, timer and deferred-image harness. Physical and real-browser checks
+are recorded in [the hardware validation document](docs/hardware-validation.md).
 
 The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`. The root module's `./...` patterns exclude the nested modules in `research/`. CI deliberately skips those throwaway prototypes; they remain reference material until their replacements land.
 
