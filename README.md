@@ -358,6 +358,23 @@ To build both Linux commands locally:
 go build -o dist/ ./cmd/...
 ```
 
+### Raw ALSA capture
+
+The Linux `alsa` package captures interleaved S16_LE directly through the kernel
+PCM interface, with no runtime audio library or helper process. It prefers
+48 kHz stereo, falls back to supported mono/rate settings, and reports the
+negotiated format. One worker owns reads and descriptor close; DROP wakes reads
+on shutdown, and every executing kernel operation retains ownership until it
+finishes. Kernel calls can outlast application deadlines.
+
+Overrun or suspend recovery uses PREPARE, changes the audio generation and
+flushes subscriber queues. Each subscriber retains at most 100 ms of samples,
+drops oldest blocks on overflow and expires blocks by end-of-capture age before
+delivery. Capture duration, kernel buffering and browser/output latency are
+separate from this application queue budget. See [the package notes](alsa/README.md)
+for timestamp estimation, ownership and the explicitly selected hardware tests.
+Browser playback and daemon lifecycle wiring are the next audio integration.
+
 ### Serial I/O and cancellation
 
 The serial package waits for the host output queue to empty, then applies baud-based pacing. This does not confirm CH9329 acknowledgement or target input processing. Request cancellation and a one-second application budget bound write readiness, queue polling and pacing.
@@ -399,7 +416,7 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `apiwire/`: portable envelopes, stable error identities and bounded line framing.
 - `apiclient/`: portable API client, independent of daemon/Linux packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
-- The `alsa` library package is added with its audio implementation issue.
+- `alsa/`: raw Linux PCM capture, negotiation, recovery and bounded subscriber queues.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License

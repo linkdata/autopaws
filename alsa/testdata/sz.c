@@ -1,0 +1,102 @@
+#include <time.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sound/asound.h>
+int main(void) {
+printf("mask.size=%zu\n", (size_t)(sizeof(struct snd_mask)));
+printf("mask.align=%zu\n", (size_t)(_Alignof(struct snd_mask)));
+printf("mask.Bits=%zu\n", offsetof(struct snd_mask, bits));
+printf("interval.size=%zu\n", (size_t)(sizeof(struct snd_interval)));
+printf("interval.align=%zu\n", (size_t)(_Alignof(struct snd_interval)));
+printf("interval.Min=%zu\n", offsetof(struct snd_interval, min));
+printf("interval.Max=%zu\n", offsetof(struct snd_interval, max));
+printf("hwParams.size=%zu\n", (size_t)(sizeof(struct snd_pcm_hw_params)));
+printf("hwParams.align=%zu\n", (size_t)(_Alignof(struct snd_pcm_hw_params)));
+printf("hwParams.Flags=%zu\n", offsetof(struct snd_pcm_hw_params, flags));
+printf("hwParams.Masks=%zu\n", offsetof(struct snd_pcm_hw_params, masks));
+printf("hwParams.MRes=%zu\n", offsetof(struct snd_pcm_hw_params, mres));
+printf("hwParams.Intervals=%zu\n", offsetof(struct snd_pcm_hw_params, intervals));
+printf("hwParams.IRes=%zu\n", offsetof(struct snd_pcm_hw_params, ires));
+printf("hwParams.RMask=%zu\n", offsetof(struct snd_pcm_hw_params, rmask));
+printf("hwParams.CMask=%zu\n", offsetof(struct snd_pcm_hw_params, cmask));
+printf("hwParams.Info=%zu\n", offsetof(struct snd_pcm_hw_params, info));
+printf("hwParams.MSBits=%zu\n", offsetof(struct snd_pcm_hw_params, msbits));
+printf("hwParams.RateNum=%zu\n", offsetof(struct snd_pcm_hw_params, rate_num));
+printf("hwParams.RateDen=%zu\n", offsetof(struct snd_pcm_hw_params, rate_den));
+printf("hwParams.FifoSize=%zu\n", offsetof(struct snd_pcm_hw_params, fifo_size));
+printf("hwParams.Sync=%zu\n", offsetof(struct snd_pcm_hw_params, sync));
+printf("hwParams.Reserved=%zu\n", offsetof(struct snd_pcm_hw_params, reserved));
+printf("swParams.size=%zu\n", (size_t)(sizeof(struct snd_pcm_sw_params)));
+printf("swParams.align=%zu\n", (size_t)(_Alignof(struct snd_pcm_sw_params)));
+printf("swParams.TimestampMode=%zu\n", offsetof(struct snd_pcm_sw_params, tstamp_mode));
+printf("swParams.PeriodStep=%zu\n", offsetof(struct snd_pcm_sw_params, period_step));
+printf("swParams.SleepMin=%zu\n", offsetof(struct snd_pcm_sw_params, sleep_min));
+printf("swParams.AvailableMin=%zu\n", offsetof(struct snd_pcm_sw_params, avail_min));
+printf("swParams.TransferAlign=%zu\n", offsetof(struct snd_pcm_sw_params, xfer_align));
+printf("swParams.StartThreshold=%zu\n", offsetof(struct snd_pcm_sw_params, start_threshold));
+printf("swParams.StopThreshold=%zu\n", offsetof(struct snd_pcm_sw_params, stop_threshold));
+printf("swParams.SilenceThreshold=%zu\n", offsetof(struct snd_pcm_sw_params, silence_threshold));
+printf("swParams.SilenceSize=%zu\n", offsetof(struct snd_pcm_sw_params, silence_size));
+printf("swParams.Boundary=%zu\n", offsetof(struct snd_pcm_sw_params, boundary));
+printf("swParams.Protocol=%zu\n", offsetof(struct snd_pcm_sw_params, proto));
+printf("swParams.TimestampType=%zu\n", offsetof(struct snd_pcm_sw_params, tstamp_type));
+printf("swParams.Reserved=%zu\n", offsetof(struct snd_pcm_sw_params, reserved));
+printf("transfer.size=%zu\n", (size_t)(sizeof(struct snd_xferi)));
+printf("transfer.align=%zu\n", (size_t)(_Alignof(struct snd_xferi)));
+printf("transfer.Result=%zu\n", offsetof(struct snd_xferi, result));
+printf("transfer.Buffer=%zu\n", offsetof(struct snd_xferi, buf));
+printf("transfer.Frames=%zu\n", offsetof(struct snd_xferi, frames));
+printf("status.size=%zu\n", (size_t)(sizeof(struct snd_pcm_status)));
+printf("status.align=%zu\n", (size_t)(_Alignof(struct snd_pcm_status)));
+printf("status.State=%zu\n", offsetof(struct snd_pcm_status, state));
+printf("status.TriggerTimestamp=%zu\n", offsetof(struct snd_pcm_status, trigger_tstamp));
+printf("status.Timestamp=%zu\n", offsetof(struct snd_pcm_status, tstamp));
+printf("status.ApplicationPointer=%zu\n", offsetof(struct snd_pcm_status, appl_ptr));
+printf("status.HardwarePointer=%zu\n", offsetof(struct snd_pcm_status, hw_ptr));
+printf("status.Delay=%zu\n", offsetof(struct snd_pcm_status, delay));
+printf("status.Available=%zu\n", offsetof(struct snd_pcm_status, avail));
+printf("status.AvailableMax=%zu\n", offsetof(struct snd_pcm_status, avail_max));
+printf("status.Overrange=%zu\n", offsetof(struct snd_pcm_status, overrange));
+printf("status.SuspendedState=%zu\n", offsetof(struct snd_pcm_status, suspended_state));
+printf("status.AudioTimestampData=%zu\n", offsetof(struct snd_pcm_status, audio_tstamp_data));
+printf("status.AudioTimestamp=%zu\n", offsetof(struct snd_pcm_status, audio_tstamp));
+printf("status.DriverTimestamp=%zu\n", offsetof(struct snd_pcm_status, driver_tstamp));
+printf("status.AudioTimestampAccuracy=%zu\n", offsetof(struct snd_pcm_status, audio_tstamp_accuracy));
+printf("status.Reserved=%zu\n", offsetof(struct snd_pcm_status, reserved));
+printf("ioctlHWRefine=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_HW_REFINE));
+printf("ioctlHWParams=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_HW_PARAMS));
+printf("ioctlSWParams=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_SW_PARAMS));
+printf("ioctlStatus=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_STATUS));
+printf("ioctlPrepare=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_PREPARE));
+printf("ioctlDrop=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_DROP));
+printf("ioctlRead=%lu\n", (unsigned long)(SNDRV_PCM_IOCTL_READI_FRAMES));
+printf("paramAccess=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_ACCESS));
+printf("paramFormat=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_FORMAT));
+printf("paramSubformat=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_SUBFORMAT));
+printf("paramChannels=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_CHANNELS));
+printf("paramRate=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_RATE));
+printf("paramPeriodTime=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_PERIOD_TIME));
+printf("paramPeriodSize=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_PERIOD_SIZE));
+printf("paramPeriods=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_PERIODS));
+printf("paramBufferSize=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_BUFFER_SIZE));
+printf("firstInterval=%lu\n", (unsigned long)(SNDRV_PCM_HW_PARAM_FIRST_INTERVAL));
+printf("accessInterleaved=%lu\n", (unsigned long)(SNDRV_PCM_ACCESS_RW_INTERLEAVED));
+printf("formatS16LE=%lu\n", (unsigned long)(SNDRV_PCM_FORMAT_S16_LE));
+printf("subformatStandard=%lu\n", (unsigned long)(SNDRV_PCM_SUBFORMAT_STD));
+printf("protocolVersion=%lu\n", (unsigned long)(SNDRV_PCM_VERSION));
+printf("timestampEnable=%lu\n", (unsigned long)(SNDRV_PCM_TSTAMP_ENABLE));
+printf("timestampMonotonic=%lu\n", (unsigned long)(SNDRV_PCM_TSTAMP_TYPE_MONOTONIC));
+printf("stateRunning=%lu\n", (unsigned long)(SNDRV_PCM_STATE_RUNNING));
+printf("stateXRun=%lu\n", (unsigned long)(SNDRV_PCM_STATE_XRUN));
+printf("stateSuspended=%lu\n", (unsigned long)(SNDRV_PCM_STATE_SUSPENDED));
+printf("stateDisconnected=%lu\n", (unsigned long)(SNDRV_PCM_STATE_DISCONNECTED));
+struct snd_interval flags = {0};
+flags.openmin=1; flags.openmax=1; flags.integer=1; flags.empty=1;
+uint32_t word; memcpy(&word, ((char *)&flags)+8, sizeof(word));
+printf("interval.Flags=%d\n", 8);
+printf("interval.FlagBits=%u\n", word);
+return 0;
+}
