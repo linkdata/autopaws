@@ -151,7 +151,8 @@ function pcm(generation, sequence, {sampleRate = 48000, channels = 2, sampleFram
 }
 
 async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
-  missingWorklet = false, prefixedAudio = false, resumeRequiresRetry = false, audioLoad = null} = {}) {
+  missingWorklet = false, prefixedAudio = false, resumeRequiresRetry = false, audioLoad = null,
+  href = "http://127.0.0.1:9999/"} = {}) {
   const clock = new Clock();
   const window = new Events();
   window.isSecureContext = secureContext;
@@ -247,6 +248,13 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     clearRect: (...args) => clears.push(args),
     drawImage: (...args) => draws.push(args),
   });
+  const cookies = [], historyChanges = [];
+  Object.defineProperty(document, "cookie", {set: value => cookies.push(value)});
+  const pageLocation = new URL(href);
+  const history = {replaceState(state, title, url) {
+    historyChanges.push({state, title, url});
+    pageLocation.href = url;
+  }};
   const sockets = [];
   class Socket extends Events {
     static OPEN = 1;
@@ -254,7 +262,11 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     bufferedAmount = 0;
     sent = [];
     closes = [];
-    constructor(url) { super(); this.url = String(url); sockets.push(this); }
+    constructor(url) {
+      super(); this.url = String(url);
+      this.bootstrap = {cookies: [...cookies], href: pageLocation.href};
+      sockets.push(this);
+    }
     open() { this.readyState = 1; return this.fire("open").done; }
     message(data) { return this.fire("message", {data}).done; }
     send(data) {
@@ -273,7 +285,7 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     decodes.push({blob, resolve, reject, settled: false});
   });
   const globals = {
-    window, document, navigator: {}, location: new URL("http://127.0.0.1:9999/"),
+    window, document, history, navigator: {}, location: pageLocation,
     WebSocket: Socket, createImageBitmap, performance: {timeOrigin: 1700000000000, now: () => clock.now},
     setTimeout: (callback, delay) => clock.schedule(callback, delay),
     clearTimeout: id => clock.timers.delete(id),
@@ -303,6 +315,7 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   await sockets[0].open();
   const h = {
     clock, window, document, elements, sockets, decodes, draws, clears, dimensions, audioContexts, audioNodes,
+    cookies, historyChanges,
     get socket() { return sockets.at(-1); },
     get sent() { return this.socket.sent; },
     async frame(generation, sequence, payload = Number(sequence), options) {
@@ -785,4 +798,19 @@ test("a second page audio click cancels module loading and late completion stays
   assert.equal(h.elements.audio.textContent, "Audio");
   await h.pcm(1, 0);
   assert.equal(h.audioNodes.length, 0);
+});
+
+
+test("fragment authentication finishes before the first WebSocket and survives reconnect", async t => {
+  const h = await viewer(t, {href: "http://localhost:9330/#token=a%2Bb%3B%C3%A5"});
+  assert.deepEqual(h.cookies, ["autopaws_token=a%2Bb%3B%C3%A5; Path=/; SameSite=Strict"]);
+  assert.deepEqual(h.historyChanges, [{state: null, title: "", url: "http://localhost:9330/"}]);
+  assert.deepEqual(h.socket.bootstrap, {cookies: h.cookies, href: "http://localhost:9330/"});
+  assert.equal(h.socket.url, "ws://localhost:9330/ws");
+  h.socket.close(1006, "reconnect");
+  await settle();
+  h.clock.advance(500);
+  assert.equal(h.sockets.length, 2);
+  assert.equal(h.socket.url, "ws://localhost:9330/ws");
+  assert.equal(h.cookies.length, 1, "reconnect reuses the cookie, never the fragment");
 });

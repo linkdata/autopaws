@@ -20,6 +20,7 @@ type Code string
 func (code Code) Error() string { return string(code) }
 
 const (
+	ErrUnauthorized    Code = "unauthorized"
 	ErrInvalidRequest  Code = "invalid request"
 	ErrRequestTooLarge Code = "request too large"
 	ErrUnknownMethod   Code = "unknown method"
@@ -37,6 +38,7 @@ const (
 type Request struct {
 	ID     json.RawMessage `json:"id"`
 	Method string          `json:"method"`
+	Token  string          `json:"token,omitempty"`
 	Params json.RawMessage `json:"params"`
 }
 

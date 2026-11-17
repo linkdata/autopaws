@@ -36,6 +36,22 @@ omitted. Integers must be JSON integers: `1.0`, strings and overflow are rejecte
 All input fields, including later text characters or sequence steps, are validated
 before hardware preparation or input emission.
 
+## Optional shared token
+
+With `serve -token-file PATH`, each request must include the matching secret as
+an envelope string field, for example `"token":"your-secret"`. It is checked
+before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
+receive `{"id":1,"ok":false,"error":"unauthorized"}` (with the request's ID).
+The token is never logged. Without a configured token, existing requests work
+unchanged; the optional token field is ignored.
+
+The file is read once at daemon startup. Its contents must be nonempty UTF-8;
+surrounding whitespace is trimmed. Restart to load a changed secret. The portable
+Go client uses `apiclient.NewWithToken(address, secret)`; `New(address)` continues
+to omit the field. MCP reads the same secret with its own `-token-file PATH` flag.
+Use loopback addresses and the SSH tunnel in the README: the token does not encrypt
+plain TCP traffic.
+
 ## Connections and cancellation
 
 A read EOF cancels the request, including `shutdown(SHUT_WR)`, `CloseWrite` and
@@ -210,6 +226,7 @@ minimal `{"error":"unavailable"}` capture object.
 
 | Code | Meaning |
 |---|---|
+| `unauthorized` | Configured token missing or incorrect; action not dispatched |
 | `invalid request` | Malformed envelope/framing or extra input |
 | `request too large` | Request exceeds the line limit |
 | `unknown method` | No registered method with that name |

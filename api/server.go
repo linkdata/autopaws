@@ -19,6 +19,7 @@ import (
 	"github.com/linkdata/autopaws/capture"
 	"github.com/linkdata/autopaws/devices"
 	"github.com/linkdata/autopaws/hid"
+	"github.com/linkdata/autopaws/internal/token"
 )
 
 // Options supplies configured device information and independent request/key
@@ -26,6 +27,7 @@ import (
 // Capture is a shared manager owned by the caller. A nil manager/discovery hook
 // leaves that service unavailable; no implicit hardware discovery is performed.
 type Options struct {
+	Token                     string
 	SerialDevice              string
 	SerialBaud                int
 	ScreenWidth, ScreenHeight int
@@ -155,6 +157,10 @@ func (server *Server) handleConn(ctx context.Context, conn net.Conn) {
 	var request apiwire.Request
 	if err := decodeObject(line, &request, apiwire.ErrInvalidRequest); err != nil {
 		_ = server.respond(conn, nil, "", nil, err)
+		return
+	}
+	if !token.Match(server.options.Token, request.Token) {
+		_ = server.respond(conn, request.ID, "", nil, apiwire.ErrUnauthorized)
 		return
 	}
 	if request.Method == "" {

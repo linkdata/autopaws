@@ -10,6 +10,25 @@ Input shares the daemon's complete-action coordinator with the API. Concurrent
 control by different operators is unsupported; there are no leases or merged
 independent held states.
 
+## Optional shared token
+
+When `serve -token-file PATH` is configured, `/ws` requires the `autopaws_token`
+cookie; missing or wrong values receive HTTP 403 before upgrade or subscription.
+All bootstrap assets remain public. Open
+`http://localhost:9330/#token=ENCODED_SECRET`, where ENCODED_SECRET is the result
+of JavaScript `encodeURIComponent(secret)`. The page removes the recognized
+fragment with `history.replaceState` and writes the URI-encoded secret into a
+session cookie before opening its first WebSocket. The cookie uses `Path=/` and
+`SameSite=Strict`, plus `Secure` on HTTPS. No Domain or persistent expiry is set.
+The server URI-decodes the cookie value without treating `+` as a space. Reconnects
+reuse the cookie; tokens never appear in WebSocket URLs or application logs.
+The fragment is processed locally and is not sent in HTTP requests.
+
+Without a configured token, assets and WebSocket behavior are unchanged. Cookies
+are scoped to a host rather than a TCP port; use one token for this viewer host.
+Use localhost through the documented SSH tunnel for remote access. Authentication
+does not add TLS or a supported reverse-proxy deployment.
+
 ## Configuration and media
 
 The first server application message is JSON text:

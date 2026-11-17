@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/linkdata/autopaws/apiclient"
+	"github.com/linkdata/autopaws/internal/token"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -32,6 +33,8 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	flags.SetOutput(io.Discard)
 	flags.StringVar(&options.APIAddress, "api", "127.0.0.1:9329", "KVM API host:port (numeric port 1..65535)")
 	flags.StringVar(&options.CaptureLogDir, "capture-log", "", "Save unchanged screenshot JPEGs in DIR; empty disables logging")
+	var tokenFile string
+	flags.StringVar(&tokenFile, "token-file", "", "Shared-secret UTF-8 file for the KVM API; empty disables authentication")
 	var requestedTesseract string
 	flags.StringVar(&requestedTesseract, "tesseract", "", "Tesseract executable; empty searches PATH and Windows install directories")
 	usage := func(output io.Writer) {
@@ -60,13 +63,17 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	if ctx.Err() != nil {
 		return 0
 	}
+	secret, err := token.ReadFile(tokenFile)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
 	options.Logger = slog.New(slog.NewTextHandler(stderr, nil))
-	var err error
 	options.TesseractPath, err = resolveTesseract(requestedTesseract)
 	if err != nil {
 		options.Logger.Warn("OCR tools disabled: Tesseract unavailable", "error", err)
 	}
-	server := newServer(ctx, options, apiclient.New(options.APIAddress))
+	server := newServer(ctx, options, apiclient.NewWithToken(options.APIAddress, secret))
 	if err := server.Run(ctx, transport); err != nil {
 		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {
 			return 0

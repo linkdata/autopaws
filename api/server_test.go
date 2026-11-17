@@ -132,6 +132,8 @@ func TestRawRequestFraming(t *testing.T) {
 		code       apiwire.Code
 		id         string
 	}{
+		{"optional token without authentication", "{\"id\":1,\"method\":\"ping\",\"token\":\"ignored\"}\n", false, "", "1"},
+		{"wrong token type", "{\"id\":1,\"method\":\"ping\",\"token\":1}\n", false, apiwire.ErrInvalidRequest, "null"},
 		{"missing params", "{\"id\":1,\"method\":\"ping\"}\n", false, "", "1"},
 		{"missing ID", "{\"method\":\"ping\"}\r\n", false, "", "null"},
 		{"large ID", "{\"id\":9007199254740993,\"method\":\"ping\"}\n", false, "", "9007199254740993"},
