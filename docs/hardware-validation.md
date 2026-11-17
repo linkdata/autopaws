@@ -51,3 +51,24 @@ The reference OpenCV capture initially returned noisy or outdated-looking setup
 frames. Continuous 12-second capture produced clear, current event logs. Capture
 startup and latency need their own checks in the video and release work; a
 single initial reference frame was not used to decide the input result.
+
+### API daemon and client
+
+The static Go daemon was started with an ephemeral loopback API listener,
+`/dev/ttyUSB0`, target size 1280×720 and default relative button mode. The portable
+Go client queried `get_device_info`, verified those settings, sent Ctrl+R to reset
+the local page, then called one `mouse_drag` from (200,200) to (900,550), with no
+per-call button-mode override. The fresh captured page recorded:
+
+| Event | Buttons | Target viewport position |
+|---|---:|---|
+| mousemove | 0 | (200,200) |
+| mousedown | 1 | (200,200) |
+| mousemove | 1 | (900,550) |
+| mouseup | 0 | (900,550) |
+
+The daemon then received SIGTERM and exited 0. This validates CLI setting wiring,
+Go client/TCP API dispatch, physical keyboard/mouse control and ordinary signal
+shutdown together. Separate recording-transport tests cover active cancellation,
+shared cleanup deadlines and slow kernel-operation ownership; this physical run
+does not claim a universal shutdown bound or complete the media/MCP release gate.
