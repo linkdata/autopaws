@@ -1,0 +1,308 @@
+[
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": true
+    },
+    "description": "Capture the current screen as an unchanged JPEG image with its width and height. Establishes this session's pixel coordinates for later absolute mouse actions.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "name": "capture_screen"
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": true
+    },
+    "description": "Read configured serial, target screen, keyboard layout and capture information from the daemon.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "name": "get_device_info"
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": true
+    },
+    "description": "List capture devices available to the daemon.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "name": "list_capture_devices"
+  },
+  {
+    "description": "Click left, right or middle (default left). Optional x and y are pixels in this session's latest successful capture_screen; supply both. A click at the current pointer needs no screenshot. Optional button_mode overrides the daemon setting.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "description": "left, right, or middle. Default left.",
+          "type": "string"
+        },
+        "button_mode": {
+          "description": "absolute or relative. Omit to use the daemon's configured mode.",
+          "type": "string"
+        },
+        "x": {
+          "description": "Optional screenshot x pixel. Supply both x and y.",
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "y": {
+          "description": "Optional screenshot y pixel. Supply both x and y.",
+          "type": [
+            "null",
+            "integer"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "name": "mouse_click"
+  },
+  {
+    "description": "Drag in one atomic daemon action, with 50 ms after button down and after the move. Both endpoints are pixels in this session's latest successful capture_screen image. Default button left; button_mode may override the daemon setting.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "description": "left, right, or middle. Default left.",
+          "type": "string"
+        },
+        "button_mode": {
+          "description": "absolute or relative. Omit to use the daemon's configured mode.",
+          "type": "string"
+        },
+        "end_x": {
+          "description": "End x pixel in the latest screenshot.",
+          "type": "integer"
+        },
+        "end_y": {
+          "description": "End y pixel in the latest screenshot.",
+          "type": "integer"
+        },
+        "start_x": {
+          "description": "Start x pixel in the latest screenshot.",
+          "type": "integer"
+        },
+        "start_y": {
+          "description": "Start y pixel in the latest screenshot.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_x",
+        "start_y",
+        "end_x",
+        "end_y"
+      ],
+      "type": "object"
+    },
+    "name": "mouse_drag"
+  },
+  {
+    "description": "Move the target pointer. Absolute x/y are integer pixels in this session's latest successful capture_screen image; capture first. Relative deltas are unchanged and each must be -127 through 127.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "relative": {
+          "description": "Use unscaled relative deltas, each -127 through 127. Default false.",
+          "type": "boolean"
+        },
+        "x": {
+          "description": "Screenshot x pixel, or signed horizontal delta when relative is true.",
+          "type": "integer"
+        },
+        "y": {
+          "description": "Screenshot y pixel, or signed vertical delta when relative is true.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "name": "mouse_move"
+  },
+  {
+    "description": "Scroll the target's wheel by a signed amount, clamped to -127 through 127.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "description": "Signed wheel amount, clamped by the daemon to -127 through 127.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "amount"
+      ],
+      "type": "object"
+    },
+    "name": "mouse_scroll"
+  },
+  {
+    "description": "Press and release one named key or 0x-prefixed HID keycode, with optional ctrl, shift, alt or super modifiers.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "description": "Named key such as enter, escape, f1, a, or a 0x-prefixed HID keycode.",
+          "type": "string"
+        },
+        "modifiers": {
+          "description": "Modifiers such as ctrl, shift, alt, or super.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "null",
+            "array"
+          ]
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "type": "object"
+    },
+    "name": "send_key"
+  },
+  {
+    "description": "Send one atomic keyboard sequence of at most 4096 steps. The complete sequence is validated first. Step delays default to 100 ms and may be 0 through 60000 ms.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "default_delay_ms": {
+          "description": "Default delay after each key in milliseconds, 0 through 60000. Default 100.",
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "steps": {
+          "description": "Complete sequence, at most 4096 steps. Every step is validated before typing.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "delay_ms": {
+                "description": "Delay after this key in milliseconds, 0 through 60000.",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "key": {
+                "description": "Named key or 0x-prefixed HID keycode.",
+                "type": "string"
+              },
+              "modifiers": {
+                "description": "Modifiers such as ctrl, shift, alt, or super.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "null",
+                  "array"
+                ]
+              }
+            },
+            "required": [
+              "key"
+            ],
+            "type": "object"
+          },
+          "type": [
+            "null",
+            "array"
+          ]
+        }
+      },
+      "required": [
+        "steps"
+      ],
+      "type": "object"
+    },
+    "name": "send_key_sequence"
+  },
+  {
+    "description": "Select a capture device by path. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "device": {
+          "description": "Capture device path such as /dev/video0. Numeric indexes are not supported.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "device"
+      ],
+      "type": "object"
+    },
+    "name": "set_capture_device"
+  },
+  {
+    "description": "Set a positive capture width and height. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "description": "Positive capture height in pixels.",
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "width": {
+          "description": "Positive capture width in pixels.",
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "type": "object"
+    },
+    "name": "set_capture_resolution"
+  },
+  {
+    "description": "Type text on the target keyboard. The entire text is validated against the configured target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "char_delay_ms": {
+          "description": "Delay after each character or tag, including the last, in milliseconds, 0 through 60000. Default 20.",
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "raw": {
+          "description": "Type braces literally instead of interpreting key tags. Default false.",
+          "type": "boolean"
+        },
+        "text": {
+          "description": "Text to type. Characters unavailable in the target layout are rejected before typing.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "type": "object"
+    },
+    "name": "type_text"
+  }
+]

@@ -1,0 +1,180 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"sync"
+
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+type apiCaller interface {
+	Call(context.Context, string, any, any) error
+}
+
+type toolServer struct {
+	lifetime context.Context
+	options  mcpOptions
+	caller   apiCaller
+	mu       sync.Mutex
+	sessions map[*mcp.ServerSession]*screenState
+}
+
+type textInput struct {
+	Text        string `json:"text" jsonschema:"Text to type. Characters unavailable in the target layout are rejected before typing."`
+	Raw         bool   `json:"raw,omitempty" jsonschema:"Type braces literally instead of interpreting key tags. Default false."`
+	CharDelayMS *int64 `json:"char_delay_ms,omitempty" jsonschema:"Delay after each character or tag, including the last, in milliseconds, 0 through 60000. Default 20."`
+}
+
+type keyInput struct {
+	Key       string   `json:"key" jsonschema:"Named key such as enter, escape, f1, a, or a 0x-prefixed HID keycode."`
+	Modifiers []string `json:"modifiers,omitempty" jsonschema:"Modifiers such as ctrl, shift, alt, or super."`
+}
+
+type keyStepInput struct {
+	Key       string   `json:"key" jsonschema:"Named key or 0x-prefixed HID keycode."`
+	Modifiers []string `json:"modifiers,omitempty" jsonschema:"Modifiers such as ctrl, shift, alt, or super."`
+	DelayMS   *int64   `json:"delay_ms,omitempty" jsonschema:"Delay after this key in milliseconds, 0 through 60000."`
+}
+
+type sequenceInput struct {
+	Steps          []keyStepInput `json:"steps" jsonschema:"Complete sequence, at most 4096 steps. Every step is validated before typing."`
+	DefaultDelayMS *int64         `json:"default_delay_ms,omitempty" jsonschema:"Default delay after each key in milliseconds, 0 through 60000. Default 100."`
+}
+
+type moveInput struct {
+	X        int  `json:"x" jsonschema:"Screenshot x pixel, or signed horizontal delta when relative is true."`
+	Y        int  `json:"y" jsonschema:"Screenshot y pixel, or signed vertical delta when relative is true."`
+	Relative bool `json:"relative,omitempty" jsonschema:"Use unscaled relative deltas, each -127 through 127. Default false."`
+}
+
+type clickInput struct {
+	Button     string `json:"button,omitempty" jsonschema:"left, right, or middle. Default left."`
+	X          *int   `json:"x,omitempty" jsonschema:"Optional screenshot x pixel. Supply both x and y."`
+	Y          *int   `json:"y,omitempty" jsonschema:"Optional screenshot y pixel. Supply both x and y."`
+	ButtonMode string `json:"button_mode,omitempty" jsonschema:"absolute or relative. Omit to use the daemon's configured mode."`
+}
+
+type dragInput struct {
+	StartX     int    `json:"start_x" jsonschema:"Start x pixel in the latest screenshot."`
+	StartY     int    `json:"start_y" jsonschema:"Start y pixel in the latest screenshot."`
+	EndX       int    `json:"end_x" jsonschema:"End x pixel in the latest screenshot."`
+	EndY       int    `json:"end_y" jsonschema:"End y pixel in the latest screenshot."`
+	Button     string `json:"button,omitempty" jsonschema:"left, right, or middle. Default left."`
+	ButtonMode string `json:"button_mode,omitempty" jsonschema:"absolute or relative. Omit to use the daemon's configured mode."`
+}
+
+type scrollInput struct {
+	Amount int `json:"amount" jsonschema:"Signed wheel amount, clamped by the daemon to -127 through 127."`
+}
+
+type captureDeviceInput struct {
+	Device string `json:"device" jsonschema:"Capture device path such as /dev/video0. Numeric indexes are not supported."`
+}
+
+type captureResolutionInput struct {
+	Width  uint32 `json:"width" jsonschema:"Positive capture width in pixels."`
+	Height uint32 `json:"height" jsonschema:"Positive capture height in pixels."`
+}
+
+func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *mcp.Server {
+	owner := &toolServer{lifetime: lifetime, options: options, caller: caller, sessions: make(map[*mcp.ServerSession]*screenState)}
+	server := mcp.NewServer(&mcp.Implementation{Name: "autopaws-mcp", Version: options.Version}, &mcp.ServerOptions{Logger: options.Logger})
+	addTool(server, owner, "type_text", "Type text on the target keyboard. The entire text is validated against the configured target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.", false, owner.typeText)
+	addTool(server, owner, "send_key", "Press and release one named key or 0x-prefixed HID keycode, with optional ctrl, shift, alt or super modifiers.", false, owner.sendKey)
+	addTool(server, owner, "send_key_sequence", "Send one atomic keyboard sequence of at most 4096 steps. The complete sequence is validated first. Step delays default to 100 ms and may be 0 through 60000 ms.", false, owner.sendKeySequence)
+	addTool(server, owner, "mouse_move", "Move the target pointer. Absolute x/y are integer pixels in this session's latest successful capture_screen image; capture first. Relative deltas are unchanged and each must be -127 through 127.", false, owner.mouseMove)
+	addTool(server, owner, "mouse_click", "Click left, right or middle (default left). Optional x and y are pixels in this session's latest successful capture_screen; supply both. A click at the current pointer needs no screenshot. Optional button_mode overrides the daemon setting.", false, owner.mouseClick)
+	addTool(server, owner, "mouse_drag", "Drag in one atomic daemon action, with 50 ms after button down and after the move. Both endpoints are pixels in this session's latest successful capture_screen image. Default button left; button_mode may override the daemon setting.", false, owner.mouseDrag)
+	addTool(server, owner, "mouse_scroll", "Scroll the target's wheel by a signed amount, clamped to -127 through 127.", false, owner.mouseScroll)
+	addTool(server, owner, "capture_screen", "Capture the current screen as an unchanged JPEG image with its width and height. Establishes this session's pixel coordinates for later absolute mouse actions.", true, owner.captureScreen)
+	addTool(server, owner, "get_device_info", "Read configured serial, target screen, keyboard layout and capture information from the daemon.", true, owner.deviceInfo)
+	addTool(server, owner, "list_capture_devices", "List capture devices available to the daemon.", true, owner.listCaptureDevices)
+	addTool(server, owner, "set_capture_device", "Select a capture device by path. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureDevice)
+	addTool(server, owner, "set_capture_resolution", "Set a positive capture width and height. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureResolution)
+	return server
+}
+
+func addTool[In any](server *mcp.Server, owner *toolServer, name, description string, readOnly bool, handle func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, error)) {
+	tool := &mcp.Tool{Name: name, Description: description}
+	if readOnly {
+		tool.Annotations = &mcp.ToolAnnotations{ReadOnlyHint: true}
+	}
+	mcp.AddTool(server, tool, func(ctx context.Context, request *mcp.CallToolRequest, input In) (*mcp.CallToolResult, any, error) {
+		ctx, cancel := context.WithCancel(ctx)
+		stop := context.AfterFunc(owner.lifetime, cancel)
+		defer stop()
+		defer cancel()
+		if owner.lifetime.Err() != nil {
+			cancel()
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, nil, err
+		}
+		result, err := handle(ctx, request, input)
+		return result, nil, err
+	})
+}
+
+func (owner *toolServer) state(session *mcp.ServerSession) *screenState {
+	owner.mu.Lock()
+	defer owner.mu.Unlock()
+	if state := owner.sessions[session]; state != nil {
+		return state
+	}
+	state := &screenState{}
+	owner.sessions[session] = state
+	go func() {
+		_ = session.Wait()
+		owner.mu.Lock()
+		delete(owner.sessions, session)
+		owner.mu.Unlock()
+	}()
+	return state
+}
+
+func (owner *toolServer) call(ctx context.Context, method string, input any) (*mcp.CallToolResult, error) {
+	var result json.RawMessage
+	if err := owner.caller.Call(ctx, method, input, &result); err != nil {
+		return nil, err
+	}
+	return textResult(string(result)), nil
+}
+
+func textResult(text string) *mcp.CallToolResult {
+	return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}
+}
+
+func (owner *toolServer) typeText(ctx context.Context, _ *mcp.CallToolRequest, input textInput) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "type_text", input)
+}
+
+func (owner *toolServer) sendKey(ctx context.Context, _ *mcp.CallToolRequest, input keyInput) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "send_key", input)
+}
+
+func (owner *toolServer) sendKeySequence(ctx context.Context, _ *mcp.CallToolRequest, input sequenceInput) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "send_key_sequence", input)
+}
+
+func (owner *toolServer) mouseScroll(ctx context.Context, _ *mcp.CallToolRequest, input scrollInput) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "mouse_scroll", input)
+}
+
+func (owner *toolServer) deviceInfo(ctx context.Context, _ *mcp.CallToolRequest, input struct{}) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "get_device_info", input)
+}
+
+func (owner *toolServer) listCaptureDevices(ctx context.Context, _ *mcp.CallToolRequest, input struct{}) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "list_capture_devices", input)
+}
+
+func (owner *toolServer) setCaptureDevice(ctx context.Context, request *mcp.CallToolRequest, input captureDeviceInput) (*mcp.CallToolResult, error) {
+	owner.state(request.Session).invalidate()
+	return owner.call(ctx, "set_capture_device", input)
+}
+
+func (owner *toolServer) setCaptureResolution(ctx context.Context, request *mcp.CallToolRequest, input captureResolutionInput) (*mcp.CallToolResult, error) {
+	owner.state(request.Session).invalidate()
+	return owner.call(ctx, "set_capture_resolution", input)
+}
