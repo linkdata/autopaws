@@ -74,7 +74,7 @@ func (controller *Controller) isClosing() bool {
 	return controller.closing
 }
 
-func (controller *Controller) run(ctx context.Context, release releaseMask, execute func(*action) error) error {
+func (controller *Controller) acquire(ctx context.Context) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -85,13 +85,22 @@ func (controller *Controller) run(ctx context.Context, release releaseMask, exec
 		return ErrClosed
 	case controller.gate <- struct{}{}:
 	}
-	defer func() { <-controller.gate }()
 	if err := ctx.Err(); err != nil {
+		<-controller.gate
 		return err
 	}
 	if controller.isClosing() {
+		<-controller.gate
 		return ErrClosed
 	}
+	return nil
+}
+
+func (controller *Controller) run(ctx context.Context, release releaseMask, execute func(*action) error) error {
+	if err := controller.acquire(ctx); err != nil {
+		return err
+	}
+	defer func() { <-controller.gate }()
 	activeCtx, cancel := context.WithCancel(ctx)
 	stop := context.AfterFunc(controller.lifetime, cancel)
 	defer stop()
@@ -149,7 +158,11 @@ type cleanupAttempt struct {
 
 func (controller *Controller) beginCleanup(ctx context.Context) *cleanupAttempt {
 	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Second)
-	attempt := &cleanupAttempt{ctx: cleanupCtx, cancel: cancel}
+	return controller.registerCleanup(cleanupCtx, cancel)
+}
+
+func (controller *Controller) registerCleanup(ctx context.Context, cancel context.CancelFunc) *cleanupAttempt {
+	attempt := &cleanupAttempt{ctx: ctx, cancel: cancel}
 	controller.mu.Lock()
 	controller.active = attempt
 	if controller.closing {
@@ -157,6 +170,29 @@ func (controller *Controller) beginCleanup(ctx context.Context) *cleanupAttempt 
 	}
 	controller.mu.Unlock()
 	return attempt
+}
+
+// releaseHeld is itself cleanup, so it uses the existing attempt/handoff rather
+// than running a normal action that might start another cleanup on failure.
+// Its deadline includes admission and is shared by an overlapping Close.
+func (controller *Controller) releaseHeld(ctx context.Context, release releaseMask) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+	deadline := time.Now().Add(time.Second)
+	if earlier, ok := ctx.Deadline(); ok && earlier.Before(deadline) {
+		deadline = earlier
+	}
+	cleanupCtx, cancel := context.WithDeadline(context.WithoutCancel(ctx), deadline)
+	if err := controller.acquire(cleanupCtx); err != nil {
+		cancel()
+		return false, err
+	}
+	defer func() { <-controller.gate }()
+	attempt := controller.registerCleanup(cleanupCtx, cancel)
+	err := controller.cleanup(attempt, release)
+	controller.endCleanup(attempt)
+	return true, err
 }
 
 func (controller *Controller) endCleanup(attempt *cleanupAttempt) {

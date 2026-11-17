@@ -115,6 +115,7 @@ func TestManagerFailedOpenResolutionRepair(t *testing.T) {
 					t.Fatal("idle repair opened source before demand")
 				}
 				done := snapshotAsync(manager, context.Background())
+				synctest.Wait() // Existing subscriber may already have signalled ReadFrame.
 				<-source.reading
 				source.reads <- managerRead{frame: managerFrame(managerJPEG(t, false), 2, 1)}
 				if result := <-done; result.err != nil {

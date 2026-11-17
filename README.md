@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server and the shared video pipeline are implemented. OCR, audio and browser services are still being ported; web startup currently reports unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser server protocol are implemented. The browser interface, OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -35,13 +35,13 @@ autopaws-kvm list-devices -help
 
 `serve` requires an API address, a web address, or both. Each address includes a
 numeric port. Empty addresses disable that listener; neither is enabled by
-default. For example, the intended API/web configuration is:
+default. To serve both protocols:
 
 ```sh
 autopaws-kvm serve -api 127.0.0.1:9329 -web 127.0.0.1:9330 -mouse-button-mode relative
 ```
 
-To run the implemented API on its own:
+To run the API on its own:
 
 ```sh
 autopaws-kvm serve -api 127.0.0.1:9329 -mouse-button-mode relative
@@ -198,6 +198,32 @@ daemon. Missing capture hardware leaves keyboard and mouse usable. Initial valid
 black/noisy HDMI acquisition pictures are possible on the tested card; another
 capture can observe the established picture without restarting the warm source.
 
+## Browser server
+
+`-web host:port` enables HTTP assets and one WebSocket per viewer at `/ws`.
+It works on its own or alongside `-api`. All requested addresses bind before
+either service begins accepting; a startup failure closes the bound addresses
+and shared hardware owners. Shutdown cancels viewers and starts network, input
+and capture cleanup concurrently, then joins every owner and handler.
+
+The [browser protocol](web/PROTOCOL.md) defines the video header, crop metadata,
+clock flags, generations and physical input messages. Video uses the shared
+pipeline's normalized JPEG without per-viewer encoding. Slow viewers skip frames,
+and every socket write has a deadline. A passive viewer disconnect sends no input
+release. A controlling disconnect releases its held input through the shared
+coordinator, sharing an existing cleanup deadline with overlapping shutdown.
+
+Browser input uses physical `KeyboardEvent.code`, independently of the selected
+text layout. Held keys retain press order, up to six. Complete shortcut messages
+hold the action gate across press and release; raw key/button events remain
+ordered. Browser mouse coordinates are normalized HID values 0 through 4095,
+with held-button movement matching the API in both button modes.
+
+The embedded page is currently a shell; the canvas, toolbar and browser controls
+arrive with the next client issue. Audio configuration reports unavailable until
+the audio work lands. The protocol already reserves audio timing and generation
+fields for that integration.
+
 ## MCP server
 
 Configure an MCP client to start `autopaws-mcp` over stdio. It connects to a running
@@ -316,12 +342,13 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `devices/`: Linux serial, video and audio inventory and USB-path selection.
 - `v4l2/`: Linux MJPG streaming capture, timestamps and read-only format probes.
 - `capture/`: shared video lifecycle, fresh snapshots, JPEG normalization and crop metadata.
+- `web/`: HTTP/WebSocket serving, browser input and the media wire protocol.
 - `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
 - `api/`: Linux daemon API handlers and TCP connection lifecycle.
 - `apiwire/`: portable envelopes, stable error identities and bounded line framing.
 - `apiclient/`: portable API client, independent of daemon/Linux packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
-- Further library packages are added with their implementation issues: `web` and `alsa`.
+- The `alsa` library package is added with its audio implementation issue.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License

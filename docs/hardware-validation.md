@@ -191,3 +191,38 @@ card and proves a failed-path repair, rather than unplug/replug recovery or a
 second card model. Cold letterbox cropping, stale/corrupt queued frames, blocked
 kernel ownership, concurrent retries and generation-switch races are separately
 covered by fake-source and loopback tests.
+
+## WebSocket development check, 2026-11-17
+
+The static daemon started both API and web listeners on ephemeral loopback ports,
+with the same physical serial/capture devices and relative button mode. A real
+Go WebSocket client checked configuration, the 64-byte video header, increasing
+per-connection delivery sequences, monotonic timestamps and 1920×1080 JPEG/crop
+metadata. It received the current target picture through the shared pipeline.
+
+One passive viewer and one controlling connection remained connected together.
+The controlling connection sent one complete Ctrl+R physical-key shortcut, then
+pressed at target (320,180). The passive viewer disconnected while that button
+was held. Movement to (960,540) and release produced exactly:
+
+| Event | Buttons | Target viewport position |
+|---|---:|---|
+| mousemove | 0 | (320,180) |
+| mousedown | 1 | (320,180) |
+| mousemove | 1 | (960,540) |
+| mouseup | 0 | (960,540) |
+
+The recorded picture confirms that passive disconnect did not release another
+connection's held button. This tests multiple viewers with one input operator;
+it does not establish concurrent-operator support.
+
+A new passive observer then watched the controlling connection press at
+(500,350) and disconnect without an up message. The subsequent WebSocket JPEG
+showed movement, mousedown with buttons 1, then mouseup with buttons 0 at that
+position. Finally SIGTERM closed the still-connected observer's socket, and the
+daemon exited 0. All physical helper processes stopped.
+
+Separate fake/loopback tests verify shared API/shortcut serialization, exact
+cleanup-deadline handoff, retained kernel ownership, listener-failure cleanup,
+slow-client isolation and source-generation flushing. The complete browser
+interface and its browser-runtime checks are tracked separately.
