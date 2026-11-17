@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser server protocol are implemented. The browser interface, OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser viewer are implemented. OCR and audio are still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
