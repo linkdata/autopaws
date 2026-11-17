@@ -61,3 +61,33 @@ Choose the intended exclusive capture substream. The tests capture sample blocks
 measure a second busy open and shutdown, and deliberately stall one read beyond
 the kernel buffer duration to exercise real overrun recovery. They do not save
 PCM bytes. Without the explicit device variable they skip, including on CI.
+
+
+## Exclusive access with WirePlumber 0.5
+
+If open reports `ErrBusy`, another process owns the capture PCM. On a desktop,
+`wpctl status --name` lists PipeWire devices; inspect the capture card's numeric
+ID with `wpctl inspect ID` to obtain its exact `device.name`. To reserve only
+that card for autopaws, create
+`~/.config/wireplumber/wireplumber.conf.d/51-autopaws-capture.conf`:
+
+```conf
+monitor.alsa.rules = [
+  {
+    matches = [ { device.name = "alsa_card.REPLACE_WITH_YOUR_CAPTURE_CARD_NAME" } ]
+    actions = { update-props = { device.disabled = true } }
+  }
+]
+```
+
+Replace the example name with the complete observed name, then run
+`systemctl --user restart wireplumber`. The selected card disappears from desktop
+audio; its raw ALSA PCM remains available to autopaws. Restore desktop access by
+removing this fragment and restarting WirePlumber again. The host used for the
+recorded hardware tests needed no policy change because the PCM was idle.
+
+This is the WirePlumber 0.5 configuration format; see the official
+[ALSA rules and device properties](https://pipewire.pages.freedesktop.org/wireplumber/daemon/configuration/alsa.html)
+and [configuration fragments](https://pipewire.pages.freedesktop.org/wireplumber/daemon/configuration/modifying_configuration.html).
+Older WirePlumber releases use different configuration. There is no automatic
+PulseAudio/PipeWire fallback.
