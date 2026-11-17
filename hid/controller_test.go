@@ -56,7 +56,7 @@ func TestControllerQueuedCancellationAndActionOrder(t *testing.T) {
 		}
 		second := make(chan error, 1)
 		go func() {
-			second <- controller.run(context.Background(), func(current *action) error {
+			second <- controller.run(context.Background(), releaseMouse, func(current *action) error {
 				return current.write(ch9329.MouseRelative(0, 1, 0, 0))
 			})
 		}()
@@ -103,7 +103,7 @@ func TestControllerCancellationCleanup(t *testing.T) {
 
 func TestControllerFailedSendRecovery(t *testing.T) {
 	controller, keyboard, transport := keyboardFixture(t, "us104")
-	if err := controller.run(context.Background(), func(current *action) error {
+	if err := controller.run(context.Background(), releaseMouse, func(current *action) error {
 		controller.buttons = 1
 		return current.write(ch9329.MouseRelative(1, 0, 0, 0))
 	}); err != nil {
@@ -159,7 +159,7 @@ func TestControllerCleanupFailures(t *testing.T) {
 				if err := keyboard.SendKey(context.Background(), "a", nil); !errors.Is(err, original) || !errors.Is(err, cleanup) {
 					t.Fatalf("lost original/cleanup error: %v", err)
 				}
-				if err := controller.run(context.Background(), func(*action) error {
+				if err := controller.run(context.Background(), releaseKeyboard, func(*action) error {
 					if controller.buttons != 0 || len(controller.keys) != 0 || controller.modifier != 0 {
 						t.Error("new generation did not clear state before the next action")
 					}
@@ -181,7 +181,7 @@ func TestControllerPreInputFailures(t *testing.T) {
 	}
 	transport.prepareHook = nil
 	ctx, cancel := context.WithCancel(context.Background())
-	if err := controller.run(ctx, func(current *action) error {
+	if err := controller.run(ctx, releaseKeyboard, func(current *action) error {
 		cancel()
 		return current.write(ch9329.Keyboard(0, 4))
 	}); !errors.Is(err, context.Canceled) {
@@ -227,7 +227,7 @@ func TestControllerCloseUnusedAndConcurrent(t *testing.T) {
 func TestControllerCloseReleasesAll(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		controller, keyboard, transport := keyboardFixture(t, "us104")
-		if err := controller.run(context.Background(), func(current *action) error {
+		if err := controller.run(context.Background(), releaseMouse, func(current *action) error {
 			controller.buttons = 1
 			return current.write(ch9329.MouseRelative(1, 0, 0, 0))
 		}); err != nil {
@@ -288,7 +288,7 @@ func TestControllerCloseCleanupFailures(t *testing.T) {
 	for _, prepareFails := range []bool{false, true} {
 		t.Run(map[bool]string{false: "reports", true: "prepare"}[prepareFails], func(t *testing.T) {
 			controller, _, transport := keyboardFixture(t, "us104")
-			if err := controller.run(context.Background(), func(*action) error { return nil }); err != nil {
+			if err := controller.run(context.Background(), releaseKeyboard, func(*action) error { return nil }); err != nil {
 				t.Fatal(err)
 			}
 			releaseError := errors.New("release failed")

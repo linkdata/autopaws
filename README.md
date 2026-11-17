@@ -78,13 +78,19 @@ Construct one `hid.Controller` for the transport and share it with the input dev
 
 Each key is held for 10 ms before release. Text defaults to a 20 ms delay after every character or tag, and sequences default to 100 ms after every step, including the last. Explicit zero disables that delay; a layout's multiple strokes have no character delay between them. Delays must be between zero and one minute, and sequences contain at most 4096 steps. Cancellation stops application waits and attempts release under a separate one-second cleanup context, subject to the serial kernel-call limits above.
 
+### Mouse actions
+
+`hid.Mouse` shares that controller. Absolute coordinates are integer target-screen pixels, from zero through width/height minus one. The endpoints map exactly to HID 0 and 4095; a one-pixel axis maps to zero. Relative movement must be within −127…127 on each axis, and wheel movement is clamped to that range. Invalid coordinates, buttons and modes are rejected before input begins.
+
+Buttons are `left`, `right` and `middle`; an empty name means left. A click holds for 10 ms, and a drag holds the shared gate through down, 50 ms, move, 50 ms and up. Clicks release the selected button and preserve other held buttons. The configured button mode defaults to `absolute`; `relative` sends positioned button changes as a button-free absolute move followed by a relative button report. Absolute movement preserves held buttons in both modes. See the [physical input validation record](docs/hardware-validation.md).
+
 ## Repository layout
 
 - `cmd/autopaws-kvm/`: Linux KVM daemon entry point (amd64 and arm64).
 - `cmd/autopaws-mcp/`: portable MCP stdio entry point.
 - `ch9329/`: portable keyboard and mouse frame encoders.
 - `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
-- `hid/`: portable keycodes, immutable layouts and serialized keyboard actions.
+- `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
 - Further library packages are added with their implementation issues: `api`, `apiclient`, `devices`, `v4l2`, `frame`, `web` and `alsa`. `apiclient` stays portable and does not import the daemon or Linux-only packages.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 

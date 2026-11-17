@@ -1,4 +1,4 @@
-// Package hid provides keyboard control and immutable target keyboard layouts.
+// Package hid provides keyboard/mouse control and immutable keyboard layouts.
 package hid
 
 import (

@@ -1,0 +1,2534 @@
+{
+  "provenance": {
+    "repository": "https://github.com/linkdata/serial-hid-kvm",
+    "revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
+    "files_sha256": {
+      "src/serial_hid_kvm/hid_mouse.py": "c9de918954e59f5ecd48dfe217d7f562d6eff2a48a0b15b31205ddf231d0e051",
+      "src/serial_hid_kvm/hid_protocol.py": "6e2e2f43c4fb498b2681b92cbd68fb69f5451f4a33af26417daecf42509704a0",
+      "tests/test_hid_mouse.py": "55809d6ce467ab93b5bf6a6f21c207b49f0298b23fff7ba75ff28077fc30179b",
+      "tests/test_viewer_input.py": "6241a8f8713146e62de4675a0acaa41bd32ccd5eaf058938c724bef069617cef"
+    },
+    "generator": "export_mouse.py",
+    "safety": "RecordingDevice only; atexit registration and sleeps patched; real serial.Serial construction raises AssertionError.",
+    "coordinate_note": "Main cases use a 4096x4096 source, matching Python tests and identity mapping. Deliberate Go pixel mapping differences are separate.",
+    "scope_note": "Python observations are not a decision to retain state bugs, partial-coordinate fallback, or relative-mode drag behavior. No hardware evidence is established."
+  },
+  "cases": [
+    {
+      "name": "click_positioned_absolute_default_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_default_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702020a001400002f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_default_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702040a0014000031"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_absolute_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_absolute_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070202010002000014"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_absolute_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_same_override_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_same_override_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702020a001400002f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_same_override_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702040a0014000031"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_absolute_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_absolute_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070202010002000014"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_absolute_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_other_override_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_other_override_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_absolute_other_override_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_absolute_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_absolute_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070200010002000012"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_absolute_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "multiple_held_buttons_absolute",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010300000010"
+            }
+          ],
+          "held_buttons_after": 3,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010700000014"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            3000,
+            2000
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070207b80bd00700b0"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            -127,
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0005050107817f0014"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            -3
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501070000fd11"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010600000013"
+            }
+          ],
+          "held_buttons_after": 6,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            }
+          ],
+          "held_buttons_after": 4,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            3
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010000000310"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "per_call_override_does_not_persist_absolute",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            30,
+            40
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702021e0028000057"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            30,
+            40
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702001e0028000055"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "motion_and_scroll_boundaries_absolute",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "move_relative",
+          "args": [
+            -127,
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0005050100817f000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            0,
+            0
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            127,
+            -127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501007f81000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            -127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000818e"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            0
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010000007f8c"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "invalid_modes_do_not_change_state_absolute",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "absolute",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "click",
+          "args": [
+            "right",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_default_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_default_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_default_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_relative_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_relative_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070200010002000012"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_relative_default",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": null
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_same_override_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_same_override_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_same_override_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_relative_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_relative_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070200010002000012"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_relative_same_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": "relative"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_other_override_left",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_other_override_right",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "right",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702020a001400002f"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_positioned_relative_other_override_middle",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702040a0014000031"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "click_unpositioned_relative_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "click",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            },
+            {
+              "kind": "sleep",
+              "milliseconds": 10.0
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "down_up_positioned_relative_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            2
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070202010002000014"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            5,
+            6
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000407020005000600001a"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "drag_relevant_relative_other_override",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            100,
+            200
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702016400c800003c"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            100,
+            200
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702006400c800003b"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "multiple_held_buttons_relative",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010300000010"
+            }
+          ],
+          "held_buttons_after": 3,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010700000014"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "move_absolute",
+          "args": [
+            3000,
+            2000
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0004070207b80bd00700b0"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            -127,
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0005050107817f0014"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            -3
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501070000fd11"
+            }
+          ],
+          "held_buttons_after": 7,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010600000013"
+            }
+          ],
+          "held_buttons_after": 6,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010400000011"
+            }
+          ],
+          "held_buttons_after": 4,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "middle"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            3
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010000000310"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "per_call_override_does_not_persist_relative",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702010a001400002e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            10,
+            20
+          ],
+          "kwargs": {
+            "button_mode": "absolute"
+          },
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702000a001400002d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            30,
+            40
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702001e0028000055"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501020000000f"
+            }
+          ],
+          "held_buttons_after": 2,
+          "error": null
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "right",
+            30,
+            40
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00040702001e0028000055"
+            },
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "motion_and_scroll_boundaries_relative",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "move_relative",
+          "args": [
+            -127,
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab0005050100817f000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            0,
+            0
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "move_relative",
+          "args": [
+            127,
+            -127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501007f81000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            -127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000818e"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            0
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        },
+        {
+          "method": "scroll",
+          "args": [
+            127
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab000505010000007f8c"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    },
+    {
+      "name": "invalid_modes_do_not_change_state_relative",
+      "screen_width": 4096,
+      "screen_height": 4096,
+      "default_button_mode": "relative",
+      "steps": [
+        {
+          "method": "mouse_down",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501010000000e"
+            }
+          ],
+          "held_buttons_after": 1,
+          "error": null
+        },
+        {
+          "method": "click",
+          "args": [
+            "right",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_down",
+          "args": [
+            "right",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left",
+            1,
+            1
+          ],
+          "kwargs": {
+            "button_mode": "bogus"
+          },
+          "events": [],
+          "held_buttons_after": 1,
+          "error": {
+            "type": "ValueError",
+            "message": "Invalid button_mode: 'bogus'"
+          }
+        },
+        {
+          "method": "mouse_up",
+          "args": [
+            "left"
+          ],
+          "kwargs": {},
+          "events": [
+            {
+              "kind": "frame",
+              "hex": "57ab00050501000000000d"
+            }
+          ],
+          "held_buttons_after": 0,
+          "error": null
+        }
+      ],
+      "held_buttons_after": 0
+    }
+  ]
+}

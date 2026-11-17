@@ -13,7 +13,15 @@ import (
 	"github.com/linkdata/autopaws/hid"
 )
 
-func TestKeyboardCancelsDuringSerialPacingAndResetsWithoutLaterInput(t *testing.T) {
+func TestHIDCancelsDuringSerialPacingAndResetsWithoutLaterInput(t *testing.T) {
+	for _, kind := range []string{"keyboard", "mouse"} {
+		t.Run(kind, func(t *testing.T) {
+			testHIDPacingCleanup(t, kind)
+		})
+	}
+}
+
+func testHIDPacingCleanup(t *testing.T, kind string) {
 	for _, deadline := range []bool{false, true} {
 		name := "cancellation"
 		if deadline {
@@ -29,8 +37,15 @@ func TestKeyboardCancelsDuringSerialPacingAndResetsWithoutLaterInput(t *testing.
 					t.Fatal(err)
 				}
 				keyboard := hid.NewKeyboard(controller, layout)
+				mouse, err := hid.NewMouse(controller, hid.MouseOptions{Width: 1920, Height: 1080, ButtonMode: "relative"})
+				if err != nil {
+					t.Fatal(err)
+				}
 				reset := ch9329.ReleaseAll()
 				press := ch9329.Keyboard(0, 4)
+				if kind == "mouse" {
+					press = ch9329.MouseRelative(1, 0, 0, 0)
+				}
 				pressWritten := false
 				queued := make(chan struct{})
 				pressed.write = func(frame []byte) (int, error) {
@@ -55,14 +70,20 @@ func TestKeyboardCancelsDuringSerialPacingAndResetsWithoutLaterInput(t *testing.
 				}
 				defer cancel()
 				result := make(chan error, 1)
-				go func() { result <- keyboard.SendKey(ctx, "a", nil) }()
+				go func() {
+					if kind == "mouse" {
+						result <- mouse.Click(ctx, "left", hid.ButtonOptions{})
+					} else {
+						result <- keyboard.SendKey(ctx, "a", nil)
+					}
+				}()
 				<-queued
 				synctest.Wait()
 				if !deadline {
 					cancel()
 				}
 				if err := <-result; !errors.Is(err, want) {
-					t.Fatalf("keyboard action = %v; want %v", err, want)
+					t.Fatalf("%s action = %v; want %v", kind, err, want)
 				}
 				// No subsequent normal action is allowed to cause this
 				// recovery: the interrupted action must do its own cleanup.
