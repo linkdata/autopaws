@@ -53,9 +53,9 @@ type failingReader struct{ err error }
 func (reader failingReader) Read([]byte) (int, error) { return 0, reader.err }
 
 func TestEnvelopePrecisionAndErrorIdentity(t *testing.T) {
-	request := apiwire.Request{ID: json.RawMessage(`9007199254740993`), Method: "ping", Params: json.RawMessage(`{}`)}
+	request := apiwire.Request{ID: json.RawMessage(`9007199254740993`), Method: "ping", Token: "secret", Params: json.RawMessage(`{}`)}
 	data, err := json.Marshal(request)
-	if err != nil || !bytes.Contains(data, []byte(`"id":9007199254740993`)) {
+	if err != nil || !bytes.Contains(data, []byte(`"id":9007199254740993`)) || !bytes.Contains(data, []byte(`"token":"secret"`)) {
 		t.Fatalf("request ID lost precision: %s, %v", data, err)
 	}
 	response := apiwire.Response{ID: request.ID, OK: false, Error: apiwire.ErrUnavailable, Detail: "device absent"}
@@ -68,7 +68,7 @@ func TestEnvelopePrecisionAndErrorIdentity(t *testing.T) {
 		t.Fatalf("response roundtrip=%+v, %v", decoded, err)
 	}
 	for _, code := range []apiwire.Code{
-		apiwire.ErrInvalidRequest, apiwire.ErrRequestTooLarge, apiwire.ErrUnknownMethod,
+		apiwire.ErrUnauthorized, apiwire.ErrInvalidRequest, apiwire.ErrRequestTooLarge, apiwire.ErrUnknownMethod,
 		apiwire.ErrInvalidParams, apiwire.ErrUnsupported, apiwire.ErrCanceled,
 		apiwire.ErrTimeout, apiwire.ErrUnavailable, apiwire.ErrBusy,
 		apiwire.ErrCaptureChanged, apiwire.ErrProtocol,

@@ -139,7 +139,7 @@ func TestCallDiscardAndNullResult(t *testing.T) {
 
 func TestRemoteErrors(t *testing.T) {
 	codes := []apiwire.Code{
-		apiwire.ErrInvalidRequest, apiwire.ErrRequestTooLarge, apiwire.ErrUnknownMethod,
+		apiwire.ErrUnauthorized, apiwire.ErrInvalidRequest, apiwire.ErrRequestTooLarge, apiwire.ErrUnknownMethod,
 		apiwire.ErrInvalidParams, apiwire.ErrUnsupported, apiwire.ErrCanceled,
 		apiwire.ErrTimeout, apiwire.ErrUnavailable, apiwire.ErrBusy,
 		apiwire.ErrCaptureChanged, apiwire.ErrProtocol, "future server error",

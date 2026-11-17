@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/linkdata/autopaws/devices"
 	"github.com/linkdata/autopaws/hid"
 	"github.com/linkdata/autopaws/internal/config"
+	"github.com/linkdata/autopaws/internal/token"
 	"github.com/linkdata/autopaws/serial"
 	"github.com/linkdata/autopaws/web"
 )
@@ -47,6 +49,10 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	}
 	if cfg.API == "" && cfg.Web == "" {
 		return fmt.Errorf("%w: at least one listener must be enabled", config.ErrInvalid)
+	}
+	secret, err := token.ReadFile(cfg.TokenFile)
+	if err != nil {
+		return err
 	}
 	layout, err := hid.LoadLayout(cfg.TargetLayout, cfg.LayoutsDir)
 	if err != nil {
@@ -100,6 +106,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	var apiServer *api.Server
 	if cfg.API != "" {
 		apiServer = api.New(keyboard, mouse, api.Options{
+			Token:        secret,
 			SerialDevice: cfg.SerialDevice, SerialBaud: cfg.SerialBaud,
 			ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
 			KeyboardLayout: cfg.TargetLayout, ButtonMode: cfg.MouseButtonMode,
@@ -114,7 +121,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		if factories.audioOptions != nil {
 			audio = factories.audioOptions(cfg.AudioDevice)
 		}
-		viewer, err = web.New(controller, mouse, video, web.Options{FPS: cfg.WebFPS, Logger: logger, KeyLogger: keys, Audio: audio})
+		viewer, err = web.New(controller, mouse, video, web.Options{Token: secret, FPS: cfg.WebFPS, Logger: logger, KeyLogger: keys, Audio: audio})
 		if err != nil {
 			return errors.Join(fmt.Errorf("create web viewer: %w", err), closeOwners())
 		}
@@ -165,10 +172,12 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	// All requested addresses are bound before either service begins accepting.
 	served := make(chan error, len(bound))
 	if apiServer != nil {
+		warnExposed(logger, "API", apiListener.Addr(), secret)
 		logger.Info("API listening", "address", apiListener.Addr().String())
 		go func() { served <- apiServer.Serve(runtimeCtx, apiListener) }()
 	}
 	if httpServer != nil {
+		warnExposed(logger, "Web", webListener.Addr(), secret)
 		logger.Info("Web listening", "address", webListener.Addr().String())
 		go func() {
 			err := httpServer.Serve(webListener)
@@ -193,4 +202,15 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		apiServer.Wait()
 	}
 	return errors.Join(serveErr, closeErr)
+}
+
+// Inspect the address actually bound by Listen, without another DNS lookup.
+func warnExposed(logger *slog.Logger, service string, address net.Addr, secret string) {
+	if secret != "" {
+		return
+	}
+	if tcp, ok := address.(*net.TCPAddr); ok && tcp.IP.IsLoopback() {
+		return
+	}
+	logger.Warn("listener exposed without authentication", "service", service, "address", address.String())
 }

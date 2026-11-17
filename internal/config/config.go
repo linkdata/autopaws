@@ -27,6 +27,7 @@ var (
 type Config struct {
 	API             string
 	Web             string
+	TokenFile       string
 	SerialDevice    string
 	SerialBaud      int
 	ScreenWidth     int

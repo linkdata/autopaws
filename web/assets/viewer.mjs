@@ -1,6 +1,12 @@
-import {mapPointer, decodeMediaMessage, createFrameGuard, createInputController}
+import {mapPointer, decodeMediaMessage, createFrameGuard, createInputController, tokenBootstrap}
   from "./viewer-helpers.mjs";
 import {createAudioPlayback} from "./audio-playback.mjs";
+
+const authentication = tokenBootstrap(location.href);
+if (authentication !== null) {
+  history.replaceState(null, "", authentication.url);
+  document.cookie = authentication.cookie;
+}
 
 const byID = id => document.getElementById(id);
 const toolbar = byID("toolbar");

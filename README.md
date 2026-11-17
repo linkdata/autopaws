@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Keyboard/mouse control, device discovery, CLI configuration, the API and MCP server, browser video/audio and optional OCR are implemented. Shared-token access and final release validation are next. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Keyboard/mouse control, device discovery, CLI configuration, the API and MCP server, browser video/audio and optional OCR are implemented. Optional shared-token access is implemented; final release validation is next. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -93,6 +93,7 @@ supported. There is no reload or SIGHUP configuration support.
 ```yaml
 api: 127.0.0.1:9329
 web: 127.0.0.1:9330
+token-file: ""
 serial-device: /dev/serial/by-id/usb-your-CH340-device
 serial-baud: 9600
 screen-width: 1280
@@ -116,6 +117,7 @@ configured paths do not have to exist while parsing configuration.
 |---|---|---|
 | `api` | empty | JSON Lines API `host:port`, or empty to disable |
 | `web` | empty | Browser viewer `host:port`, or empty to disable |
+| `token-file` | empty | UTF-8 shared-secret file for both API and web; empty disables authentication |
 | `serial-device` | empty | Serial device path; empty auto-detects CH340/CH341 |
 | `serial-baud` | `9600` | Standard rate from the supported list below |
 | `screen-width` | `1920` | Positive target coordinate width in pixels |
@@ -285,6 +287,7 @@ autopaws-mcp -api 127.0.0.1:9329
 |---|---|---|
 | `-api host:port` | `127.0.0.1:9329` | KVM API address with a numeric port from 1 through 65535 |
 | `-capture-log DIR` | empty, off | Save unchanged screenshot JPEGs in the selected directory |
+| `-token-file PATH` | empty, off | Read the API shared secret once at startup |
 | `-tesseract PATH` | search automatically | Optional Tesseract executable; an explicit missing path disables OCR |
 
 Each agent process has its own MCP session. Tools also isolate screenshot state
@@ -345,6 +348,50 @@ the original Python preprocessing. With Tesseract 5.5.0, both recognized 240 of
 241 combined characters, with identical output on all four fixtures. The
 PowerShell-style fixture is synthetic, and does not claim Windows runtime
 validation.
+
+## Security
+
+Both the API and web viewer can type on and click on the connected computer.
+Keep them bound to loopback. Browser view-only mode is a local convenience and
+does not restrict another client. `-debug-keys` logs typed text and input reports;
+leave it disabled unless those records are needed.
+
+Optional authentication uses a shared secret. Generate a 256-bit token as 64 hex
+characters and keep the file private:
+
+```sh
+umask 077
+openssl rand -hex 32 > ./autopaws.token
+```
+
+Start the daemon with `serve -token-file ./autopaws.token` (or the `token-file`
+YAML setting). Both daemon and MCP trim surrounding whitespace and read their files
+once at startup; restart them to change the secret. A configured unreadable,
+empty, or invalid UTF-8 file fails startup. Start MCP with
+`autopaws-mcp -api 127.0.0.1:9329 -token-file PATH`. Other API clients include the
+matching string in the `token` request field or use `apiclient.NewWithToken`.
+
+Open the viewer at `http://localhost:9330/#token=ENCODED_SECRET`, replacing
+ENCODED_SECRET with `encodeURIComponent(secret)`. The page removes that fragment
+and stores the secret in a session cookie before connecting. The fragment is
+never sent to the server; bootstrap assets remain public and the WebSocket requires
+the cookie. Tokens are never logged. Without a configured token, startup warns
+for each non-loopback listener using its actual bound address.
+
+The token does not encrypt traffic. For remote use, bind the daemon API to
+`127.0.0.1:9329` and web server to `127.0.0.1:9330`, then run:
+
+```sh
+ssh -L 9329:127.0.0.1:9329 -L 9330:127.0.0.1:9330 kvmhost
+```
+
+MCP connects to local port 9329; open `http://localhost:9330` in the browser
+(with the token fragment when enabled). Forward both ports. Localhost HTTP is a
+trustworthy origin for browser secure-context features, including AudioWorklet.
+Direct plain HTTP to a LAN address is not; capability checks explain unavailable
+features. Direct LAN browser audio, built-in HTTPS and supported reverse-proxy
+setups are outside v1 scope. See the [Web Audio specification](https://webaudio.github.io/web-audio-api/#audioworklet)
+and [Secure Contexts specification](https://www.w3.org/TR/secure-contexts/#is-origin-trustworthy).
 
 ## Development
 

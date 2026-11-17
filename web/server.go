@@ -11,12 +11,14 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/coder/websocket"
 	"github.com/linkdata/autopaws/capture"
 	"github.com/linkdata/autopaws/hid"
+	"github.com/linkdata/autopaws/internal/token"
 )
 
 var ErrOptions = errors.New("invalid web options")
@@ -25,6 +27,7 @@ var ErrOptions = errors.New("invalid web options")
 // Zero FPS uses 20; zero WriteTimeout uses one second. No send has an unbounded
 // application wait. Nil loggers disable their respective records.
 type Options struct {
+	Token             string
 	FPS               int
 	WriteTimeout      time.Duration
 	Logger, KeyLogger *slog.Logger
@@ -76,6 +79,17 @@ func (server *Server) ServeHTTP(output http.ResponseWriter, request *http.Reques
 	if request.URL.Path != "/ws" {
 		serveAsset(output, request)
 		return
+	}
+	if server.options.Token != "" {
+		cookie, err := request.Cookie("autopaws_token")
+		supplied := ""
+		if err == nil {
+			supplied, err = url.PathUnescape(cookie.Value)
+		}
+		if err != nil || !token.Match(server.options.Token, supplied) {
+			http.Error(output, "authentication required", http.StatusForbidden)
+			return
+		}
 	}
 	server.mu.Lock()
 	if server.closed {

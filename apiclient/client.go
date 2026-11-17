@@ -14,14 +14,19 @@ import (
 )
 
 // Client opens a fresh connection for each call. Its address is immutable, so
-// concurrent calls are independent and safe.
+// concurrent calls are independent and safe. The token is also immutable.
 type Client struct {
 	address string
+	token   string
 }
 
 // New returns a client for a TCP address such as "localhost:9329". Connections
 // are established by Call, whose context owns their complete lifetime.
-func New(address string) *Client { return &Client{address: address} }
+func New(address string) *Client { return NewWithToken(address, "") }
+
+// NewWithToken returns a client that sends token on every request. An empty token
+// preserves the unauthenticated wire format. Callers own reading any token file.
+func NewWithToken(address, token string) *Client { return &Client{address: address, token: token} }
 
 // RemoteError is a stable error code returned by the server, with optional
 // diagnostics. Use errors.Is with an apiwire.Code to test its identity.
@@ -53,8 +58,9 @@ func (client *Client) Call(ctx context.Context, method string, params, result an
 	request, err := json.Marshal(struct {
 		ID     int    `json:"id"`
 		Method string `json:"method"`
+		Token  string `json:"token,omitempty"`
 		Params any    `json:"params"`
-	}{ID: 1, Method: method, Params: params})
+	}{ID: 1, Method: method, Token: client.token, Params: params})
 	if err != nil {
 		return fmt.Errorf("encode API request: %w", err)
 	}

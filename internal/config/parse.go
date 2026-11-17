@@ -72,6 +72,7 @@ func serveFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file")
 	settings.StringVar(&cfg.API, "api", cfg.API, "API listen host:port; empty disables it (example 127.0.0.1:9329)")
 	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen host:port; empty disables it (example 127.0.0.1:9330)")
+	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; empty disables authentication")
 	settings.StringVar(&cfg.SerialDevice, "serial-device", cfg.SerialDevice, "Serial device path; empty auto-detects one CH340/CH341")
 	settings.IntVar(&cfg.SerialBaud, "serial-baud", cfg.SerialBaud, "Serial baud rate")
 	settings.IntVar(&cfg.ScreenWidth, "screen-width", cfg.ScreenWidth, "Target screen width in pixels")
