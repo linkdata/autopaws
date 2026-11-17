@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, the TCP API and the stdio MCP server are implemented. Video, OCR, audio and browser services are still being ported; capture calls, web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, the TCP API, the stdio MCP server and low-level V4L2 capture are implemented. The shared video pipeline, OCR, audio and browser services are still being ported; API capture calls, web startup and `list-devices` currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -135,6 +135,27 @@ SIGINT and SIGTERM initiate shutdown. The shared input controller stops normal
 actions and attempts release before permanently closing serial transport. The
 one-second cleanup context bounds application waits; it cannot interrupt a Linux
 driver call already executing, as described in [serial I/O and cancellation](#serial-io-and-cancellation).
+
+## V4L2 capture
+
+The Linux `v4l2` package captures MJPG through memory-mapped streaming. It requests
+a size and reports the driver's negotiated size; it leaves frame rate at the
+driver's native setting. Frames own copied bytes and retain the driver's raw
+timestamp, clock/source flags and sequence number. A monotonic timestamp is not
+a calendar time. This layer preserves compressed bytes; the shared frame
+pipeline will normalize JPEGs and provide API snapshots.
+
+`Probe` lists node capabilities and capture formats with read-only queries. It
+does not negotiate a format or start a stream. `Open` requires single-planar
+streaming capture and MJPG; unsupported formats, invalid descriptors and device
+loss have matchable errors. Cancellation wakes a parked frame read, and `Close`
+waits for active copying before unmapping. Synchronous Linux driver calls can
+outlast a context; ownership is retained until they return.
+
+Go poll registration happens after streaming starts: registering earlier can
+cache the driver's expected pre-stream `EPOLLERR` and prevent frame reads. ABI
+checks and their C-header provenance are in [v4l2/testdata](v4l2/testdata/README.md).
+Actual capture observations are recorded in [hardware validation](docs/hardware-validation.md).
 
 ## MCP server
 
