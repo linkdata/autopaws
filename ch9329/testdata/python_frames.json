@@ -1,0 +1,472 @@
+{
+  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
+  "source": "https://github.com/linkdata/serial-hid-kvm/blob/a66c6e8b2d936717fcd543319ecd339ca43ec235/src/serial_hid_kvm/hid_protocol.py",
+  "source_tests": "https://github.com/linkdata/serial-hid-kvm/blob/a66c6e8b2d936717fcd543319ecd339ca43ec235/tests/test_hid_protocol.py",
+  "python_tests_executed": 10,
+  "notes": [
+    "The first 12 keyboard vectors record every encoder invocation from the 10 original Python tests; extra keyboard and mouse cases cover boundaries.",
+    "The Python set test records its observed iteration order. Go accepts an ordered byte sequence and preserves that order.",
+    "Mouse expected bytes were exported from Python with wheel preclamped to -127..127, the deliberate Go difference in issue26. Coordinate and delta clamping are unchanged."
+  ],
+  "keyboard": [
+    {
+      "name": "test_no_keys/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [],
+      "expected_hex": "57ab00020800000000000000000c"
+    },
+    {
+      "name": "test_single_key/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        4
+      ],
+      "expected_hex": "57ab000208000004000000000010"
+    },
+    {
+      "name": "test_modifier_with_key/build_keyboard_report",
+      "modifier": 1,
+      "keycodes": [
+        6
+      ],
+      "expected_hex": "57ab000208010006000000000013"
+    },
+    {
+      "name": "test_multiple_keys/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6
+      ],
+      "expected_hex": "57ab00020800000405060000001b"
+    },
+    {
+      "name": "test_max_six_keys/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_hex": "57ab000208000004050607080933"
+    },
+    {
+      "name": "test_more_than_six_keys_truncated/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "expected_hex": "57ab000208000004050607080933"
+    },
+    {
+      "name": "test_set_input/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        26,
+        4
+      ],
+      "expected_hex": "57ab00020800001a04000000002a"
+    },
+    {
+      "name": "test_zero_keycodes_filtered/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [
+        0,
+        4
+      ],
+      "expected_hex": "57ab000208000004000000000010"
+    },
+    {
+      "name": "test_matches_single_key_packet/build_keyboard_report",
+      "modifier": 2,
+      "keycodes": [
+        40
+      ],
+      "expected_hex": "57ab000208020028000000000036"
+    },
+    {
+      "name": "test_matches_single_key_packet/build_keyboard_packet",
+      "modifier": 2,
+      "keycodes": [
+        40
+      ],
+      "expected_hex": "57ab000208020028000000000036"
+    },
+    {
+      "name": "test_release_is_empty_report/build_keyboard_release_packet",
+      "modifier": 0,
+      "keycodes": [],
+      "expected_hex": "57ab00020800000000000000000c"
+    },
+    {
+      "name": "test_release_is_empty_report/build_keyboard_report",
+      "modifier": 0,
+      "keycodes": [],
+      "expected_hex": "57ab00020800000000000000000c"
+    },
+    {
+      "name": "interspersed_zeros",
+      "modifier": 255,
+      "keycodes": [
+        0,
+        4,
+        0,
+        5,
+        6,
+        0,
+        7,
+        8,
+        0,
+        9,
+        10
+      ],
+      "expected_hex": "57ab000208ff0004050607080932"
+    },
+    {
+      "name": "duplicates_preserved",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5
+      ],
+      "expected_hex": "57ab000208000004040404040424"
+    },
+    {
+      "name": "all_zero",
+      "modifier": 255,
+      "keycodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab000208ff000000000000000b"
+    },
+    {
+      "name": "full_byte_keycodes",
+      "modifier": 255,
+      "keycodes": [
+        255,
+        254,
+        253,
+        252,
+        251,
+        250,
+        249
+      ],
+      "expected_hex": "57ab000208ff00fffefdfcfbfaf6"
+    }
+  ],
+  "mouse": [
+    {
+      "name": "origin",
+      "kind": "absolute",
+      "args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "python_args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab000407020000000000000f",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "max_position_all_buttons",
+      "kind": "absolute",
+      "args": [
+        7,
+        4095,
+        4095,
+        0
+      ],
+      "python_args": [
+        7,
+        4095,
+        4095,
+        0
+      ],
+      "expected_hex": "57ab0004070207ff0fff0f0032",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "low_x_high_y",
+      "kind": "absolute",
+      "args": [
+        1,
+        -1,
+        4096,
+        1
+      ],
+      "python_args": [
+        1,
+        -1,
+        4096,
+        1
+      ],
+      "expected_hex": "57ab00040702010000ff0f011f",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "high_x_low_y",
+      "kind": "absolute",
+      "args": [
+        2,
+        4096,
+        -1,
+        -1
+      ],
+      "python_args": [
+        2,
+        4096,
+        -1,
+        -1
+      ],
+      "expected_hex": "57ab0004070202ff0f0000ff1e",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "little_endian",
+      "kind": "absolute",
+      "args": [
+        4,
+        291,
+        2748,
+        -127
+      ],
+      "python_args": [
+        4,
+        291,
+        2748,
+        -127
+      ],
+      "expected_hex": "57ab00040702042301bc0a817e",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "wheel_high",
+      "kind": "absolute",
+      "args": [
+        0,
+        2048,
+        1024,
+        128
+      ],
+      "python_args": [
+        0,
+        2048,
+        1024,
+        127
+      ],
+      "expected_hex": "57ab0004070200000800047f9a",
+      "wheel_clamped_for_go_contract": true
+    },
+    {
+      "name": "wheel_low",
+      "kind": "absolute",
+      "args": [
+        0,
+        0,
+        0,
+        -128
+      ],
+      "python_args": [
+        0,
+        0,
+        0,
+        -127
+      ],
+      "expected_hex": "57ab0004070200000000008190",
+      "wheel_clamped_for_go_contract": true
+    },
+    {
+      "name": "extreme_coordinates",
+      "kind": "absolute",
+      "args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        9223372036854775807
+      ],
+      "python_args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        127
+      ],
+      "expected_hex": "57ab00040702ff0000ff0f7f9b",
+      "wheel_clamped_for_go_contract": true
+    },
+    {
+      "name": "still",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "python_args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab00050501000000000d",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "max_delta",
+      "kind": "relative",
+      "args": [
+        7,
+        127,
+        127,
+        127
+      ],
+      "python_args": [
+        7,
+        127,
+        127,
+        127
+      ],
+      "expected_hex": "57ab00050501077f7f7f91",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "min_delta",
+      "kind": "relative",
+      "args": [
+        1,
+        -127,
+        -127,
+        -127
+      ],
+      "python_args": [
+        1,
+        -127,
+        -127,
+        -127
+      ],
+      "expected_hex": "57ab000505010181818191",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "clamp_both",
+      "kind": "relative",
+      "args": [
+        2,
+        -128,
+        128,
+        1
+      ],
+      "python_args": [
+        2,
+        -128,
+        128,
+        1
+      ],
+      "expected_hex": "57ab0005050102817f0110",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "sign_mix",
+      "kind": "relative",
+      "args": [
+        4,
+        1,
+        -1,
+        -1
+      ],
+      "python_args": [
+        4,
+        1,
+        -1,
+        -1
+      ],
+      "expected_hex": "57ab000505010401ffff10",
+      "wheel_clamped_for_go_contract": false
+    },
+    {
+      "name": "wheel_high",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        128
+      ],
+      "python_args": [
+        0,
+        0,
+        0,
+        127
+      ],
+      "expected_hex": "57ab000505010000007f8c",
+      "wheel_clamped_for_go_contract": true
+    },
+    {
+      "name": "wheel_low",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        -128
+      ],
+      "python_args": [
+        0,
+        0,
+        0,
+        -127
+      ],
+      "expected_hex": "57ab00050501000000818e",
+      "wheel_clamped_for_go_contract": true
+    },
+    {
+      "name": "extreme_deltas",
+      "kind": "relative",
+      "args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        -9223372036854775808
+      ],
+      "python_args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        -127
+      ],
+      "expected_hex": "57ab00050501ff817f818d",
+      "wheel_clamped_for_go_contract": true
+    }
+  ],
+  "release_all_hex": [
+    "57ab00020800000000000000000c",
+    "57ab00050501000000000d"
+  ]
+}
