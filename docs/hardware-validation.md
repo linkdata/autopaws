@@ -284,3 +284,29 @@ registration and unchanged screenshot-coordinate state are covered with owned
 helper-process and real loopback MCP/API tests. No target image is part of the
 committed corpus, and the synthetic PowerShell style does not claim Windows
 runtime testing.
+
+
+## Raw ALSA development checks, 2026-11-17
+
+The explicit hardware tests selected `/dev/snd/pcmC1D0c`, the capture PCM belonging
+to MACROSILICON UGREEN 15389 on USB path `4-1`. `/proc/asound` identified one USB
+capture substream; no other process held it at test start, so no PipeWire or
+WirePlumber configuration change was needed.
+
+- Negotiation returned S16_LE, 48,000 Hz, two channels, 960-frame/20 ms periods
+  and a 7,680-frame/160 ms kernel buffer. At least 12,480 frames were read with
+  owned PCM bytes and positive monotonic first-sample timestamp estimates.
+- A second nonblocking open returned the matchable busy error in 231.913 µs,
+  within the 100 ms acceptance bound.
+- DROP and joined descriptor shutdown completed in 1.078 ms on this hardware.
+  This observation does not impose a universal bound on Linux driver calls.
+- Deliberately stalling the real reader beyond its kernel buffer produced one
+  overrun. PREPARE recovered capture, incremented the generation from 2 to 3,
+  flushed old samples and delivered a new-generation block.
+
+Fake-kernel tests separately cover terminal notification while close retains
+ownership, cancellation between read admission and DROP, suspend recovery,
+100 ms period usability, exact stale-expiry boundaries, duration queue bounds and
+subscriber independence. GCC measurements verify 89 LP64 UAPI values on amd64;
+arm64 is cross-built, with no claim of separate ARM hardware execution. Browser
+playback, end-to-end timing and the ten-minute audio run remain separate checks.
