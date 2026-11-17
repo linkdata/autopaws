@@ -5,3 +5,5 @@ The target machine's access credentials are stored in `~/autopaws.txt` on the de
 The target machine is dedicated to testing and contains no sensitive data or credentials. You may reboot or reinstall it whenever needed for development or testing.
 
 The existing Python tools, `serial-hid-kvm` and `mcp-serial-hid-kvm`, are available on `PATH`. You may use them during development to test functionality while porting the projects to Go.
+
+The `claude` CLI is available on `PATH`. You may use Claude as an adversarial reviewer during development.
