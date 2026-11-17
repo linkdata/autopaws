@@ -10,20 +10,28 @@ import (
 	"net"
 
 	"github.com/linkdata/autopaws/api"
+	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/devices"
 	"github.com/linkdata/autopaws/hid"
 	"github.com/linkdata/autopaws/internal/config"
 	"github.com/linkdata/autopaws/serial"
 )
 
 type runtimeFactories struct {
-	newTransport func(serial.Options) (hid.Transport, error)
-	listen       func(context.Context, string, string) (net.Listener, error)
+	newTransport    func(serial.Options) (hid.Transport, error)
+	listen          func(context.Context, string, string) (net.Listener, error)
+	newCapture      func(capture.Options) (*capture.Manager, error)
+	discoverCapture func(context.Context) ([]devices.VideoDevice, error)
 }
 
 func serveRuntime(ctx context.Context, cfg config.Config, output io.Writer) error {
 	return serveWith(ctx, cfg, output, runtimeFactories{
 		newTransport: func(options serial.Options) (hid.Transport, error) { return serial.New(options) },
 		listen:       (&net.ListenConfig{}).Listen,
+		newCapture:   capture.New,
+		discoverCapture: func(ctx context.Context) ([]devices.VideoDevice, error) {
+			return devices.DiscoverVideo(ctx, devices.Options{})
+		},
 	})
 }
 
@@ -53,17 +61,42 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	if err != nil {
 		return errors.Join(err, controller.Close())
 	}
+	var video *capture.Manager
+	if factories.newCapture != nil {
+		selected := cfg.CaptureDevice
+		if selected == "" && factories.discoverCapture != nil {
+			found, err := factories.discoverCapture(ctx)
+			if err != nil {
+				logger.Warn("capture discovery failed", "error", err)
+			} else if device, err := devices.SelectVideo(found); err == nil {
+				selected = device.Path
+			}
+		}
+		video, err = factories.newCapture(capture.Options{
+			Device: selected, Width: uint32(cfg.CaptureWidth), Height: uint32(cfg.CaptureHeight), Autocrop: cfg.Autocrop,
+		})
+		if err != nil {
+			return errors.Join(fmt.Errorf("create capture manager: %w", err), controller.Close())
+		}
+	}
+	closeVideo := func() error {
+		if video != nil {
+			return video.Close()
+		}
+		return nil
+	}
 	runtimeCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	listener, err := factories.listen(runtimeCtx, "tcp", cfg.API)
 	if err != nil {
-		return errors.Join(fmt.Errorf("listen API: %w", err), controller.Close())
+		return errors.Join(fmt.Errorf("listen API: %w", err), controller.Close(), closeVideo())
 	}
 	server := api.New(keyboard, mouse, api.Options{
 		SerialDevice: cfg.SerialDevice, SerialBaud: cfg.SerialBaud,
 		ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
 		KeyboardLayout: cfg.TargetLayout, ButtonMode: cfg.MouseButtonMode,
 		Logger: logger, KeyLogger: keys,
+		Capture: video, DiscoverCapture: factories.discoverCapture,
 	})
 	logger.Info("API listening", "address", listener.Addr().String())
 	served := make(chan error, 1)
@@ -76,10 +109,14 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	case <-ctx.Done():
 	}
 	cancel()
+	// Both hardware owners start shutdown before either can wait inside a
+	// synchronous kernel operation. Every cleanup goroutine is joined below.
+	videoClosed := make(chan error, 1)
+	go func() { videoClosed <- closeVideo() }()
 	closeErr := controller.Close()
 	if !finished {
 		serveErr = <-served
 	}
 	server.Wait()
-	return errors.Join(serveErr, closeErr)
+	return errors.Join(serveErr, closeErr, <-videoClosed)
 }

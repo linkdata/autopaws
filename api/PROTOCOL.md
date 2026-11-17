@@ -8,7 +8,7 @@ unsupported. CRLF is accepted as JSON trailing whitespace plus LF.
 Request lines may contain at most 1 MiB (1048576 bytes), **including LF**. An
 oversized line gets `request too large` and the connection closes. An unterminated
 fragment is not executed. The Go client accepts response lines up to 64 MiB
-(67108864 bytes), including LF, to accommodate future base64 JPEG replies.
+(67108864 bytes), including LF, to accommodate base64 JPEG replies.
 
 ```json
 {"id":1,"method":"send_key","params":{"key":"enter"}}
@@ -122,33 +122,89 @@ not a claim that the device is connected:
     "screen_width":1920,"screen_height":1080,"keyboard_layout":"us104",
     "serial_baud":9600,"mouse_button_mode":"absolute"
   },
-  "capture":{"error":"unavailable"}
+  "capture":{
+    "device":"","requested_width":1920,"requested_height":1080,
+    "autocrop":true,"running":false,"generation":1,
+    "available_devices":[],"error":"unavailable"
+  }
 }
 ```
 
-Capture methods are registered now and return `unavailable` after validating their
-parameter shapes. The frame pipeline will supply their operational behavior:
+Capture methods share the daemon's frame pipeline:
 
-| Method | Parameters | Current result / later contract |
+| Method | Parameters | Successful result |
 |---|---|---|
-| `capture_frame` | none | Currently unavailable; later `{"jpeg_b64":"...","width":W,"height":H}` |
-| `list_capture_devices` | none | Currently unavailable; later a `devices` array, empty when none exist |
-| `set_capture_device` | nonempty string `device` path, not a signed/unsigned numeric index | Currently unavailable; later selects a device even when none is open |
-| `set_capture_resolution` | integer `width`, `height`, each 1…4294967295 | Currently unavailable; later updates the selected device's requested size |
+| `capture_frame` | none | `{"jpeg_b64":"...","width":W,"height":H}` |
+| `list_capture_devices` | none | `{"devices":[...]}`, empty when none exist |
+| `set_capture_device` | nonempty string `device` path, not a signed/unsigned numeric index | Capture-status object after selecting a device |
+| `set_capture_resolution` | integer `width`, `height`, each 1…4294967295 | Capture-status object after updating the requested size |
 
-A future snapshot must be captured after its request arrived. Its five-second
-server deadline includes startup and corrupt-frame warm-up; an earlier caller
-cancellation wins. No valid fresh frame yields `timeout`; device loss or no selected
-device yields `unavailable`. Changing the selected device or resolution cancels
-pending old-generation snapshots with `capture changed`, without silently moving
-them to the new generation.
+A snapshot requires a successfully decoded frame whose `CLOCK_MONOTONIC` capture
+timestamp is after its request arrived. Its five-second acquisition deadline
+includes startup and corrupt-frame warmup; an earlier caller cancellation wins.
+No valid fresh frame yields `timeout`; device loss, no selected device or an
+unsupported timestamp clock yields `unavailable`. There is no stale-frame
+fallback. Acquisition can finish while an owned kernel operation is still
+returning; daemon teardown retains ownership and joins it. Capture timing does
+not establish that the target application has processed earlier input or that
+HDMI content has stabilized.
+
+Snapshot bytes are normalized MJPEG with any detected crop applied. Uncropped
+images pass through after full-decode validation; cropped images use one cached
+quality-85 encode. Width/height describe the returned image, which can differ
+from both requested capture size and configured target coordinates. There is no
+quality parameter. Capture starts on demand and stops after ten idle seconds.
+
+Every device or resolution change accepted by a setter increments the settings
+generation, flushes queued old frames and resets crop detection. Pending
+old-generation snapshots fail with `capture changed`; callers retry explicitly.
+Idle/retry opens of unchanged settings retain that generation. A device selection
+is accepted even with no source open, and a failed open preserves that selection.
 
 An idle capture device is not unavailable merely because streaming is stopped.
 Resolution changes remain available while idle or after a previous open failed.
 Store the requested size for the next start or reopen for active subscribers; a
 failed reopen is reported while selection/settings remain repairable. No selected
-device means resolution changes return `unavailable`. These operational checks
-arrive with the frame pipeline; the current stubs do not simulate device state.
+device means resolution changes return `unavailable`. Missing capture hardware
+and discovery failures leave HID input and device selection usable.
+
+Each listed device has this shape; format order is the driver's order:
+
+```json
+{
+  "device":"/dev/video0","name":"UGREEN",
+  "formats":[{"fourcc":1196444237,"description":"Motion-JPEG","flags":1}],
+  "usb":{"vid":"2b89","pid":"5389","bus_path":"/sys/devices/example/usb4/4-1"}
+}
+```
+
+FourCC and format flags are numeric unsigned 32-bit values, retaining big-endian
+format bits. Format lists are arrays, including when empty. Non-USB devices use
+empty USB strings. Discovery uses numeric node order and node-specific capture
+capabilities, omitting metadata nodes. Listing performs read-only queries without
+starting a stream. Probe/permission failures are errors rather than an empty list.
+
+With a selected device, capture status has this shape. Successful setters return
+this object directly; `get_device_info` places it under `capture`:
+
+```json
+{
+  "device":"/dev/video0","requested_width":1920,"requested_height":1080,
+  "autocrop":true,"running":true,"generation":3,
+  "format":{"width":1920,"height":1080,"fourcc":1196444237,"bytes_per_line":0,"size_image":4147200},
+  "available_devices":[]
+}
+```
+
+`format` is omitted until a negotiated format is known. It describes the actual
+source format independently of requested settings and cropped snapshot size.
+Selected metadata comes from one manager state; `available_devices` is a separate
+discovery refresh and remains an array. A closed/missing/failed source or
+incomplete discovery adds stable `error` and optional diagnostic `detail`, while
+retaining selected/requested settings. A selected idle device is available while
+`running` is false. `get_device_info` remains an overall success when capture is
+unavailable. A standalone API server without a capture manager retains the
+minimal `{"error":"unavailable"}` capture object.
 
 ## Stable errors and logs
 
@@ -160,10 +216,10 @@ arrive with the frame pipeline; the current stubs do not simulate device state.
 | `invalid params` | Missing, wrong-type or out-of-range input |
 | `unsupported character` | A text/key character is absent from the target layout |
 | `canceled` | Request context was cancelled |
-| `timeout` | Context deadline; later snapshot freshness deadline |
+| `timeout` | Context deadline or snapshot acquisition deadline |
 | `unavailable` | Service/device unavailable, disconnected or closing |
 | `device busy` | Another cooperating process owns the serial port |
-| `capture changed` | Reserved for a snapshot cancelled by capture selection/resolution change |
+| `capture changed` | Pending snapshot cancelled by a capture selection/resolution change |
 
 The optional `detail` contains diagnostics, including the unsupported rune's
 position and cleanup errors. Match the stable code, not the detail text.

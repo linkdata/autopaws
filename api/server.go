@@ -16,11 +16,15 @@ import (
 	"sync"
 
 	"github.com/linkdata/autopaws/apiwire"
+	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/devices"
 	"github.com/linkdata/autopaws/hid"
 )
 
 // Options supplies configured device information and independent request/key
 // loggers. Nil loggers disable their records. This does not probe serial devices.
+// Capture is a shared manager owned by the caller. A nil manager/discovery hook
+// leaves that service unavailable; no implicit hardware discovery is performed.
 type Options struct {
 	SerialDevice              string
 	SerialBaud                int
@@ -28,6 +32,8 @@ type Options struct {
 	KeyboardLayout            string
 	ButtonMode                string
 	Logger, KeyLogger         *slog.Logger
+	Capture                   *capture.Manager
+	DiscoverCapture           func(context.Context) ([]devices.VideoDevice, error)
 }
 
 type handler func(context.Context, json.RawMessage) (any, error)

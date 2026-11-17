@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server and low-level V4L2 capture are implemented. The shared video pipeline, OCR, audio and browser services are still being ported; API capture calls and web startup currently report unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server and the shared video pipeline are implemented. OCR, audio and browser services are still being ported; web startup currently reports unavailable. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -160,7 +160,7 @@ a size and reports the driver's negotiated size; it leaves frame rate at the
 driver's native setting. Frames own copied bytes and retain the driver's raw
 timestamp, clock/source flags and sequence number. A monotonic timestamp is not
 a calendar time. This layer preserves compressed bytes; the shared frame
-pipeline will normalize JPEGs and provide API snapshots.
+pipeline normalizes JPEGs and provides API snapshots.
 
 `Probe` lists node capabilities and capture formats with read-only queries. It
 does not negotiate a format or start a stream. `Open` requires single-planar
@@ -173,6 +173,30 @@ Go poll registration happens after streaming starts: registering earlier can
 cache the driver's expected pre-stream `EPOLLERR` and prevent frame reads. ABI
 checks and their C-header provenance are in [v4l2/testdata](v4l2/testdata/README.md).
 Actual capture observations are recorded in [hardware validation](docs/hardware-validation.md).
+
+The `capture` package shares one producer between subscriptions and snapshots.
+Capture starts on demand and stops after ten seconds with neither subscribers
+nor pending snapshots. A snapshot waits for a successfully decoded frame whose
+`CLOCK_MONOTONIC` capture timestamp is later than the request. Its total
+five-second acquisition deadline includes startup and corrupt warmup; an earlier
+caller cancellation wins. There is no stale-frame fallback. This establishes
+capture timing, rather than whether the target application has finished reacting
+to preceding input or whether the HDMI source has stabilized.
+
+Every frame has JPEG padding removed and missing standard Huffman tables repaired.
+With autocrop enabled, the producer detects black borders on the first decodable
+frame, every thirtieth frame and a requested snapshot while no crop is known.
+The detector uses luma greater than 20, a border of at least four pixels and at
+least 64 active rows and columns. Snapshots apply a detected crop with one cached
+quality-85 encode; uncropped snapshots return the normalized device JPEG. Decodes
+and cropped encodes are shared across requests for that frame.
+
+Selecting a device or resolution starts a new settings generation, clears old
+queued frames/crop information and returns `capture changed` to pending old
+snapshots. Idle or failed-open settings remain repairable without restarting the
+daemon. Missing capture hardware leaves keyboard and mouse usable. Initial valid
+black/noisy HDMI acquisition pictures are possible on the tested card; another
+capture can observe the established picture without restarting the warm source.
 
 ## MCP server
 
@@ -208,8 +232,8 @@ or drag. Both screenshot endpoints map to the target endpoints, including croppe
 or scaled images; a one-pixel image or target axis maps to zero. Relative deltas
 remain unscaled and a click at the current pointer needs no screenshot. A capture
 device/resolution change attempt invalidates the old screenshot even when the API
-reports failure. Capture support becomes available with the frame pipeline; the
-keyboard, relative-movement and current-pointer tools work through the API now.
+reports failure. Screenshots use the shared pipeline's fresh, optionally cropped
+JPEG; MCP returns those bytes unchanged.
 
 Cancelling a tool or closing its MCP connection closes the active API call,
 allowing the daemon to finish its release-only cleanup. Complete input actions
@@ -291,12 +315,13 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 - `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
 - `devices/`: Linux serial, video and audio inventory and USB-path selection.
 - `v4l2/`: Linux MJPG streaming capture, timestamps and read-only format probes.
+- `capture/`: shared video lifecycle, fresh snapshots, JPEG normalization and crop metadata.
 - `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
 - `api/`: Linux daemon API handlers and TCP connection lifecycle.
 - `apiwire/`: portable envelopes, stable error identities and bounded line framing.
 - `apiclient/`: portable API client, independent of daemon/Linux packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
-- Further library packages are added with their implementation issues: `capture`, `web` and `alsa`.
+- Further library packages are added with their implementation issues: `web` and `alsa`.
 - `research/`: throwaway feasibility prototypes for serial, V4L2 capture, ALSA audio and WebSocket. Each is its own Go module. They are reference material for the rewrite and are deleted once the matching package lands.
 
 ## License
