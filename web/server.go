@@ -6,7 +6,7 @@ package web
 import (
 	"bytes"
 	"context"
-	_ "embed"
+	"embed"
 	"errors"
 	"fmt"
 	"io"
@@ -140,20 +140,9 @@ func (server *Server) Close() {
 // Wait may be called after Close, when no new connection worker can be admitted.
 func (server *Server) Wait() { server.workers.Wait() }
 
-//go:embed assets/index.html
-var indexHTML []byte
-
-//go:embed assets/app.js
-var pageJS []byte
-
-//go:embed assets/manifest.json
-var manifest []byte
-
-//go:embed assets/sw.js
-var serviceWorker []byte
-
-//go:embed assets/icon.svg
-var icon []byte
+//go:embed assets/index.html assets/viewer.mjs assets/viewer-helpers.mjs assets/viewer.css
+//go:embed assets/manifest.json assets/sw.js assets/icon.svg
+var pageAssets embed.FS
 
 func serveAsset(output http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet && request.Method != http.MethodHead {
@@ -161,17 +150,21 @@ func serveAsset(output http.ResponseWriter, request *http.Request) {
 		http.Error(output, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	data, contentType := indexHTML, "text/html; charset=utf-8"
-	switch request.URL.Path {
-	case "/app.js":
-		data, contentType = pageJS, "text/javascript; charset=utf-8"
+	path, contentType := request.URL.Path, "text/html; charset=utf-8"
+	switch path {
+	case "/viewer.mjs", "/viewer-helpers.mjs", "/sw.js":
+		contentType = "text/javascript; charset=utf-8"
+	case "/viewer.css":
+		contentType = "text/css; charset=utf-8"
 	case "/manifest.json":
-		data, contentType = manifest, "application/manifest+json"
-	case "/sw.js":
-		data, contentType = serviceWorker, "text/javascript; charset=utf-8"
+		contentType = "application/manifest+json"
 	case "/icon.svg":
-		data, contentType = icon, "image/svg+xml"
+		contentType = "image/svg+xml"
+	default:
+		path = "/index.html"
 	}
+	// Every selected path is an explicit compile-time embed match above.
+	data, _ := pageAssets.ReadFile("assets" + path)
 	output.Header().Set("Content-Type", contentType)
 	http.ServeContent(output, request, "", time.Time{}, bytes.NewReader(data))
 }

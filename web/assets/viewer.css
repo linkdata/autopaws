@@ -1,0 +1,36 @@
+:root { color-scheme: dark; font: 14px/1.4 system-ui, sans-serif; background: #080c12; color: #e2e8f0; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; }
+button { font: inherit; color: inherit; background: #202b3c; border: 1px solid #40516a; border-radius: 6px; padding: 6px 10px; white-space: nowrap; cursor: pointer; }
+button:hover:not(:disabled) { background: #32425b; }
+button:focus-visible, summary:focus-visible { outline: 2px solid #67e8f9; outline-offset: 3px; }
+button[aria-pressed="true"] { border-color: #5eead4; background: #164e4a; }
+button:disabled { opacity: .4; cursor: default; }
+.toolbar { position: fixed; z-index: 3; top: 12px; left: 12px; max-width: calc(100vw - 24px); display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 8px 10px; border: 1px solid #364760; border-radius: 10px; background: #111b2bee; box-shadow: 0 4px 20px #0007; transition: opacity .16s, transform .16s; }
+.toolbar.is-hidden { opacity: 0; transform: translateY(-18px); pointer-events: none; }
+.handle { cursor: grab; touch-action: none; padding: 3px 6px; color: #94a3b8; border-color: transparent; background: transparent; font-size: 20px; line-height: 1; }
+.handle:active { cursor: grabbing; }
+.brand { letter-spacing: -.025em; font-size: 16px; margin-right: 2px; }
+.status { color: #fbbf24; font-size: 12px; }
+.status.connected { color: #5eead4; }
+.status.disconnected { color: #fda4af; }
+.fps { font-variant-numeric: tabular-nums; color: #94a3b8; font-size: 12px; min-width: 38px; }
+.divider { height: 22px; border-left: 1px solid #40516a; margin: 0 2px; }
+#viewport { position: fixed; inset: 78px 12px 12px; overflow: hidden; outline: none; }
+#viewport.native-size { overflow: auto; }
+#screen { position: relative; display: block; background: #000; touch-action: none; user-select: none; }
+.message { position: fixed; z-index: 1; inset: 50% 16px auto; text-align: center; color: #94a3b8; pointer-events: none; }
+.message[hidden] { display: none; }
+.capabilities { position: fixed; z-index: 4; right: 12px; bottom: 12px; max-width: min(430px, calc(100vw - 24px)); padding: 7px 10px; border: 1px solid #40516a; border-radius: 8px; background: #111b2bf5; font-size: 12px; color: #b8c7dc; }
+.capabilities summary { cursor: pointer; }
+.capabilities ul { padding-left: 18px; margin: 8px 0 2px; }
+.capabilities li + li { margin-top: 6px; }
+body.fullscreen #viewport { inset: 0; }
+body.fullscreen .capabilities:not([open]) { opacity: .65; }
+@media (max-width: 700px) {
+  .toolbar { gap: 5px; top: 6px; left: 6px; max-width: calc(100vw - 12px); padding: 6px; }
+  button { padding: 5px 7px; font-size: 12px; }
+  .brand { font-size: 14px; }
+  .divider { display: none; }
+  #viewport { inset: 106px 6px 6px; }
+}

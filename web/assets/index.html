@@ -1,2 +1,36 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="/manifest.json"><title>autopaws</title><h1>autopaws</h1><p>Remote keyboard, mouse and video.</p><script type="module" src="/app.js"></script></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>autopaws</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/viewer.css">
+</head>
+<body>
+  <header id="toolbar" class="toolbar" aria-label="KVM controls">
+    <button id="toolbar-handle" class="handle" title="Drag to move toolbar; arrow keys also move it" aria-label="Move toolbar">⠿</button>
+    <strong class="brand">autopaws</strong>
+    <span id="status" class="status" role="status" aria-live="polite">Connecting…</span>
+    <span id="fps" class="fps" aria-label="Rendered frame rate">0 fps</span>
+    <span class="divider" aria-hidden="true"></span>
+    <button id="ctrl-alt-del" title="Send Ctrl+Alt+Delete to the target" disabled>Ctrl+Alt+Del</button>
+    <button id="alt-tab" title="Send Alt+Tab to the target" disabled>Alt+Tab</button>
+    <button id="view-only" aria-pressed="false" title="Stop sending keyboard and mouse input">View only</button>
+    <button id="cursor" aria-pressed="true" title="Show or hide the local cursor">Cursor</button>
+    <button id="scaling" aria-pressed="false" title="Switch between fit and original pixel size">Fit</button>
+    <button id="fullscreen" aria-pressed="false">Fullscreen</button>
+  </header>
+  <main id="viewport" tabindex="0" aria-label="Target screen. Click to send keyboard input.">
+    <canvas id="screen" width="1" height="1" aria-label="Target video">Live target screen.</canvas>
+  </main>
+  <div id="message" class="message" role="status">Connecting to the KVM…</div>
+  <details id="capabilities" class="capabilities" hidden>
+    <summary>Browser capabilities</summary>
+    <ul id="capability-list"></ul>
+  </details>
+  <script type="module" src="/viewer.mjs"></script>
+</body>
+</html>
