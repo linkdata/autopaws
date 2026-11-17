@@ -1,0 +1,8 @@
+# Target layout overrides on the US104 base. See ../../CREATING_LAYOUTS.md.
+overrides:
+  "\"": ["shift", "0x1F"]
+  "#": ["none", "0x31"]
+  "@": ["shift", "0x34"]
+  "\\": ["none", "0x64"]
+  "|": ["shift", "0x64"]
+  "~": ["shift", "0x31"]

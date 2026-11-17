@@ -14,4 +14,6 @@ The `claude` CLI is available on `PATH`. You may use Claude as an adversarial re
 
 Use Claude sparingly: critique changes yourself until the final review round. If Claude's usage credits run out, continue self-reviewing until they refill. When using Claude, use streaming mode so you can monitor its progress.
 
+Install CI tooling locally. After the final edits, run `actionlint` and the complete local CI gate documented in the README. They must pass before pushing changes or manually starting GitHub Actions.
+
 Unless otherwise specified, changes require two consecutive clean reviews before merging. A clean review reports no defects or suggested simplifications. Address any findings and restart the count. Security defects are out of scope for reviews during the current porting stage.

@@ -1,0 +1,74 @@
+{
+  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
+  "modifier_aliases": {
+    "ctrl": 1,
+    "lctrl": 1,
+    "rctrl": 16,
+    "shift": 2,
+    "lshift": 2,
+    "rshift": 32,
+    "alt": 4,
+    "lalt": 4,
+    "ralt": 64,
+    "win": 8,
+    "lwin": 8,
+    "rwin": 128,
+    "gui": 8,
+    "super": 8,
+    "meta": 8
+  },
+  "special_key_aliases": {
+    "enter": 40,
+    "return": 40,
+    "escape": 41,
+    "esc": 41,
+    "backspace": 42,
+    "tab": 43,
+    "space": 44,
+    "capslock": 57,
+    "f1": 58,
+    "f2": 59,
+    "f3": 60,
+    "f4": 61,
+    "f5": 62,
+    "f6": 63,
+    "f7": 64,
+    "f8": 65,
+    "f9": 66,
+    "f10": 67,
+    "f11": 68,
+    "f12": 69,
+    "printscreen": 70,
+    "scrolllock": 71,
+    "pause": 72,
+    "insert": 73,
+    "home": 74,
+    "pageup": 75,
+    "delete": 76,
+    "end": 77,
+    "pagedown": 78,
+    "right": 79,
+    "left": 80,
+    "down": 81,
+    "up": 82,
+    "numlock": 83
+  },
+  "special_lookup": [
+    {
+      "input": "0x87",
+      "keycode": 135
+    },
+    {
+      "input": "0X2c",
+      "keycode": 44
+    },
+    {
+      "input": "0x100",
+      "keycode": null
+    },
+    {
+      "input": "0x",
+      "keycode": null
+    }
+  ]
+}
