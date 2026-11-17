@@ -92,6 +92,10 @@ func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *
 	addTool(server, owner, "list_capture_devices", "List capture devices available to the daemon.", true, owner.listCaptureDevices)
 	addTool(server, owner, "set_capture_device", "Select a capture device by path. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureDevice)
 	addTool(server, owner, "set_capture_resolution", "Set a positive capture width and height. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureResolution)
+	if options.TesseractPath != "" {
+		addTool(server, owner, "get_screen_text", "Capture the current target screen and extract English text with local Tesseract OCR. Prefer this to an image for terminal text. Does not establish screenshot coordinates for mouse actions.", true, owner.getScreenText)
+		addTool(server, owner, "execute_and_read", "Type command plus Enter in one raw keyboard action, wait for output, then capture a fresh frame and extract English text with local Tesseract OCR. The wait is cancellable, defaults to 1 second and accepts 0 through 60 seconds; a fresh frame does not prove the command has completed. Does not establish screenshot coordinates.", false, owner.executeAndRead)
+	}
 	return server
 }
 

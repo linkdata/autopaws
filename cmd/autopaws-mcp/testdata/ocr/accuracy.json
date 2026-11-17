@@ -1,0 +1,34 @@
+[
+  {
+    "Name": "linux-console",
+    "GoText": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+    "PythonText": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+    "Expected": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+    "GoErrors": 0,
+    "PythonErrors": 0
+  },
+  {
+    "Name": "dark-terminal",
+    "GoText": "agent@Linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+    "PythonText": "agent@Linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+    "Expected": "agent@linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+    "GoErrors": 1,
+    "PythonErrors": 1
+  },
+  {
+    "Name": "light-terminal",
+    "GoText": "user@host:~$ uname\nLinux\nCapture stream ready",
+    "PythonText": "user@host:~$ uname\nLinux\nCapture stream ready",
+    "Expected": "user@host:~$ uname\nLinux\nCapture stream ready",
+    "GoErrors": 0,
+    "PythonErrors": 0
+  },
+  {
+    "Name": "powershell-style",
+    "GoText": "PS C:\\Autopaws\u003e Write-Output hello\nhello autopaws\nStatus: Ready",
+    "PythonText": "PS C:\\Autopaws\u003e Write-Output hello\nhello autopaws\nStatus: Ready",
+    "Expected": "PS C:\\Autopaws\u003e Write-Output hello\nhello autopaws\nStatus: Ready",
+    "GoErrors": 0,
+    "PythonErrors": 0
+  }
+]

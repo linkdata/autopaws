@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "description": "Controlled text rendered with a public font; no target screenshots or credentials. PowerShell is a visual style, not Windows runtime validation.",
+  "font": "LiberationMono-Regular.ttf",
+  "font_sha256": "d18235f1e874771f4eaec3ddd6ddb4db849d334bdc6930c5c2185d9344834e62",
+  "font_size": 24,
+  "pillow_version": "13.0.0",
+  "original_ocr_source_sha256": "d09462a04d83c145401129ca040dad72785ac71a7eb46c20ed03aed9b152d40a",
+  "tesseract_version": "tesseract 5.5.0"
+}

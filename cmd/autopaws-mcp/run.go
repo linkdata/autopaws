@@ -23,6 +23,7 @@ type mcpOptions struct {
 	CaptureLogDir string
 	Version       string
 	Logger        *slog.Logger
+	TesseractPath string
 }
 
 func run(ctx context.Context, args []string, transport mcp.Transport, stdout, stderr io.Writer) int {
@@ -31,6 +32,8 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	flags.SetOutput(io.Discard)
 	flags.StringVar(&options.APIAddress, "api", "127.0.0.1:9329", "KVM API host:port (numeric port 1..65535)")
 	flags.StringVar(&options.CaptureLogDir, "capture-log", "", "Save unchanged screenshot JPEGs in DIR; empty disables logging")
+	var requestedTesseract string
+	flags.StringVar(&requestedTesseract, "tesseract", "", "Tesseract executable; empty searches PATH and Windows install directories")
 	usage := func(output io.Writer) {
 		fmt.Fprintln(output, "Usage: autopaws-mcp [flags]")
 		flags.SetOutput(output)
@@ -58,6 +61,11 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 		return 0
 	}
 	options.Logger = slog.New(slog.NewTextHandler(stderr, nil))
+	var err error
+	options.TesseractPath, err = resolveTesseract(requestedTesseract)
+	if err != nil {
+		options.Logger.Warn("OCR tools disabled: Tesseract unavailable", "error", err)
+	}
 	server := newServer(ctx, options, apiclient.New(options.APIAddress))
 	if err := server.Run(ctx, transport); err != nil {
 		if ctx.Err() != nil && errors.Is(err, ctx.Err()) {

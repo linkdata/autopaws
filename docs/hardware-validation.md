@@ -262,3 +262,25 @@ With the real CH340 transport at 9600 baud, 120 complete warm absolute moves too
 17.516 ms (60.18 moves/second). The browser sends coalesced movement at 30 Hz,
 leaving serial capacity for keys and button transitions. This is a measured
 configuration choice, not a universal transport throughput guarantee.
+
+
+## MCP OCR development check, 2026-11-17
+
+The OCR-enabled static MCP command connected over stdio to the real daemon API
+and UGREEN HDMI capture source, with local Tesseract 5.5.0. It offered fourteen
+tools and called the read-only `get_screen_text`; no keyboard or mouse event was
+sent. After the card's initial acquisition frames, the third fresh capture read
+the controlled target's `INPUT TEST` heading, 1280×720/DPR1 viewport and all seven
+recorded mouse events. Recognition completed 4.709 seconds after the first OCR
+request; the initial two valid acquisition pictures returned empty text. This
+observes the existing HDMI acquisition behavior rather than imposing a content
+filter or startup delay. MCP stdin EOF and daemon SIGTERM both exited zero.
+
+The required controlled corpus additionally compares four generated image styles
+against the original Python preprocessing. Both produced identical recognized
+text with Tesseract 5.5.0, scoring 240/241 characters by the documented edit
+metric. Process cancellation/timeout/reaping, command ordering and waits, optional
+registration and unchanged screenshot-coordinate state are covered with owned
+helper-process and real loopback MCP/API tests. No target image is part of the
+committed corpus, and the synthetic PowerShell style does not claim Windows
+runtime testing.
