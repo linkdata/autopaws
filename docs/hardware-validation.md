@@ -11,7 +11,8 @@ gate by themselves.
 - Dedicated Linux target running GNOME and Firefox. Exact versions remain to be
   recorded during release validation.
 - UGREEN U15389/MACROSILICON HDMI capture, `2b89:5389`, `/dev/video0`.
-- Fullscreen target-browser viewport: 1280×720, device pixel ratio 1. Reference
+- Mirrored or single target display, as confirmed by the owner. Fullscreen
+  target-browser viewport: 1280×720, device pixel ratio 1. Reference
   capture: MJPG at 1920×1080, 30 fps, scaling that target image.
 - The Go keyboard opened a local `data:text/html` event recorder. No credentials
   or application data were entered. A temporary host HTTP page was unreachable

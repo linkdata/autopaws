@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core packages are being ported; the command binaries are stubs and do not control hardware yet. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Keyboard/mouse control and CLI configuration are implemented; API, MCP and media service startup is still being ported. `serve` and `list-devices` report unavailable until their runtime issues land. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -22,6 +22,111 @@ The rewrite is underway. Core packages are being ported; the command binaries ar
 - The same hardware as serial-hid-kvm: a CH9329 behind a CH340/CH341 USB-UART, and UVC HDMI capture cards with their USB audio.
 - Targets can run any OS. The CH9329 appears to them as a standard USB keyboard and mouse.
 - No compatibility with the Python projects' command lines, configuration or wire formats.
+
+## Commands and configuration
+
+The command line is independent of the Python tools. Use a subcommand:
+
+```sh
+autopaws-kvm version
+autopaws-kvm serve -help
+autopaws-kvm list-devices -help
+```
+
+`serve` requires an API address, a web address, or both. Each address includes a
+numeric port. Empty addresses disable that listener; neither is enabled by
+default. For example, the intended API/web configuration is:
+
+```sh
+autopaws-kvm serve -api 127.0.0.1:9329 -web 127.0.0.1:9330 -mouse-button-mode relative
+```
+
+Command help and `version` work without attached hardware or a configuration file.
+Help exits 0; unknown commands, malformed flags and invalid configuration exit 2.
+A runtime startup failure exits 1.
+
+### Precedence and files
+
+Built-in defaults are replaced by the explicitly selected YAML file, then by
+explicit command-line flags. There are no environment overrides or automatic
+configuration-file searches. Select exactly the file you intend to use:
+
+```sh
+autopaws-kvm serve -config ./autopaws.yaml -web-fps 30
+```
+
+Explicit false, empty and zero values override the file too. For example,
+`-autocrop=false` disables a file's enabled setting and `-web=` disables its web
+listener. Boolean flag values use `=false` or `=true`; a separate trailing word
+such as `-autocrop false` is an error. Flags belong after their subcommand.
+
+The file is one YAML mapping. Unknown or duplicate keys, null values, wrong value
+types, an empty file and extra YAML documents are errors. Omitted keys retain
+their defaults. Values must be scalars; YAML aliases and merge keys are not
+supported. There is no reload or SIGHUP configuration support.
+
+```yaml
+api: 127.0.0.1:9329
+web: 127.0.0.1:9330
+serial-device: /dev/serial/by-id/usb-your-CH340-device
+serial-baud: 9600
+screen-width: 1280
+screen-height: 720
+target-layout: us104
+mouse-button-mode: relative
+capture-width: 1920
+capture-height: 1080
+autocrop: true
+audio-device: ""
+log-level: info
+debug-keys: false
+```
+
+### Serve settings
+
+Flag names and YAML keys match. Empty device settings select automatic discovery;
+configured paths do not have to exist while parsing configuration.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `api` | empty | JSON Lines API `host:port`, or empty to disable |
+| `web` | empty | Browser viewer `host:port`, or empty to disable |
+| `serial-device` | empty | Serial device path; empty auto-detects CH340/CH341 |
+| `serial-baud` | `9600` | Standard rate from the supported list below |
+| `screen-width` | `1920` | Positive target coordinate width in pixels |
+| `screen-height` | `1080` | Positive target coordinate height in pixels |
+| `target-layout` | `us104` | Target text layout name |
+| `layouts-dir` | empty | Custom layout directory searched before built-ins |
+| `mouse-button-mode` | `absolute` | `absolute` or compatibility mode `relative` |
+| `capture-device` | empty | Video device path, such as `/dev/video0`; numeric indexes are unsupported |
+| `capture-width` | `1920` | Positive requested capture width, at most 4294967295 |
+| `capture-height` | `1080` | Positive requested capture height, at most 4294967295 |
+| `autocrop` | `true` | Automatically crop detected black borders |
+| `web-fps` | `20` | Viewer frame rate, from 1 through 120 |
+| `audio-device` | empty | Empty auto-selects audio for the video USB device; `off` disables it; otherwise a PCM device path |
+| `log-level` | `info` | `debug`, `info`, `warn` or `error` |
+| `debug-keys` | `false` | Emit input/packet debug records independently of ordinary log level |
+
+Supported baud rates are 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600 and
+115200. Screen dimensions may be one pixel; that axis maps to HID zero. Screen
+size describes the target coordinate system; capture size describes the video
+stream, which can have a different resolution. See [keyboard layouts](CREATING_LAYOUTS.md)
+for target OS differences and custom files.
+
+Addresses support hostnames, IPv4, bracketed IPv6 such as `[::1]:9329`, and an
+empty host such as `:9329` for all interfaces. Ports range from 0 through 65535;
+zero requests an ephemeral port and is useful for tests. Address validation does
+not resolve hostnames or bind sockets. Device support and capture negotiation
+are checked when the relevant service opens hardware.
+
+Logs go to stderr. Enabling `debug-keys` keeps key/packet records visible even at
+ordinary `warn` or `error` level; unrelated debug logs remain filtered. Input logs
+can reveal typed content, so enable them only while diagnosing input.
+
+SIGINT and SIGTERM initiate shutdown. The shared input controller stops normal
+actions and attempts release before permanently closing serial transport. The
+one-second cleanup context bounds application waits; it cannot interrupt a Linux
+driver call already executing, as described in [serial I/O and cancellation](#serial-io-and-cancellation).
 
 ## Development
 

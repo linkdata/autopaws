@@ -3,11 +3,15 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	fmt.Fprintln(os.Stderr, "autopaws-kvm is not implemented yet")
-	os.Exit(1)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	code := run(ctx, os.Args[1:], os.Stdout, os.Stderr, commandHooks{})
+	stop()
+	os.Exit(code)
 }
