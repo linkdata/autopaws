@@ -353,39 +353,50 @@ func (subscription *Subscription) pop() Block {
 	return block
 }
 
+// Ready returns a change notification for an external media select loop. Read
+// it BEFORE TryNext, then wait only if no block/error is ready, to avoid missing
+// a concurrent publication. The signal carries no PCM and adds no sample queue.
+func (subscription *Subscription) Ready() <-chan struct{} {
+	subscription.capture.mu.Lock()
+	defer subscription.capture.mu.Unlock()
+	return subscription.notify
+}
+
+// TryNext never waits for publication. It expires blocks100ms after their last
+// captured sample, separate from their acquisition duration. The queue itself
+// still holds at most100ms of sample frames.
+func (subscription *Subscription) TryNext() (Block, bool, error) {
+	now, err := subscription.capture.ops.now()
+	if err != nil {
+		return Block{}, false, fmt.Errorf("alsa queue monotonic clock: %w", err)
+	}
+	subscription.capture.mu.Lock()
+	defer subscription.capture.mu.Unlock()
+	for len(subscription.queue) != 0 {
+		first := subscription.queue[0]
+		duration := int64(uint64(first.Frames) * uint64(time.Second) / uint64(first.Config.Rate))
+		if now >= first.TimestampNS && now-first.TimestampNS-duration > int64(ServerQueueBudget) {
+			subscription.pop()
+			continue
+		}
+		return subscription.pop(), true, nil
+	}
+	return Block{}, false, subscription.err
+}
+
 // Next discards blocks whose end-of-capture time is older than the server's
-// 100 ms share before returning samples for transmission. Capture duration is
-// separate from queue residence. Call immediately before writing; a caller that
+// 100 ms share before returning samples. Acquisition duration is separate from
+// queue residence. Call immediately before writing; a caller that
 // stalls after Next must recheck freshness rather than replay an old block.
 func (subscription *Subscription) Next(ctx context.Context) (Block, error) {
 	for {
 		if err := ctx.Err(); err != nil {
 			return Block{}, err
 		}
-		now, err := subscription.capture.ops.now()
-		if err != nil {
-			return Block{}, fmt.Errorf("alsa queue monotonic clock: %w", err)
-		}
-		subscription.capture.mu.Lock()
-		for len(subscription.queue) != 0 {
-			first := subscription.queue[0]
-			// Frames is uint32 and the negotiated rate is positive, so this
-			// product fits uint64 and its quotient fits int64. Subtract the
-			// duration rather than adding it to a near-MaxInt64 timestamp.
-			duration := int64(uint64(first.Frames) * uint64(time.Second) / uint64(first.Config.Rate))
-			if now >= first.TimestampNS && now-first.TimestampNS-duration > int64(ServerQueueBudget) {
-				subscription.pop()
-				continue
-			}
-			block := subscription.pop()
-			subscription.capture.mu.Unlock()
-			return block, nil
-		}
-		err = subscription.err
-		notify := subscription.notify
-		subscription.capture.mu.Unlock()
-		if err != nil {
-			return Block{}, err
+		notify := subscription.Ready()
+		block, ok, err := subscription.TryNext()
+		if err != nil || ok {
+			return block, err
 		}
 		select {
 		case <-ctx.Done():

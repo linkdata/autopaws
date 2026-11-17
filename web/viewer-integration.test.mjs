@@ -129,10 +129,92 @@ function video(generation, sequence, payload, {
   return data;
 }
 
-async function viewer(t) {
+function pcm(generation, sequence, {sampleRate = 48000, channels = 2, sampleFrames = 960} = {}) {
+  const data = new ArrayBuffer(64 + sampleFrames * channels * 2);
+  const view = new DataView(data);
+  view.setUint8(0, 2);
+  view.setUint8(1, 1);
+  view.setUint16(2, 64, true);
+  view.setUint32(4, 5, true);
+  view.setBigUint64(8, BigInt(generation), true);
+  view.setBigUint64(16, BigInt(sequence), true);
+  const durationNS = BigInt(sampleFrames) * 1000000000n / BigInt(sampleRate);
+  view.setBigUint64(24, 1234567890123456789n + BigInt(sequence) * durationNS, true);
+  view.setUint32(56, sampleFrames, true);
+  view.setUint32(60, Number(durationNS), true);
+  for (let frame = 0; frame < sampleFrames; frame++) {
+    for (let channel = 0; channel < channels; channel++) {
+      view.setInt16(64 + (frame * channels + channel) * 2, channel === 0 ? 16384 : -16384, true);
+    }
+  }
+  return data;
+}
+
+async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
+  missingWorklet = false, prefixedAudio = false, resumeRequiresRetry = false, audioLoad = null} = {}) {
   const clock = new Clock();
   const window = new Events();
-  window.isSecureContext = false;
+  window.isSecureContext = secureContext;
+  const audioContexts = [], audioNodes = [];
+  class AudioContext extends Events {
+    constructor({sampleRate}) {
+      super();
+      this.sampleRate = sampleRate;
+      this.state = "suspended";
+      this.currentTime = 0;
+      this.destination = {};
+      this.resumeCalls = 0;
+      this.closeCalls = 0;
+      this.modules = [];
+      this.audioWorklet = {addModule: async url => {
+        this.modules.push(String(url));
+        if (audioLoad !== null) await audioLoad;
+      }};
+      audioContexts.push(this);
+    }
+    resume() {
+      this.resumeCalls++;
+      if (resumeRequiresRetry && this.resumeCalls === 1) {
+        return new Promise((resolve, reject) => { this.pendingResume = {resolve, reject}; });
+      }
+      this.state = "running";
+      this.pendingResume?.resolve();
+      return Promise.resolve();
+    }
+    close() {
+      this.closeCalls++;
+      this.state = "closed";
+      this.pendingResume?.reject(new Error("context closed"));
+      this.fire("statechange");
+      return Promise.resolve();
+    }
+  }
+  class AudioWorkletNode extends Events {
+    constructor(context, name, options) {
+      super();
+      assert.equal(name, "autopaws-audio");
+      this.context = context;
+      this.options = options;
+      this.messages = [];
+      this.port = {
+        postMessage: (message, transfer) => {
+          assert.equal(this.closed, undefined, "a detached audio port received PCM");
+          this.messages.push(structuredClone(message, {transfer}));
+        },
+        close: () => { this.closed = true; },
+      };
+      audioNodes.push(this);
+    }
+    connect(destination) { assert.equal(destination, this.context.destination); this.connected = true; }
+    disconnect() { this.connected = false; }
+    ack(sequence, generation = this.options.processorOptions.generation) {
+      this.port.onmessage({data: {type: "ack", generation, sequence}});
+    }
+  }
+  if (nativeAudio) {
+    window[prefixedAudio ? "webkitAudioContext" : "AudioContext"] = AudioContext;
+    if (!missingWorklet) window.AudioWorkletNode = AudioWorkletNode;
+  }
   const document = new Events();
   document.parent = window;
   document.hidden = false;
@@ -145,7 +227,7 @@ async function viewer(t) {
   document.activeElement = document.body;
   document.createElement = () => new Element(document);
   const ids = ["toolbar", "viewport", "screen", "message", "status", "ctrl-alt-del", "alt-tab",
-    "view-only", "cursor", "scaling", "fullscreen", "toolbar-handle", "capability-list", "capabilities", "fps"];
+    "view-only", "cursor", "scaling", "fullscreen", "toolbar-handle", "capability-list", "capabilities", "fps", "audio"];
   const elements = Object.fromEntries(ids.map(id => [id, new Element(document, id)]));
   for (const element of Object.values(elements)) element.parent = document.body;
   elements.screen.parent = elements.viewport;
@@ -192,7 +274,7 @@ async function viewer(t) {
   });
   const globals = {
     window, document, navigator: {}, location: new URL("http://127.0.0.1:9999/"),
-    WebSocket: Socket, createImageBitmap, performance: {now: () => clock.now},
+    WebSocket: Socket, createImageBitmap, performance: {timeOrigin: 1700000000000, now: () => clock.now},
     setTimeout: (callback, delay) => clock.schedule(callback, delay),
     clearTimeout: id => clock.timers.delete(id),
     setInterval: (callback, delay) => clock.schedule(callback, delay, true),
@@ -220,12 +302,22 @@ async function viewer(t) {
   assert.equal(sockets.length, 1);
   await sockets[0].open();
   const h = {
-    clock, window, document, elements, sockets, decodes, draws, clears, dimensions,
+    clock, window, document, elements, sockets, decodes, draws, clears, dimensions, audioContexts, audioNodes,
     get socket() { return sockets.at(-1); },
     get sent() { return this.socket.sent; },
     async frame(generation, sequence, payload = Number(sequence), options) {
       await this.socket.message(video(generation, sequence, payload, options));
       await settle();
+    },
+    async config(audio) {
+      await this.socket.message(JSON.stringify({type: "config", audio}));
+      await settle();
+    },
+    async pcm(generation, sequence, options) {
+      const data = pcm(generation, sequence, options);
+      await this.socket.message(data);
+      await settle();
+      return data;
     },
     async image(index = decodes.length - 1, options = {}) {
       const decode = decodes[index];
@@ -487,4 +579,210 @@ test("discrete input flushes the latest move, wheel is nonpassive, passive mode 
   assert.equal(h.mouse("contextmenu").defaultPrevented, false);
   h.clock.advance(100);
   assert.equal(h.sent.length, count);
+});
+
+test("page audio routes negotiated PCM and preserves mute across format changes", async t => {
+  const h = await viewer(t, {nativeAudio: true, prefixedAudio: true});
+  const button = h.elements.audio;
+  const generation = 9007199254740993n;
+  assert.equal(button.hidden, true);
+  await h.config({status: "available", generation: String(generation), sampleRate: 48000, channels: 2});
+  assert.equal(button.hidden, false);
+  assert.equal(button.getAttribute("aria-pressed"), "false");
+  await h.pcm(generation, 0);
+  assert.equal(h.audioContexts.length, 0, "configuration/PCM cannot bypass the enable gesture");
+  assert.equal(h.decodes.length, 0, "audio must not enter the JPEG decoder");
+
+  await h.click("audio");
+  assert.equal(h.audioContexts.length, 1);
+  assert.equal(h.audioContexts[0].sampleRate, 48000);
+  assert.match(h.audioContexts[0].modules[0], /\/audio-worklet\.mjs$/);
+  assert.equal(button.getAttribute("aria-pressed"), "true");
+  assert.match(button.title, /Mute/);
+  const wire = await h.pcm(generation, 0);
+  const first = h.audioNodes[0];
+  assert.deepEqual(first.options.outputChannelCount, [2]);
+  assert.equal(first.messages.length, 1);
+  assert.equal(first.messages[0].block.generation, generation);
+  assert.equal(first.messages[0].block.sequence, 0n);
+  assert.deepEqual([...first.messages[0].block.payload], [...new Uint8Array(wire, 64)]);
+  await h.pcm(generation, 1);
+  assert.equal(first.messages.length, 1, "the page cannot enqueue PCM behind an unacknowledged transfer");
+  first.ack(0n);
+  await h.pcm(generation, 2);
+  assert.equal(first.messages.length, 2);
+
+  await h.click("audio");
+  assert.equal(h.audioContexts[0].state, "closed");
+  assert.equal(first.closed, true);
+  assert.equal(first.connected, false);
+  assert.equal(button.getAttribute("aria-pressed"), "false");
+  await h.pcm(generation, 3);
+  await h.config({status: "available", generation: String(generation + 1n), sampleRate: 96000, channels: 1});
+  assert.equal(h.audioContexts.length, 1, "a format change must preserve the mute choice");
+  await h.click("audio");
+  assert.equal(h.audioContexts[1].sampleRate, 96000);
+  const second = h.audioNodes[1];
+  assert.deepEqual(second.options.outputChannelCount, [1]);
+  await h.pcm(generation, 4);
+  assert.equal(second.messages.length, 0, "the prior audio generation cannot reach the replacement graph");
+  await h.pcm(generation + 1n, 0, {sampleRate: 96000, channels: 1, sampleFrames: 1920});
+  assert.equal(second.messages.length, 1);
+  assert.equal(second.messages[0].block.payload.byteLength, 1920 * 2);
+
+  await h.config({status: "off", generation: String(generation + 2n)});
+  assert.equal(button.hidden, true);
+  assert.equal(h.audioContexts[1].state, "closed");
+  await h.config({status: "available", generation: String(generation + 3n), sampleRate: 48000, channels: 2});
+  assert.equal(h.audioContexts.length, 3, "returning availability preserves the desired enabled choice");
+  assert.equal(button.getAttribute("aria-pressed"), "true");
+});
+
+test("same-format page audio recovery keeps playback and orders reset before new-generation PCM", async t => {
+  const h = await viewer(t, {nativeAudio: true});
+  await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
+  await h.click("audio");
+  await h.pcm(1, 0);
+  const node = h.audioNodes[0];
+  await h.config({status: "available", generation: "2", sampleRate: 48000, channels: 2});
+  assert.equal(h.audioContexts.length, 1);
+  assert.equal(h.audioNodes.length, 1);
+  assert.equal(h.audioContexts[0].state, "running");
+  assert.equal(h.audioContexts[0].resumeCalls, 1);
+  assert.equal(h.audioContexts[0].closeCalls, 0);
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "true");
+  assert.equal(h.elements.audio.textContent, "Audio");
+  assert.deepEqual(node.messages[1], {type: "reset", generation: 2n});
+  await h.pcm(1, 1);
+  await h.pcm(2, 0);
+  assert.equal(node.messages.length, 2, "the old transfer still owns admission until acknowledged");
+  node.ack(0n, 1n);
+  await h.pcm(2, 0);
+  assert.equal(node.messages[2].block.generation, 2n);
+  node.ack(0n, 1n);
+  await h.pcm(2, 1);
+  assert.equal(node.messages.length, 3, "late old ACK cannot release the new generation's sequence0 transfer");
+  node.ack(0n, 2n);
+  await h.pcm(2, 1);
+  assert.equal(node.messages[3].block.sequence, 1n);
+  assert.equal(h.socket.closes.length, 0);
+});
+
+test("page reconnects keep the audio choice while ignoring old-socket PCM and closing graphs", async t => {
+  const h = await viewer(t, {nativeAudio: true});
+  await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
+  await h.click("audio");
+  await h.pcm(1, 0);
+  const oldSocket = h.socket;
+  let resolvePCM;
+  const delayed = oldSocket.message({arrayBuffer: () => new Promise(resolve => { resolvePCM = resolve; })});
+  oldSocket.close(1006, "reconnect");
+  await settle();
+  assert.equal(h.audioContexts[0].state, "closed");
+  assert.equal(h.audioNodes[0].closed, true);
+  assert.equal(h.elements.audio.hidden, true);
+  h.clock.advance(500);
+  await h.socket.open();
+  await h.config({status: "available", generation: "2", sampleRate: 48000, channels: 2});
+  assert.equal(h.audioContexts.length, 2);
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "true");
+  resolvePCM(pcm(1, 99));
+  await delayed;
+  await oldSocket.message(JSON.stringify({type: "config", audio: {status: "off", generation: "999"}}));
+  await settle();
+  assert.equal(h.audioNodes[1].messages.length, 0, "a delayed old carrier cannot feed the new graph");
+  assert.equal(h.elements.audio.hidden, false, "an old carrier cannot replace the new configuration");
+  await h.pcm(2, 0);
+  assert.equal(h.audioNodes[1].messages.length, 1);
+
+  await h.click("audio");
+  h.socket.close(1006, "muted reconnect");
+  await settle();
+  h.clock.advance(500);
+  await h.socket.open();
+  await h.config({status: "available", generation: "3", sampleRate: 48000, channels: 2});
+  await h.pcm(3, 0);
+  assert.equal(h.audioContexts.length, 2, "reconnect must not silently unmute");
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "false");
+  await h.click("audio");
+  assert.equal(h.audioContexts.length, 3);
+  await h.window.fire("pagehide").done;
+  await settle();
+  assert.ok(h.audioContexts.every(context => context.state === "closed"));
+  assert.ok(h.audioNodes.every(node => node.closed && !node.connected));
+  h.clock.advance(10000);
+  assert.equal(h.sockets.length, 3);
+});
+
+test("audio capability failures leave page video and keyboard/mouse input usable", async t => {
+  for (const options of [{nativeAudio: true, missingWorklet: true}, {nativeAudio: true, secureContext: false}]) {
+    await t.test(JSON.stringify(options), async t => {
+      const h = await viewer(t, options);
+      await h.show();
+      await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
+      assert.equal(h.elements.audio.hidden, false);
+      await h.click("audio");
+      assert.equal(h.elements.audio.getAttribute("aria-pressed"), "false");
+      assert.equal(h.elements.capabilities.hidden, false);
+      assert.equal(h.elements.capabilities.open, true);
+      assert.ok(h.elements["capability-list"].children.some(item => /AudioWorklet.*secure context/.test(item.textContent)));
+      assert.equal(h.audioContexts.length, 0);
+      await h.pcm(1, 0);
+      await h.show(1, 2);
+      h.key("keydown", "KeyA");
+      h.key("keyup", "KeyA");
+      h.mouse("mousedown", {buttons: 1});
+      h.mouse("mouseup");
+      assert.equal(h.draws.length, 2);
+      assert.deepEqual(h.sent, [
+        {type: "keydown", code: "KeyA"}, {type: "keyup", code: "KeyA"},
+        {type: "mousedown", x: 0, y: 0, buttons: 1}, {type: "mouseup", x: 0, y: 0, buttons: 0},
+      ]);
+      assert.equal(h.socket.closes.length, 0, "an audio-only capability failure cannot close the shared stream");
+      await h.config({status: "unavailable", generation: "2"});
+      assert.equal(h.elements.audio.hidden, true);
+    });
+  }
+});
+
+test("the page audio button retries enabled but pending playback during a fresh gesture", async t => {
+  const h = await viewer(t, {nativeAudio: true, resumeRequiresRetry: true});
+  await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
+  await h.click("audio");
+  assert.equal(h.audioContexts[0].resumeCalls, 1);
+  assert.equal(h.audioContexts[0].state, "suspended");
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "false");
+  assert.match(h.elements.audio.title, /again/);
+  await h.pcm(1, 0);
+  assert.equal(h.audioNodes.length, 0);
+  await h.click("audio");
+  assert.equal(h.audioContexts.length, 1);
+  assert.equal(h.audioContexts[0].resumeCalls, 2);
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "true");
+  await h.pcm(1, 1);
+  assert.equal(h.audioNodes[0].messages.length, 1);
+});
+
+
+test("a second page audio click cancels module loading and late completion stays muted", async t => {
+  let finishLoad;
+  const audioLoad = new Promise(resolve => { finishLoad = resolve; });
+  const h = await viewer(t, {nativeAudio: true, audioLoad});
+  await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
+  await h.click("audio");
+  assert.equal(h.audioContexts.length, 1);
+  assert.equal(h.audioContexts[0].state, "running");
+  assert.equal(h.audioNodes.length, 0);
+  assert.equal(h.elements.audio.textContent, "Cancel audio");
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "false");
+  await h.click("audio");
+  assert.equal(h.audioContexts[0].state, "closed");
+  finishLoad();
+  await settle();
+  assert.equal(h.audioContexts.length, 1, "cancel must not start another audio context");
+  assert.equal(h.audioNodes.length, 0, "late module completion cannot unmute or connect a worklet");
+  assert.equal(h.elements.audio.getAttribute("aria-pressed"), "false");
+  assert.equal(h.elements.audio.textContent, "Audio");
+  await h.pcm(1, 0);
+  assert.equal(h.audioNodes.length, 0);
 });

@@ -136,6 +136,8 @@ func TestStaticAssetsAndAdmission(t *testing.T) {
 		{"/viewer.mjs", "viewer.mjs", "text/javascript; charset=utf-8"},
 		{"/viewer-helpers.mjs", "viewer-helpers.mjs", "text/javascript; charset=utf-8"},
 		{"/viewer.css", "viewer.css", "text/css; charset=utf-8"},
+		{"/audio-playback.mjs", "audio-playback.mjs", "text/javascript; charset=utf-8"},
+		{"/audio-worklet.mjs", "audio-worklet.mjs", "text/javascript; charset=utf-8"},
 		{"/manifest.json", "manifest.json", "application/manifest+json"},
 		{"/sw.js", "sw.js", "text/javascript; charset=utf-8"},
 		{"/icon.svg", "icon.svg", "image/svg+xml"},

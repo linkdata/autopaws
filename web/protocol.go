@@ -5,7 +5,9 @@ package web
 import (
 	"encoding/binary"
 	"image"
+	"time"
 
+	"github.com/linkdata/autopaws/alsa"
 	"github.com/linkdata/autopaws/capture"
 	"github.com/linkdata/autopaws/v4l2"
 )
@@ -14,7 +16,7 @@ const (
 	mediaHeaderSize = 64
 	mediaVersion    = 1
 	videoMessage    = 1
-	audioMessage    = 2 // Reserved until41; see PROTOCOL.md.
+	audioMessage    = 2
 )
 
 const (
@@ -48,5 +50,18 @@ func videoHeader(metadata capture.Metadata, sequence uint64) [mediaHeaderSize]by
 	binary.LittleEndian.PutUint32(header[44:], uint32(crop.Min.Y))
 	binary.LittleEndian.PutUint32(header[48:], uint32(crop.Dx()))
 	binary.LittleEndian.PutUint32(header[52:], uint32(crop.Dy()))
+	return header
+}
+
+func audioHeader(block alsa.Block) [mediaHeaderSize]byte {
+	var header [mediaHeaderSize]byte
+	header[0], header[1] = audioMessage, mediaVersion
+	binary.LittleEndian.PutUint16(header[2:], mediaHeaderSize)
+	binary.LittleEndian.PutUint32(header[4:], flagMonotonic|flagEstimated)
+	binary.LittleEndian.PutUint64(header[8:], block.Config.Generation)
+	binary.LittleEndian.PutUint64(header[16:], block.Sequence)
+	binary.LittleEndian.PutUint64(header[24:], uint64(block.TimestampNS))
+	binary.LittleEndian.PutUint32(header[56:], block.Frames)
+	binary.LittleEndian.PutUint32(header[60:], uint32(uint64(block.Frames)*uint64(time.Second)/uint64(block.Config.Rate)))
 	return header
 }

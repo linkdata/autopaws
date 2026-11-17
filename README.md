@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-The rewrite is underway. Core input, CLI configuration, device discovery, the TCP API, the stdio MCP server, the shared video pipeline and the browser viewer are implemented. Optional OCR is implemented; audio is still being ported. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
+The rewrite is underway. Keyboard/mouse control, device discovery, CLI configuration, the API and MCP server, browser video/audio and optional OCR are implemented. Shared-token access and final release validation are next. The [tracking epic](../../issues/23) lists the implementation issues in execution order.
 
 ## Components
 
@@ -67,8 +67,8 @@ selected video's complete USB device path, so identical cards do not select each
 other's audio. With several capture PCMs on that USB device, the lowest numeric
 card/device pair wins. No match means audio unavailable; `audio-device: off`
 disables it and an explicit PCM path stays independent of video selection. Audio
-service startup and switching are wired with the audio work; this command already
-shows the discovery result.
+capture starts with the first web viewer and stops when the last viewer leaves;
+the listing command only shows the discovery result.
 
 ### Precedence and files
 
@@ -237,8 +237,40 @@ Browser capabilities are detected at runtime. Keyboard Lock is attempted in
 fullscreen when available; if it is denied, toolbar shortcuts remain usable.
 The installable app uses an online-only service worker and caches no assets or
 media. A localhost SSH tunnel provides a secure context for compatible browser
-APIs. Audio configuration reports unavailable until audio playback is enabled by
-the audio implementation.
+APIs, including AudioWorklet playback.
+
+### Browser audio
+
+Click Audio to start playback. The control is hidden when capture is disabled or
+unavailable. Muting closes and flushes the browser audio graph; configuration
+changes and reconnects preserve that choice. While audio is loading, Cancel audio
+stops it. If playback is interrupted, Retry audio starts a fresh attempt.
+Capability or sample-rate failures display an explanation while video and input
+remain usable. Recovery at an unchanged format flushes old samples without
+restarting the running audio graph.
+
+The context requests the negotiated capture rate and verifies it before playing
+interleaved S16_LE PCM. There is no resampler. Audio shares each viewer's
+WebSocket and takes priority over a waiting video frame. Every accepted video
+settings generation reopens the selected audio source and flushes old samples.
+Automatic selection follows the new video's USB path; an explicit PCM path stays
+fixed. Changed configuration is sent before new-generation samples. An audio
+failure reports unavailable without stopping video/input; changing capture
+settings or closing and reopening the last viewer retries acquisition.
+
+The server retains at most 100 ms of PCM per viewer. The browser retains a 50 ms
+worklet ring plus at most one acknowledged 50 ms transfer, keeping application
+queues within 200 ms total. Oldest/stale audio is discarded and underruns produce
+silence. While the one transfer awaits acknowledgement, new arriving blocks are
+dropped; ring overflow and oversized-block trimming discard oldest samples. A
+video write lasting at least 100 ms discards its accumulated audio queue before
+resuming. Capture duration, kernel, TCP/WebSocket and output-device
+latency are separate; the queue limit does not establish the 200 ms end-to-end
+target. Measurements and tested configurations are recorded in
+[the hardware validation document](docs/hardware-validation.md).
+
+See [raw ALSA notes](alsa/README.md) for exclusive device access, timestamp
+estimation and WirePlumber setup.
 
 ## MCP server
 
@@ -333,6 +365,8 @@ needed. From the repository root, run the same browser and Go gate as CI:
 node --check web/assets/viewer-helpers.mjs
 node --check web/assets/viewer.mjs
 node --check web/assets/sw.js
+node --check web/assets/audio-playback.mjs
+node --check web/assets/audio-worklet.mjs
 node --test web/*.test.mjs
 CGO_ENABLED=0 go build ./...
 CGO_ENABLED=0 go build -o /dev/null ./cmd/autopaws-kvm
@@ -373,7 +407,7 @@ drops oldest blocks on overflow and expires blocks by end-of-capture age before
 delivery. Capture duration, kernel buffering and browser/output latency are
 separate from this application queue budget. See [the package notes](alsa/README.md)
 for timestamp estimation, ownership and the explicitly selected hardware tests.
-Browser playback and daemon lifecycle wiring are the next audio integration.
+The web viewer shares this capture source through the single ordered media writer.
 
 ### Serial I/O and cancellation
 

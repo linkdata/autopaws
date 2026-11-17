@@ -24,6 +24,7 @@ type runtimeFactories struct {
 	listen          func(context.Context, string, string) (net.Listener, error)
 	newCapture      func(capture.Options) (*capture.Manager, error)
 	discoverCapture func(context.Context) ([]devices.VideoDevice, error)
+	audioOptions    func(string) *web.AudioOptions
 }
 
 func serveRuntime(ctx context.Context, cfg config.Config, output io.Writer) error {
@@ -31,6 +32,7 @@ func serveRuntime(ctx context.Context, cfg config.Config, output io.Writer) erro
 		newTransport: func(options serial.Options) (hid.Transport, error) { return serial.New(options) },
 		listen:       (&net.ListenConfig{}).Listen,
 		newCapture:   capture.New,
+		audioOptions: func(device string) *web.AudioOptions { return &web.AudioOptions{Device: device} },
 		discoverCapture: func(ctx context.Context) ([]devices.VideoDevice, error) {
 			return devices.DiscoverVideo(ctx, devices.Options{})
 		},
@@ -108,7 +110,11 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	var viewer *web.Server
 	var httpServer *http.Server
 	if cfg.Web != "" {
-		viewer, err = web.New(controller, mouse, video, web.Options{FPS: cfg.WebFPS, Logger: logger, KeyLogger: keys})
+		var audio *web.AudioOptions
+		if factories.audioOptions != nil {
+			audio = factories.audioOptions(cfg.AudioDevice)
+		}
+		viewer, err = web.New(controller, mouse, video, web.Options{FPS: cfg.WebFPS, Logger: logger, KeyLogger: keys, Audio: audio})
 		if err != nil {
 			return errors.Join(fmt.Errorf("create web viewer: %w", err), closeOwners())
 		}
@@ -135,7 +141,11 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 			}
 			networkClosed <- result
 		}()
-		return errors.Join(closeOwners(), <-networkClosed)
+		result := errors.Join(closeOwners(), <-networkClosed)
+		if viewer != nil {
+			viewer.Wait() // Also join pre-bind audio control/owned close on startup errors.
+		}
+		return result
 	}
 	var apiListener, webListener net.Listener
 	if cfg.API != "" {
@@ -181,9 +191,6 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	}
 	if apiServer != nil {
 		apiServer.Wait()
-	}
-	if viewer != nil {
-		viewer.Wait()
 	}
 	return errors.Join(serveErr, closeErr)
 }

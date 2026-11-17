@@ -25,6 +25,8 @@ jobs:
           node --check web/assets/viewer-helpers.mjs
           node --check web/assets/viewer.mjs
           node --check web/assets/sw.js
+          node --check web/assets/audio-playback.mjs
+          node --check web/assets/audio-worklet.mjs
           node --test web/*.test.mjs
       - uses: golangci/golangci-lint-action@v9
         with:
