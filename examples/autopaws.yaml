@@ -1,5 +1,7 @@
 # Example for one Linux KVM host and one mirrored/single-display target.
 # Replace the serial path and target dimensions with your actual configuration.
+# Defaults shown explicitly: loopback API and relative mouse button reports.
+# To serve only the web viewer, set api: "".
 api: 127.0.0.1:9329
 web: 127.0.0.1:9330
 # Optional shared secret for both API and web, read once at daemon startup.

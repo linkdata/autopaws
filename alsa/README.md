@@ -17,6 +17,23 @@ capture; the package never issues START. EPIPE/ESTRPIPE recovery uses PREPARE,
 increments the source generation, clears every subscriber queue, and restarts
 sequence numbering. A reopened source also gets a new process-unique generation.
 
+Recovery permits one PREPARE without an intervening successful, validated PCM
+read. If EPIPE/ESTRPIPE repeats before valid samples arrive, capture ends with a
+terminal error instead of repeatedly preparing and publishing generations.
+EINTR or a cancellable EAGAIN wait does not count as sample progress. This bounds
+the detached-driver case while allowing a later genuine overrun after normal
+PCM has resumed. A terminal source still notifies subscribers before joining
+its owned close; it is not retried in a tight loop.
+
+After physical device return, the web service needs a new activation or accepted
+video-settings change to retry terminal audio. With existing viewers, re-list the
+returned capture nodes and call `set_capture_device` with the correct path; the
+same path is accepted and starts a new video generation. Automatic audio then
+resolves that selected video's full USB ancestor to its current PCM, so renumbered
+card/device paths are not guessed from labels. Closing every viewer and opening
+a new viewer also starts a new audio activation. The raw package caller repairs
+by opening a new source. Existing failed capture objects do not reopen themselves.
+
 Each block estimates the first sample's capture time as:
 
 ```text

@@ -5,7 +5,9 @@ repository visibility; downloads require an account/token with access.
 
 1. Complete every required Linux core check in #43 and record actual hardware,
    host/target architecture/OS, browser versions, negotiated media settings,
-   limits and optional coverage not run. Resolve failures in required/shared
+   limits and optional coverage not run. Also confirm the owner-required limited
+   read-only Windows laptop smoke before v0.1.0; record only test actions and
+   pass/fail, with no screen content or images. Resolve failures in required/shared
    behavior; a new follow-up issue cannot waive them.
 2. Validate the README installation path, device permissions and optional
    udev/service setup on the release setup. Preserve the CLI/audio/OCR/access
@@ -19,7 +21,9 @@ repository visibility; downloads require an account/token with access.
    while that marker remains. Keep runtime-tested and build-only platforms
    distinct. Include optional environments not run.
    Confirm every required physical recovery and browser row, retaining diagnosed
-   browser limits. Do not infer a pass from unit tests or crossbuilds.
+   browser limits and the initial failed ALSA recovery trial. Check the successful
+   fixed-build retest, bounded recovery and actual retained-close exit diagnostics.
+   Do not infer a pass from eventual media restoration, unit tests or crossbuilds.
 5. Run actionlint and the complete final README local CI gate. Run the eight
    release builds from a clean tree with a new output directory:
 
@@ -28,7 +32,7 @@ repository visibility; downloads require an account/token with access.
    ```
 
    Substitute the chosen version. Check eight binaries plus `SHA256SUMS`, the
-   native KVM's `version` output, MCP's initialization `serverInfo.version`, and
+   native KVM's `--version` output, MCP's initialization `serverInfo.version`, and
    the checksums. Linux binaries should be static; macOS binaries still link
    `libSystem`. Cross-building the Windows/macOS/ARM64 artifacts is not a claim
    that those runtimes or hardware were exercised.

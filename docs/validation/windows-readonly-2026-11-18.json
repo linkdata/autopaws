@@ -1,0 +1,466 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "result": "PASS: limited read-only Windows laptop smoke after owner-handled setup",
+  "target": "Windows laptop, as identified by owner",
+  "target_os_version_build_model": "not recorded",
+  "privacy": "Test actions, pass/fail and host/capture metadata only. No screen contents, labels, identifiers, OCR or screenshots are retained or referenced.",
+  "target_access_limits": {
+    "scripts_placed_on_target": false,
+    "target_text_or_commands_typed": false,
+    "target_applications_launched": false,
+    "target_files_or_settings_changed_by_agent": false,
+    "owner_handled_target_setup": true
+  },
+  "preparation": {
+    "owner_prepared_stable_video": true,
+    "initial_input_check": "No visible response before the owner reconnected target-side HID USB. Serial write success alone was not treated as target input success.",
+    "owner_reconnected_target_hid_usb": true,
+    "post_reconnect_checks": {
+      "capture": "PASS",
+      "keyboard_shortcuts": "PASS",
+      "modifier_press_release": "PASS",
+      "focus_navigation": "PASS",
+      "dismissal": "PASS",
+      "pointer_movement": "PASS",
+      "positioned_left_click": "PASS",
+      "right_click": "PASS",
+      "repeat_click": "PASS",
+      "final_idle_state": "PASS"
+    }
+  },
+  "host_configuration": {
+    "daemon_argv": [
+      "/tmp/autopaws-v0.1.0-reviewed-9v97ayz8/dist/autopaws-kvm_v0.1.0_linux_amd64",
+      "-autocrop=false"
+    ],
+    "api_default": "127.0.0.1:9329",
+    "mouse_button_mode_default": "relative",
+    "api_and_mouse_mode_flags_omitted": true,
+    "capture_format": [
+      1920,
+      1080
+    ],
+    "host_only_passive_reader": "Repeated capture_frame calls, no input and no image storage."
+  },
+  "input_api_events": [
+    {
+      "utc": "2026-11-18T10:59:52.327762+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape",
+        "modifiers": [
+          "ctrl"
+        ]
+      },
+      "elapsed_seconds": 0.08109525800682604,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:00:13.440244+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 1600,
+        "y": 200
+      },
+      "elapsed_seconds": 0.018857918010326102,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "position": {
+            "relative": false,
+            "x": 1600,
+            "y": 200
+          }
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:00:39.748867+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "0x00",
+        "modifiers": [
+          "win"
+        ]
+      },
+      "elapsed_seconds": 0.047998221998568624,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:01:24.068255+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 1600,
+        "y": 200
+      },
+      "elapsed_seconds": 0.018749458002275787,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "position": {
+            "relative": false,
+            "x": 1600,
+            "y": 200
+          }
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:01:24.179470+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape",
+        "modifiers": [
+          "ctrl"
+        ]
+      },
+      "elapsed_seconds": 0.04728029799298383,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:01:58.513047+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "tab"
+      },
+      "elapsed_seconds": 0.0470409940026002,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:01:58.589932+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "right"
+      },
+      "elapsed_seconds": 0.04642394700204022,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:08.941106+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape"
+      },
+      "elapsed_seconds": 0.046572563995141536,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:20.356756+00:00",
+      "method": "mouse_click",
+      "params": {
+        "x": 693,
+        "y": 1046
+      },
+      "elapsed_seconds": 0.07517928699962795,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "clicked": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:33.140608+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape"
+      },
+      "elapsed_seconds": 0.04741705699416343,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:33.273476+00:00",
+      "method": "mouse_click",
+      "params": {
+        "button": "right",
+        "x": 1600,
+        "y": 200
+      },
+      "elapsed_seconds": 0.0725833699980285,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "clicked": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:50.117094+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape"
+      },
+      "elapsed_seconds": 0.04815899500681553,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:02:50.209321+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "0x00",
+        "modifiers": [
+          "win"
+        ]
+      },
+      "elapsed_seconds": 0.04683908500010148,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:03:05.309918+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape"
+      },
+      "elapsed_seconds": 0.046649294992676005,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:03:05.388804+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 1200,
+        "y": 150
+      },
+      "elapsed_seconds": 0.018337708999752067,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "position": {
+            "relative": false,
+            "x": 1200,
+            "y": 150
+          }
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:03:05.509001+00:00",
+      "method": "mouse_click",
+      "params": {
+        "x": 693,
+        "y": 1046
+      },
+      "elapsed_seconds": 0.07394029300485272,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "clicked": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T11:03:25.062205+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "escape"
+      },
+      "elapsed_seconds": 0.048457622004207224,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    }
+  ],
+  "capture_api_metadata": [
+    {
+      "utc": "2026-11-18T10:55:27.788920+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T10:56:09.081714+00:00",
+      "ok": true,
+      "width": 1728,
+      "height": 1070
+    },
+    {
+      "utc": "2026-11-18T10:57:26.381152+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T10:59:28.535160+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T10:59:52.842988+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:00:14.055261+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:00:40.516383+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:01:24.913308+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:01:59.086936+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:02:09.417459+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:02:20.942983+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:02:33.837389+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:02:50.776762+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:03:06.024711+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "utc": "2026-11-18T11:03:25.588592+00:00",
+      "ok": true,
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "binary_identity": {
+    "source_commit": "965b89c6e6ebb749150f1743535d16088c519810",
+    "binary_filename": "autopaws-kvm_v0.1.0_linux_amd64",
+    "binary_sha256": "e81bf3adb3d3bfce070c93568b9bc5eb7eddbddb14a16b60d0d7bd64727ad6b6",
+    "source_hashes": {
+      "cmd/autopaws-kvm/run_linux.go": "9159fc16674307a5f1c1fa12651d924048f9eae1bd6a26eb0dd6bd7fc85914fb",
+      "internal/config/config.go": "d2dee96a8975bc09ea30f8bcb6a6646820357b1ec709c5d44af376c8eb05a990",
+      "internal/config/parse.go": "afc391ae3865279a86f86430e7b188b68de5d17c116db5e48d847ebbe7f8aad0",
+      "hid/mouse.go": "fac83d052d5577899c62be49a43dac515d7dcad108b510848ef5c73d3dc623ba",
+      "alsa/capture_linux.go": "3005d92a7d96aa9bb376a2d4d3c573ae6c9910409c12a2255ded00b54b9b690c"
+    },
+    "build_metadata": "/tmp/autopaws-v0.1.0-reviewed-9v97ayz8/dist/autopaws-kvm_v0.1.0_linux_amd64: go1.27.4\n\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm\n\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261118104748-965b89c6e6eb\t\n\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=\n\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=965b89c6e6ebb749150f1743535d16088c519810\n\tbuild\tvcs.time=2026-11-18T10:47:48Z\n\tbuild\tvcs.modified=false\n"
+  },
+  "cleanup": {
+    "metadata_recorded_utc": "2026-11-18T11:08:39.563821+00:00",
+    "initial_framing_daemon_exit": 0,
+    "initial_passive_reader_exit": 0,
+    "test_daemon_exit": 0,
+    "test_passive_reader_exit": 0,
+    "processes_reaped": true,
+    "test_listeners_closed": [
+      9329,
+      9330
+    ],
+    "temporary_images_deleted": 15,
+    "remaining_temporary_images": 0
+  },
+  "coverage_limits": [
+    "This is a limited physical capture and safe keyboard/pointer smoke; no broad Windows compatibility claim.",
+    "Text/layout characters, dragging, target audio, BIOS, privileged UI and Windows-host MCP runtime were not tested.",
+    "No exact target OS/build/model, screen content or identifiers are recorded.",
+    "API elapsed values are host-call durations, not measured target input latency."
+  ],
+  "archive": {
+    "filename": "autopaws-windows-readonly-validation-2026-11-18.tar.gz",
+    "sha256": "eedea6f9ae45d980640e411b9f8335b8f18c2c679b31401522cb2a5654180837",
+    "bytes": 5875,
+    "files": 11,
+    "contains_screen_content_images_ocr_credentials_or_binaries": false
+  }
+}

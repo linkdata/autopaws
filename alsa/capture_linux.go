@@ -159,6 +159,7 @@ func (capture *Capture) run() {
 func (capture *Capture) readLoop() error {
 	config := capture.Config()
 	storage := make([]byte, int(config.PeriodFrames)*int(config.Channels)*2)
+	recovering := false
 	for capture.lifetime.Err() == nil {
 		frames, timestamp, err := capture.read(storage, config)
 		if capture.lifetime.Err() != nil {
@@ -166,8 +167,15 @@ func (capture *Capture) readLoop() error {
 		}
 		switch {
 		case err == nil:
+			recovering = false
 			capture.publish(storage[:int(frames)*int(config.Channels)*2], frames, timestamp)
 		case errors.Is(err, syscall.EPIPE), errors.Is(err, syscall.ESTRPIPE):
+			// A detached driver can keep accepting PREPARE while reads fail
+			// immediately. Require valid PCM before attempting recovery again.
+			if recovering {
+				return fmt.Errorf("PCM read failed after PREPARE without sample progress: %w", err)
+			}
+			recovering = true
 			if err := capture.recover(err); err != nil {
 				return err
 			}

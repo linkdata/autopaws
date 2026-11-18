@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, browser video/audio, optional OCR and shared-token access are implemented. First-release validation is still pending; see [tested configurations and limits](#tested-configurations-and-limits). The [tracking epic](../../issues/23) records the port.
+Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, browser video/audio, optional OCR and shared-token access are implemented. Required Linux core validation is recorded; see [tested configurations and limits](#tested-configurations-and-limits). The [tracking epic](../../issues/23) records the port.
 
 ## Components
 
@@ -74,7 +74,7 @@ linker flags report version `devel`. On the Linux KVM host, install both command
 
 ```sh
 sudo install -m 0755 dist/autopaws-kvm dist/autopaws-mcp /usr/local/bin/
-autopaws-kvm version
+autopaws-kvm --version
 ```
 
 For MCP on another computer, use the absolute path to the built binary, or
@@ -116,7 +116,7 @@ gh release download "$autopaws_version" --repo linkdata/autopaws \
   awk -v file="$autopaws_asset" '$2 == file' SHA256SUMS | sha256sum --check - &&
     sudo install -m 0755 "$autopaws_asset" /usr/local/bin/autopaws-kvm
 )
-autopaws-kvm version
+autopaws-kvm --version
 ```
 
 Use `linux_arm64` for an arm64 KVM host. Download the matching `autopaws-mcp`
@@ -156,18 +156,17 @@ service. List devices and start the daemon in the foreground. Replace the serial
 path, screen dimensions and layout with the target's actual settings:
 
 ```sh
-autopaws-kvm list-devices
-autopaws-kvm serve \
+autopaws-kvm --list-devices
+autopaws-kvm \
   -serial-device /dev/serial/by-id/REPLACE_WITH_YOUR_CH340_OR_CH341 \
   -serial-baud 9600 -screen-width 1920 -screen-height 1080 \
-  -target-layout us104 -mouse-button-mode relative \
-  -api 127.0.0.1:9329 -web 127.0.0.1:9330
+  -target-layout us104 -web 127.0.0.1:9330
 ```
 
 Prefer `/dev/serial/by-id`; use `/dev/serial/by-path` when the adapter has no
 unique ID. Replugging can change `ttyUSBn`. Discovery chooses the default video
 and its matching USB audio; specify `-capture-device` when needed. The
-`relative` button mode above is used by the tested Linux target. Use one
+default `relative` button mode is used by the tested Linux target. Use one
 operator at a time.
 
 Open `http://localhost:9330` on the KVM host and click the image to focus input.
@@ -182,41 +181,56 @@ MCP process needs its own readable file containing the same secret.
 
 ## Commands and configuration
 
-The command line is independent of the Python tools. Use a subcommand:
+The command line is independent of the Python tools. Run `autopaws-kvm` with
+daemon flags, or use a flag to show help, print the version or list devices:
 
 ```sh
-autopaws-kvm version
-autopaws-kvm serve -help
-autopaws-kvm list-devices -help
+autopaws-kvm --help
+autopaws-kvm --version
+autopaws-kvm --list-devices
 ```
 
-`serve` requires an API address, a web address, or both. Each address includes a
-numeric port. Empty addresses disable that listener; neither is enabled by
-default. To serve both protocols:
+With no arguments, `autopaws-kvm` starts the daemon with the API at
+`127.0.0.1:9329` and relative mouse button reports. The web viewer is disabled
+until configured. Each listen address includes a numeric port; an empty address
+disables that listener. At least one listener must remain enabled. To serve both
+protocols:
 
 ```sh
-autopaws-kvm serve -api 127.0.0.1:9329 -web 127.0.0.1:9330 -mouse-button-mode relative
+autopaws-kvm -web 127.0.0.1:9330
 ```
 
 To run the API on its own:
 
 ```sh
-autopaws-kvm serve -api 127.0.0.1:9329 -mouse-button-mode relative
+autopaws-kvm
 ```
+
+To serve only the web viewer, explicitly disable the default API:
+
+```sh
+autopaws-kvm -api '' -web 127.0.0.1:9330
+```
+
+Use `-mouse-button-mode absolute` to select absolute button reports explicitly.
 
 The [API protocol reference](api/PROTOCOL.md) describes every method, validation
 limit, result and error. `apiclient` provides its portable Go client.
-Command help and `version` work without attached hardware or a configuration file.
-Help exits 0; unknown commands, malformed flags and invalid configuration exit 2.
+Command help and `--version` work without attached hardware or a configuration file.
+Help exits 0; positional arguments, malformed flags and invalid configuration exit 2.
 A runtime startup failure exits 1.
 
-`autopaws-kvm list-devices` lists supported CH340/CH341 serial ports, capture
+`autopaws-kvm --list-devices` lists supported CH340/CH341 serial ports, capture
 video nodes with their pixel formats, and capture PCM devices. It queries video
 capabilities and formats without starting or changing a stream; tty and PCM
 devices are not opened. Metadata-only video nodes and unrelated serial ports
 are omitted. The `*` marker shows automatic defaults. Multiple supported serial
 ports remain ambiguous and require `-serial-device`. Empty inventories are
-successful listings. Listing needs no serve listener or configuration file.
+successful listings. Listing needs no listener or configuration file.
+Use `--version` or `--list-devices` on its own.
+
+There are no subcommands. The former `serve`, `version` and `list-devices`
+spellings are not accepted.
 
 Video selection uses numeric node order, preferring the first name without a
 webcam keyword and otherwise the first capture node. Automatic audio matches the
@@ -234,13 +248,13 @@ explicit command-line flags. There are no environment overrides or automatic
 configuration-file searches. Select exactly the file you intend to use:
 
 ```sh
-autopaws-kvm serve -config ./autopaws.yaml -web-fps 30
+autopaws-kvm -config ./autopaws.yaml -web-fps 30
 ```
 
 Explicit false, empty and zero values override the file too. For example,
 `-autocrop=false` disables a file's enabled setting and `-web=` disables its web
 listener. Boolean flag values use `=false` or `=true`; a separate trailing word
-such as `-autocrop false` is an error. Flags belong after their subcommand.
+such as `-autocrop false` is an error.
 
 The file is one YAML mapping. Unknown or duplicate keys, null values, wrong value
 types, an empty file and extra YAML documents are errors. Omitted keys retain
@@ -265,14 +279,14 @@ log-level: info
 debug-keys: false
 ```
 
-### Serve settings
+### Daemon settings
 
 Flag names and YAML keys match. Empty device settings select automatic discovery;
 configured paths do not have to exist while parsing configuration.
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `api` | empty | JSON Lines API `host:port`, or empty to disable |
+| `api` | `127.0.0.1:9329` | JSON Lines API `host:port`, or empty to disable |
 | `web` | empty | Browser viewer `host:port`, or empty to disable |
 | `token-file` | empty | UTF-8 shared-secret file for both API and web; empty disables authentication |
 | `serial-device` | empty | Serial device path; empty auto-detects CH340/CH341 |
@@ -281,7 +295,7 @@ configured paths do not have to exist while parsing configuration.
 | `screen-height` | `1080` | Positive target coordinate height in pixels |
 | `target-layout` | `us104` | Target text layout name |
 | `layouts-dir` | empty | Custom layout directory searched before built-ins |
-| `mouse-button-mode` | `absolute` | `absolute` or compatibility mode `relative` |
+| `mouse-button-mode` | `relative` | Relative button reports, or explicit `absolute` |
 | `capture-device` | empty | Video device path, such as `/dev/video0`; numeric indexes are unsupported |
 | `capture-width` | `1920` | Positive requested capture width, at most 4294967295 |
 | `capture-height` | `1080` | Positive requested capture height, at most 4294967295 |
@@ -558,9 +572,9 @@ umask 077
 openssl rand -hex 32 > ./autopaws.token
 ```
 
-Start the daemon with `serve -token-file ./autopaws.token` (or the `token-file`
-YAML setting). Both daemon and MCP trim surrounding whitespace and read their files
-once at startup; restart them to change the secret. A configured unreadable,
+Start the daemon with `autopaws-kvm -token-file ./autopaws.token` (or the
+`token-file` YAML setting). Both daemon and MCP trim surrounding whitespace and
+read their files once at startup; restart them to change the secret. A configured unreadable,
 empty, or invalid UTF-8 file fails startup. Start MCP with
 `autopaws-mcp -api 127.0.0.1:9329 -token-file PATH`. Other API clients include the
 matching string in the `token` request field or use `apiclient.NewWithToken`.
@@ -589,7 +603,7 @@ and [Secure Contexts specification](https://www.w3.org/TR/secure-contexts/#is-or
 
 ## Coming from the Python projects
 
-Use `autopaws-kvm serve` in place of `serial-hid-kvm`, and `autopaws-mcp` in place
+Use `autopaws-kvm` in place of `serial-hid-kvm`, and `autopaws-mcp` in place
 of `mcp-serial-hid-kvm`. Python CLI flags, YAML keys, environment variables, wire
 formats and MCP tool signatures are not compatible with this redesign. Start
 with the Go help and references rather than copying the old configuration.
@@ -600,17 +614,21 @@ The browser replaces the native preview.
 The [hardware validation record](docs/hardware-validation.md) identifies the
 tested Linux host, target, hardware and browser configurations and their actual
 results. [Release notes](docs/release-notes.md) track the first-release gate.
-Physical serial USB recovery and native Firefox 154 video/audio checks are now
-recorded, including the Firefox document-close diagnostic described in the
-validation record. Physical capture/audio USB recovery remains pending.
-First-release validation is incomplete; every required Linux core check must
-pass before publication.
+Required Linux core checks passed on the recorded setup, including physical
+serial and capture/audio USB recovery, Chromium/Firefox video/audio, and
+screenshot-scaled input. The validation record retains the initial ALSA recovery
+defect, its fixed-build physical retest and known browser/shutdown diagnostics.
+Final tagged artifacts follow the [release procedure](docs/releasing.md).
 
-Separate Windows/macOS target tests, physical ARM64 hardware, Safari and browser
-checks on other operating systems have not been run and are optional extended
-coverage. Supported-platform cross-builds remain required; they do not establish
-runtime or hardware validation. Extended card/OCR coverage and known limits are
-recorded separately from the required Linux results.
+A separate [limited read-only Windows laptop smoke](docs/validation/windows-readonly-2026-11-18.json)
+passed capture and safe keyboard/pointer checks. Only test actions and outcomes
+are recorded; no screen content or images are retained. No scripts were placed on the target,
+and the agent changed no target files or settings. This does not establish text-layout,
+drag or audio coverage. Broader Windows/macOS target tests, physical ARM64
+hardware, Safari and browser checks on other operating systems remain optional
+extended coverage. Supported-platform cross-builds remain required; they do not
+establish runtime or hardware validation. Extended card/OCR coverage and known
+limits are recorded separately from the required Linux results.
 
 ## Development
 
@@ -701,7 +719,7 @@ Each key is held for 10 ms before release. Text defaults to a 20 ms delay after 
 
 `hid.Mouse` shares that controller. Absolute coordinates are integer target-screen pixels, from zero through width/height minus one. The endpoints map exactly to HID 0 and 4095; a one-pixel axis maps to zero. Relative movement must be within −127…127 on each axis, and wheel movement is clamped to that range. Invalid coordinates, buttons and modes are rejected before input begins.
 
-Buttons are `left`, `right` and `middle`; an empty name means left. A click holds for 10 ms, and a drag holds the shared gate through down, 50 ms, move, 50 ms and up. Clicks release the selected button and preserve other held buttons. The configured button mode defaults to `absolute`; `relative` sends positioned button changes as a button-free absolute move followed by a relative button report. Absolute movement preserves held buttons in both modes. See the [physical input validation record](docs/hardware-validation.md).
+Buttons are `left`, `right` and `middle`; an empty name means left. A click holds for 10 ms, and a drag holds the shared gate through down, 50 ms, move, 50 ms and up. Clicks release the selected button and preserve other held buttons. The configured button mode defaults to `relative`, which sends positioned button changes as a button-free absolute move followed by a relative button report. Set `-mouse-button-mode absolute` to use absolute button reports instead. Absolute movement preserves held buttons in both modes. See the [physical input validation record](docs/hardware-validation.md).
 
 ## Repository layout
 

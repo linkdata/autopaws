@@ -12,8 +12,9 @@ independent held states.
 
 ## Optional shared token
 
-When `serve -token-file PATH` is configured, `/ws` requires the `autopaws_token`
-cookie; missing or wrong values receive HTTP 403 before upgrade or subscription.
+When `autopaws-kvm -token-file PATH` is configured, `/ws` requires the
+`autopaws_token` cookie; missing or wrong values receive HTTP 403 before upgrade
+or subscription.
 All bootstrap assets remain public. Open
 `http://localhost:9330/#token=ENCODED_SECRET`, where ENCODED_SECRET is the result
 of JavaScript `encodeURIComponent(secret)`. The page removes the recognized

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "date": "2026-11-17",
-  "release_acceptance": "incomplete",
-  "scope": "Available Linux host/target; Chromium157 and native headless Firefox154 have been checked. Physical capture/audio USB recovery remains pending; see current_validation_record for the later serial/cancellation/Firefox evidence.",
+  "release_acceptance": "required Linux core complete; publication follows release procedure",
+  "scope": "Available Linux host/target; Chromium157 and native headless Firefox154 checked. Required physical serial and capture/audio USB recovery completed on 2026-11-18; current_validation_record includes the initially failed ALSA loop and successful progress-guard retest. Historical ordinary audio timing remains tied to its original pre-guard binary.",
   "measurement": {
     "method": "../audio-measurement.md",
     "from": "ALSA first-sample CLOCK_MONOTONIC timestamp estimate",
@@ -1021,9 +1021,7 @@
       "initial_attempt_limit": "Normal browser-window corner attempts reached native desktop controls. Reloading the page also requires a target-readiness wait; no Go coordinate code change was made."
     }
   },
-  "pending_release_checks": [
-    "Physical capture/audio USB unplug/replug recovery; serial recovery and native Firefox checks are recorded as completed in current_validation_record."
-  ],
+  "pending_release_checks": [],
   "evidence_archive": {
     "archive": "autopaws-audio-validation-2026-11-17.tar.gz",
     "sha256": "0b89ebad5daeb51ef70aa6108ebdf6c235517d8343f223f7734eb5cc4bb93717",
@@ -1710,8 +1708,8 @@
         "2 Windows PE"
       ]
     },
-    "limit": "Preparation checks only. Repeat after final release edits; actual tagged release identity is still pending required core validation."
+    "limit": "Historical preparation checks only. Repeat after final release edits; actual tagged artifact identity and publication follow the final release procedure. Required Linux core validation completed separately on 2026-11-18; see current_validation_record."
   },
   "status_as_of": "2026-11-18",
-  "current_validation_record": "recovery-firefox-2026-11-18.json"
+  "current_validation_record": "capture-usb-2026-11-18.json"
 }

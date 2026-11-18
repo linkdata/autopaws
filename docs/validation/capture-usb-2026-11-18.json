@@ -1,0 +1,595 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "release_core_capture_recovery": "PASS after ALSA progress-guard fix",
+  "base_source_commit": "cdfdb3603f3fbcb9f953bd937cecf7c857f7169e",
+  "device": {
+    "name": "UGREEN 15389 / MACROSILICON U15389",
+    "usb_vid": "2b89",
+    "usb_pid": "5389",
+    "usb_port": "4-1",
+    "video_before_and_after": "/dev/video0",
+    "audio_before_and_after": "/dev/snd/pcmC1D0c",
+    "video": "MJPG 1920x1080",
+    "pcm": "S16_LE 48000 Hz stereo",
+    "serial_remained_connected": "CH340 1a86:7523 /dev/ttyUSB0"
+  },
+  "baseline_defect": {
+    "last_video_utc": "2026-11-18T10:08:31.600399266Z",
+    "last_pcm_utc": "2026-11-18T10:08:31.585834237Z",
+    "status_config_count_before": 2,
+    "status_config_count_removed": 3845,
+    "last_available_generation_before_unavailable": "10501",
+    "unavailable_at": "2026-11-18T10:08:32.191170844Z",
+    "last_pcm_generation": 1,
+    "reopen_restored_video_generation": 2,
+    "reopen_restored_pcm_generation": 10502,
+    "result": "Failed required/shared behavior: repeated EPIPE/ESTRPIPE and successful PREPARE caused no-progress CPU/config churn. Retained as failed historical evidence, fixed before release."
+  },
+  "fix": {
+    "behavior": "Allow one PREPARE until read + STATUS + timestamp produce valid PCM. A repeated EPIPE/ESTRPIPE without valid PCM becomes terminal with original errno; valid PCM permits later independent recovery. EINTR/EAGAIN do not reset the progress guard.",
+    "production_file": "alsa/capture_linux.go",
+    "regression_file": "alsa/recovery_progress_linux_test.go",
+    "regression_old_source": "FAIL as expected: 9 reads / 9 prepares including initial / 8 generations / 1 owned close before finite fake ENODEV.",
+    "regression_fixed_source": "PASS: 2 reads / 2 prepares including initial / 1 generation / original second errno / 1 owned close. Same/mixed/status faults, interrupted/would-block reads and valid-PCM reset covered."
+  },
+  "physical_retest": {
+    "initial_observer": {
+      "started_utc": "2026-11-18T10:14:56.541482214Z",
+      "url": "ws://127.0.0.1:9330/ws",
+      "connected": true,
+      "config_count": 2,
+      "latest_configs": [
+        {
+          "utc": "2026-11-18T10:14:56.54259349Z",
+          "audio": {
+            "status": "unavailable",
+            "generation": "0"
+          }
+        },
+        {
+          "utc": "2026-11-18T10:14:57.20376517Z",
+          "audio": {
+            "status": "available",
+            "generation": "1",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        }
+      ],
+      "video": {
+        "count": 193,
+        "generation": 1,
+        "sequence": 193,
+        "timestamp_ns": 96674921195000,
+        "timestamp_flags": 3,
+        "last_received_utc": "2026-11-18T10:15:07.254367246Z",
+        "last_payload_bytes": 210289,
+        "width": 1920,
+        "height": 1080,
+        "crop_xywh": [
+          0,
+          0,
+          1920,
+          1080
+        ],
+        "source_sequence_gaps": 0
+      },
+      "audio": {
+        "count": 503,
+        "generation": 1,
+        "sequence": 502,
+        "timestamp_ns": 96674929929139,
+        "timestamp_flags": 5,
+        "last_received_utc": "2026-11-18T10:15:07.264670684Z",
+        "last_payload_bytes": 3840,
+        "crop_xywh": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sample_frames": 960,
+        "duration_ns": 20000000,
+        "source_sequence_gaps": 0
+      },
+      "order_error_count": 0,
+      "first_order_errors": null
+    },
+    "removed_observation": {
+      "utc": "2026-11-18T10:15:21.059242+00:00",
+      "usb_present": false,
+      "video_present": false,
+      "serial_present": true
+    },
+    "absent_observer": {
+      "started_utc": "2026-11-18T10:14:56.541482214Z",
+      "url": "ws://127.0.0.1:9330/ws",
+      "connected": true,
+      "config_count": 4,
+      "latest_configs": [
+        {
+          "utc": "2026-11-18T10:14:56.54259349Z",
+          "audio": {
+            "status": "unavailable",
+            "generation": "0"
+          }
+        },
+        {
+          "utc": "2026-11-18T10:14:57.20376517Z",
+          "audio": {
+            "status": "available",
+            "generation": "1",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        },
+        {
+          "utc": "2026-11-18T10:15:19.903093964Z",
+          "audio": {
+            "status": "available",
+            "generation": "2",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        },
+        {
+          "utc": "2026-11-18T10:15:19.90326001Z",
+          "audio": {
+            "status": "unavailable",
+            "generation": "0"
+          }
+        }
+      ],
+      "video": {
+        "count": 441,
+        "generation": 1,
+        "sequence": 441,
+        "timestamp_ns": 96687518886000,
+        "timestamp_flags": 3,
+        "last_received_utc": "2026-11-18T10:15:19.860947673Z",
+        "last_payload_bytes": 210289,
+        "width": 1920,
+        "height": 1080,
+        "crop_xywh": [
+          0,
+          0,
+          1920,
+          1080
+        ],
+        "source_sequence_gaps": 0
+      },
+      "audio": {
+        "count": 1132,
+        "generation": 1,
+        "sequence": 1131,
+        "timestamp_ns": 96687509951566,
+        "timestamp_flags": 5,
+        "last_received_utc": "2026-11-18T10:15:19.844601604Z",
+        "last_payload_bytes": 3840,
+        "crop_xywh": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sample_frames": 960,
+        "duration_ns": 20000000,
+        "source_sequence_gaps": 0
+      },
+      "order_error_count": 0,
+      "first_order_errors": null
+    },
+    "returned_observation": {
+      "utc": "2026-11-18T10:16:01.417562+00:00",
+      "monotonic_ns": 96729103133989,
+      "usb_present": true,
+      "video_nodes": [
+        "video5",
+        "video3",
+        "video1",
+        "video4",
+        "video2",
+        "video0"
+      ]
+    },
+    "repair": "Re-list exact USB 2b89:5389; explicit set_capture_device /dev/video0 even though path unchanged. This starts a new video generation and rematches/reopens automatic audio. No claim of automatic background reopen.",
+    "final_observer": {
+      "started_utc": "2026-11-18T10:14:56.541482214Z",
+      "url": "ws://127.0.0.1:9330/ws",
+      "connected": true,
+      "config_count": 5,
+      "latest_configs": [
+        {
+          "utc": "2026-11-18T10:14:56.54259349Z",
+          "audio": {
+            "status": "unavailable",
+            "generation": "0"
+          }
+        },
+        {
+          "utc": "2026-11-18T10:14:57.20376517Z",
+          "audio": {
+            "status": "available",
+            "generation": "1",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        },
+        {
+          "utc": "2026-11-18T10:15:19.903093964Z",
+          "audio": {
+            "status": "available",
+            "generation": "2",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        },
+        {
+          "utc": "2026-11-18T10:15:19.90326001Z",
+          "audio": {
+            "status": "unavailable",
+            "generation": "0"
+          }
+        },
+        {
+          "utc": "2026-11-18T10:16:01.678494985Z",
+          "audio": {
+            "status": "available",
+            "generation": "3",
+            "sampleRate": 48000,
+            "channels": 2
+          }
+        }
+      ],
+      "video": {
+        "count": 1866,
+        "generation": 2,
+        "sequence": 1866,
+        "timestamp_ns": 96801948260000,
+        "timestamp_flags": 3,
+        "last_received_utc": "2026-11-18T10:17:14.292151373Z",
+        "last_payload_bytes": 241005,
+        "width": 1920,
+        "height": 1080,
+        "crop_xywh": [
+          0,
+          0,
+          1920,
+          1080
+        ],
+        "source_sequence_gaps": 0
+      },
+      "audio": {
+        "count": 4763,
+        "generation": 3,
+        "sequence": 3630,
+        "timestamp_ns": 96801967296575,
+        "timestamp_flags": 5,
+        "last_received_utc": "2026-11-18T10:17:14.301942962Z",
+        "last_payload_bytes": 3840,
+        "crop_xywh": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sample_frames": 960,
+        "duration_ns": 20000000,
+        "source_sequence_gaps": 0
+      },
+      "order_error_count": 0,
+      "first_order_errors": null
+    },
+    "fresh_video_and_pcm_timestamps_after_observed_replug": true,
+    "audio_config_preceded_each_pcm_generation": true,
+    "input_while_absent": {
+      "requested_position": [
+        400,
+        280
+      ],
+      "observed_target_position": [
+        600,
+        420
+      ],
+      "observed_events": [
+        "mousemove buttons=0",
+        "mousedown buttons=1",
+        "mouseup buttons=0"
+      ],
+      "limit": "Coordinates differed while capture USB/HDMI sink was absent, consistent with target display reconfiguration (inference; no independent absent desktop-resolution reading). This proves continued serial input and release; restored mapping is checked separately."
+    },
+    "fresh_input_after_return": {
+      "requested_position": [
+        520,
+        330
+      ],
+      "observed_target_position": [
+        520,
+        330
+      ],
+      "observed_events": [
+        "mousemove buttons=0",
+        "mousedown buttons=1",
+        "mouseup buttons=0"
+      ]
+    },
+    "api_events": [
+      {
+        "utc": "2026-11-18T10:15:36.866334+00:00",
+        "method": "capture_frame",
+        "params": {},
+        "elapsed_seconds": 0.0016742610023356974,
+        "response": {
+          "id": 1,
+          "ok": false,
+          "error": "unavailable",
+          "detail": "capture unavailable: v4l2 open /dev/video0: open /dev/video0: no such file or directory"
+        }
+      },
+      {
+        "utc": "2026-11-18T10:15:37.009142+00:00",
+        "method": "mouse_click",
+        "params": {
+          "x": 400,
+          "y": 280
+        },
+        "elapsed_seconds": 0.10770532599417493,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "clicked": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:16:01.390376+00:00",
+        "method": "list_capture_devices",
+        "params": {},
+        "elapsed_seconds": 0.0019405049970373511,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "devices": [
+              {
+                "device": "/dev/video0",
+                "name": "UGREEN 15389: UGREEN 15389",
+                "formats": [
+                  {
+                    "fourcc": 1448695129,
+                    "description": "YUYV 4:2:2",
+                    "flags": 0
+                  },
+                  {
+                    "fourcc": 1196444237,
+                    "description": "Motion-JPEG",
+                    "flags": 1
+                  }
+                ],
+                "usb": {
+                  "vid": "2b89",
+                  "pid": "5389",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:1c.4/0000:03:00.0/0000:04:02.0/0000:39:00.0/usb4/4-1"
+                }
+              },
+              {
+                "device": "/dev/video2",
+                "name": "Integrated_Webcam_HD: Integrate",
+                "formats": [
+                  {
+                    "fourcc": 1196444237,
+                    "description": "Motion-JPEG",
+                    "flags": 1
+                  },
+                  {
+                    "fourcc": 1448695129,
+                    "description": "YUYV 4:2:2",
+                    "flags": 0
+                  }
+                ],
+                "usb": {
+                  "vid": "0bda",
+                  "pid": "5510",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                }
+              },
+              {
+                "device": "/dev/video4",
+                "name": "Integrated_Webcam_HD: Integrate",
+                "formats": [
+                  {
+                    "fourcc": 1497715271,
+                    "description": "8-bit Greyscale",
+                    "flags": 0
+                  }
+                ],
+                "usb": {
+                  "vid": "0bda",
+                  "pid": "5510",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:16:01.687583+00:00",
+        "method": "set_capture_device",
+        "params": {
+          "device": "/dev/video0"
+        },
+        "elapsed_seconds": 0.2410141189902788,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "device": "/dev/video0",
+            "requested_width": 1920,
+            "requested_height": 1080,
+            "autocrop": true,
+            "running": true,
+            "generation": 2,
+            "format": {
+              "width": 1920,
+              "height": 1080,
+              "fourcc": 1196444237,
+              "bytes_per_line": 0,
+              "size_image": 4147200
+            },
+            "available_devices": [
+              {
+                "device": "/dev/video0",
+                "name": "UGREEN 15389: UGREEN 15389",
+                "formats": [
+                  {
+                    "fourcc": 1448695129,
+                    "description": "YUYV 4:2:2",
+                    "flags": 0
+                  },
+                  {
+                    "fourcc": 1196444237,
+                    "description": "Motion-JPEG",
+                    "flags": 1
+                  }
+                ],
+                "usb": {
+                  "vid": "2b89",
+                  "pid": "5389",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:1c.4/0000:03:00.0/0000:04:02.0/0000:39:00.0/usb4/4-1"
+                }
+              },
+              {
+                "device": "/dev/video2",
+                "name": "Integrated_Webcam_HD: Integrate",
+                "formats": [
+                  {
+                    "fourcc": 1196444237,
+                    "description": "Motion-JPEG",
+                    "flags": 1
+                  },
+                  {
+                    "fourcc": 1448695129,
+                    "description": "YUYV 4:2:2",
+                    "flags": 0
+                  }
+                ],
+                "usb": {
+                  "vid": "0bda",
+                  "pid": "5510",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                }
+              },
+              {
+                "device": "/dev/video4",
+                "name": "Integrated_Webcam_HD: Integrate",
+                "formats": [
+                  {
+                    "fourcc": 1497715271,
+                    "description": "8-bit Greyscale",
+                    "flags": 0
+                  }
+                ],
+                "usb": {
+                  "vid": "0bda",
+                  "pid": "5510",
+                  "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:16:01.951969+00:00",
+        "method": "capture_frame",
+        "params": {},
+        "elapsed_seconds": 0.2336527410079725,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "width": 1920,
+            "height": 1080,
+            "jpeg_bytes": 41109,
+            "jpeg_sha256": "8be18d70dd2ffbfbb73d3aec970541fec3c4dfb27e1dbc4c86736e6bc108af8b"
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:16:37.809158+00:00",
+        "method": "mouse_click",
+        "params": {
+          "x": 520,
+          "y": 330
+        },
+        "elapsed_seconds": 0.07327681199240033,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "clicked": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:17:14.621198+00:00",
+        "method": "capture_frame",
+        "params": {},
+        "elapsed_seconds": 0.061498153998400085,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "width": 1920,
+            "height": 1080,
+            "jpeg_bytes": 241005,
+            "jpeg_sha256": "34ec3fd76e580fb533e7e76d86794e80e42323309ac606dc443dba9fe5570c7d"
+          }
+        }
+      }
+    ],
+    "shutdown": {
+      "utc": "2026-11-18T10:17:47.274946+00:00",
+      "observer_exit": 0,
+      "daemon_exit": 1,
+      "processes_reaped": true,
+      "listeners_closed": {
+        "9329": true,
+        "9330": true
+      },
+      "daemon_error": [
+        "v4l2 close /dev/video0: v4l2: device disconnected",
+        "no such device"
+      ],
+      "limit": "Exit1 retains the previous unplugged V4L2 descriptor close error. Both processes exited and all listeners closed; no kernel-call cancellation bound is implied."
+    }
+  },
+  "measurement_limits": [
+    "No target credentials used or stored. Metadata, controlled input logs and OCR event text only; no physical image, JPEG payload, PCM or binary retained in the evidence archive.",
+    "Audio availability, negotiated format and resumed fresh PCM were verified; no new acoustic or ten-minute latency claim is made. Prior completed long-run evidence is separate.",
+    "First reopened snapshots can contain the card's initial black acquisition frame. Warm current target events and later fresh 1920x1080 JPEG separately establish useful recovery.",
+    "The previous unplugged V4L2 descriptor close error remains observable at shutdown (exit1); both owned processes exited and listeners closed. No bound on an uncooperative kernel operation is asserted."
+  ],
+  "test_binary": {
+    "parent_commit": "cdfdb3603f3fbcb9f953bd937cecf7c857f7169e",
+    "uncommitted_source_fix": true,
+    "source_hashes": {
+      "alsa/capture_linux.go": "3005d92a7d96aa9bb376a2d4d3c573ae6c9910409c12a2255ded00b54b9b690c",
+      "alsa/recovery_progress_linux_test.go": "5a6ffb1a239fb62df360bddc52dbeb27a102ddf21ede09a5516307bcb609e0a5"
+    },
+    "binary_sha256": "e11b3321b5a0a24cf4d6ae49d32010cbfce9d51a2b1efa60a93632bbfaed33e9",
+    "build_metadata": "/tmp/autopaws-kvm-capture-retest: go1.27.4\n\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm\n\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261118092613-cdfdb3603f3f+dirty\t\n\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=\n\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=cdfdb3603f3fbcb9f953bd937cecf7c857f7169e\n\tbuild\tvcs.time=2026-11-18T09:26:13Z\n\tbuild\tvcs.modified=true\n",
+    "metadata_recorded_utc": "2026-11-18T10:15:07.614654+00:00",
+    "archive_label_correction": "The archive fixed/binary.json and fixed/summary.json label this metadata-recording timestamp built_utc; it is not a measured build timestamp. Archived raw records remain unchanged."
+  },
+  "archive": {
+    "filename": "autopaws-capture-usb-validation-2026-11-18.tar.gz",
+    "sha256": "071a7ea668f8c8102d1c426643f5704b221631209fe408be2d32698dcde4a8ac",
+    "bytes": 20698,
+    "files": 36,
+    "contains_physical_images_pcm_credentials_or_binaries": false
+  }
+}

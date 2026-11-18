@@ -36,7 +36,7 @@ func TestListDevicesRuntime(t *testing.T) {
 		t.Fatalf("default discovery lost cancellation: %v", err)
 	}
 	var stdout, stderr bytes.Buffer
-	if code := run(ctx, []string{"list-devices"}, &stdout, &stderr, commandHooks{}); code != 1 || stdout.Len() != 0 || !strings.Contains(stderr.String(), "context canceled") {
+	if code := run(ctx, []string{"--list-devices"}, &stdout, &stderr, commandHooks{}); code != 1 || stdout.Len() != 0 || !strings.Contains(stderr.String(), "context canceled") {
 		t.Fatalf("production list hook: exit %d stdout %q stderr %q", code, stdout.String(), stderr.String())
 	}
 }

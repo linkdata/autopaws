@@ -140,8 +140,9 @@ earlier outlier detail.
 
 A completed result must name gaps, errors, missing mapping and source/output
 accuracy limits, as well as the latency distribution. Run 4's measured estimates
-and paired allowance were below the target, as recorded below; the remaining
-browser and physical recovery matrix is still incomplete.
+and paired allowance were below the target, as recorded below. The separate
+[browser and physical recovery matrix](hardware-validation.md#release-validation-draft-2026-11-17)
+now records the completed required Linux core checks.
 
 ## Distinguish the recovery probes
 
@@ -185,7 +186,7 @@ found audio already handed to the browser output path delayed or ambiguously
 mapped across the output-clock discontinuity; the application queue cannot recall
 that audio. This diagnostic is not a latency pass and must remain in the record.
 
-The ordinary final-code run 4 completed with 644.887 seconds of mapped output
+The recorded ordinary run 4 completed with 644.887 seconds of mapped output
 span and 641.419 seconds of real 48 kHz stereo PCM. All 240,541 real quanta were
 mapped; none had a negative estimate or exceeded 200 ms, including its paired
 engineering allowance. Maximum estimate was 102.941 ms, maximum paired upper
@@ -198,9 +199,24 @@ and exact sources are archived; full-precision statistics and context history
 are in [the compact result](validation/audio-2026-11-17.json).
 
 This establishes the observed target result for this configuration and method,
-not an acoustic guarantee or completed release acceptance. The [current hardware matrix](hardware-validation.md#release-validation-draft-2026-11-17)
-records the independent Firefox and physical USB recovery results. Historical failures and the diagnostic output-pause
-limitation remain part of the record; do not exclude them from the conclusion.
+within this timestamp method's limits. The [current hardware matrix](hardware-validation.md#release-validation-draft-2026-11-17)
+records the separate Firefox and physical USB recovery results. Historical
+failures and the diagnostic output-pause limitation remain part of the record.
+
+## Later physical capture-USB recovery
+
+The 2026-11-18 initial USB-removal trial exposed rapid repeated ALSA recovery
+without sample progress. It is retained as a failed trial. A progress guard then
+allowed one PREPARE before requiring validated PCM, and the fixed-build physical
+retest reached bounded unavailable status, repaired explicitly, and resumed fresh
+video/audio with zero configuration-order errors. See the
+[capture USB evidence](validation/capture-usb-2026-11-18.json).
+
+Run 4 retains its original binary and frozen browser-module identities. That
+ordinary-path timing observation predates the later terminal-recovery guard; the
+fixed recovery has separate source/binary identities and physical evidence.
+The retest does not claim another ten-minute or acoustic measurement. Keep these
+scopes distinct rather than relabeling the old run as a new-binary measurement.
 
 ## Native server-writer recovery probe
 

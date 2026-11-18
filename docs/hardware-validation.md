@@ -1,15 +1,18 @@
 # Hardware validation
 
-This record distinguishes physical observations from builds and unit tests. It
-will be extended with the required browser video/audio and recovery checks before
-the first release. The input and API/MCP capture observations below do not
-establish the entire release gate by themselves.
+This record distinguishes physical observations from builds and unit tests.
+Development checks precede the completed required Linux core matrix below.
+Browser, serial and capture/audio recovery results retain initial failures and
+retests; individual component checks do not establish the entire gate alone.
+Recorded commands and archived transcripts retain the CLI used for each run.
+Earlier builds used subcommands; the current CLI starts the daemon with
+`autopaws-kvm` and uses `--version` and `--list-devices` flags.
 
 ## Input development checks, 2026-11-17
 
 - Linux amd64 development host; CH340 `1a86:7523` on `/dev/ttyUSB0`, 9600 baud.
-- Dedicated Linux target running GNOME and Firefox. Exact versions remain to be
-  recorded during release validation.
+- Dedicated Linux target running GNOME and Firefox. Exact versions are listed in
+  the release configuration below.
 - UGREEN U15389/MACROSILICON HDMI capture, `2b89:5389`, `/dev/video0`.
 - Mirrored or single target display, as confirmed by the owner. Fullscreen
   target-browser viewport: 1280×720, device pixel ratio 1. Reference
@@ -314,12 +317,16 @@ playback, end-to-end timing and the ten-minute audio run remain separate checks.
 
 ## Release validation draft, 2026-11-17
 
-**INCOMPLETE — issue 43 and first-release acceptance remain open.** This section
-records current evidence and pending work, not a blanket latency or browser pass.
-The owner-scoped release checks use the available Linux host and target;
-Windows/macOS target tests and ARM64 physical hardware are not required by
-`AGENTS.md`. Chromium and Firefox are the required available browser engines;
-Safari and other platform browsers are optional. Keep supported cross-builds.
+**Required Linux core checks completed, 2026-11-18.** This section records the
+scoped observations, initial failures and fixed-build retests. Tagged release
+artifacts are checked separately; these results do not assert universal latency
+or browser compatibility.
+The owner-scoped release checks use the available Linux host and target. The
+additional owner-required limited read-only Windows laptop smoke also passed,
+as recorded below. Broader Windows/macOS target tests and ARM64 physical hardware
+remain outside the required scope. Chromium and Firefox are the required
+available browser engines; Safari and other platform browsers are optional.
+Keep supported cross-builds.
 
 ### Current setup and build identity
 
@@ -334,13 +341,13 @@ Safari and other platform browsers are optional. Keep supported cross-builds.
 | Negotiated audio | S16_LE, 48,000 Hz stereo, 960-frame/20 ms periods, 7,680-frame/160 ms kernel buffer |
 | Exclusive PCM access | No competing PCM owner at test start; no PipeWire/WirePlumber policy change applied |
 | Browser under validation | Linux Chromium 157 and native headless Firefox 154.0; exact user agents are retained with their evidence. The Firefox checks below do not claim a second ten-minute latency run. |
-| Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Final release artifact identity remains pending. |
+| Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Tagged artifacts and checksums are verified separately through the release procedure. |
 
 The earlier input section's unspecified OS versions describe the same lab setup;
 this table records the subsequently obtained exact versions. It does not turn
 historical component observations into a completed release matrix.
 
-### Current core evidence and pending checks
+### Current core evidence
 
 | Check | Result/evidence |
 |---|---|
@@ -348,7 +355,7 @@ historical component observations into a completed release matrix.
 | 9600-baud timing, exclusivity and cancellation | Physical flock passed: a second `Port.Prepare` returned `ErrBusy` in 161.209 µs, generation 0, with no input admitted. Successful `Prepare` (open/configure, release-all reset and baud pacing together) took 31.71986 ms; joined `Close` took 518.406 µs. Component tests cover host-queue wait/baud guard and cancellation of application waits. These observations do not impose a universal Linux kernel-call bound. |
 | Ordinary shutdown and input release | Earlier actual API/MCP/WebSocket runs exited 0; controlling disconnect released held buttons, while passive disconnect did not. The 2026-11-18 physical serial replug check also released the held left button before fresh input, with no failed-action replay. The Firefox document-close diagnostic and completed backend cleanup are described below. |
 | Serial physical unplug/replug | **PASS, 2026-11-18.** The owner removed the host serial USB connection while left was held at `(240,220)`. A move to `(900,550)` while absent returned `unavailable` in 1.509 ms. After replug, the first fresh move to `(500,350)` completed in 51.123 ms; release-all preceded that move, and the target recorded mouseup at `(240,220)` before the new movement, with no `(900,550)` replay. Details below. |
-| Capture/audio physical unplug/replug | **CAPTURE_USB_RECOVERY_PENDING — owner confirmation and physical evidence required.** Record actual removed/returned video and PCM nodes, USB identity, unavailable status, explicit repair/retry, fresh video/audio generations and config order, and joined ownership. A missing path, serial unplug or forced reader pause does not complete this check. |
+| Capture/audio physical unplug/replug | **PASS after the ALSA progress-guard fix, 2026-11-18.** Initial removal exposed a rapid recovery-generation loop, retained below. On the fixed build, configuration count rose only 2 → 4 (one recovery then unavailable), stayed at 4 while absent and reached 5 after explicit same-path repair. Video generation 2 and 48 kHz stereo audio generation 3 resumed with timestamps after the observed replug and zero config/media ordering errors. Warm target events and fresh capture confirmed useful recovery; shutdown joined all owners and retained the old V4L2 close diagnostic. |
 | 1080p MJPG, timestamp/format listing and live size/device repair | Physical component checks above pass; valid acquisition black/noisy images were not content-filtered. Corrupt-frame/DHT normalization is covered synthetically. A native Chromium fixture additionally displayed production-normalized DHT-less input: raw 1280×800 JPEG with zero DHT segments became a decodable one-DHT frame, cropped to `(40,40,1200,720)`. Its displayed corners produced exact fake-HID endpoints 0/4095. This fixture used synthetic source/HID, not another physical card. |
 | Real HDMI audio content | Observed: a target-generated quiet 440 Hz tone reached both captured channels for about five seconds. Details below. |
 | Real ALSA overrun and same-format playback recovery | Run 4 paused the owned reader for 0.400324 s: generation 2 → 3 retained context 1/node 1, with no new gesture or reported browser error. The final result is recorded below and in the compact JSON. |
@@ -357,6 +364,7 @@ historical component observations into a completed release matrix.
 | SSH viewer/API access | Token-protected `http://localhost:9330` displayed video near 20 fps and 48 kHz stereo audio; enable/mute/unmute worked without browser errors. The fragment was removed, cookie authentication worked, and API port 9329 rejected missing/wrong tokens. Both ports were forwarded; no secret is in the evidence. |
 | AudioWorklet unavailable explanation | Native Chromium loaded the synthetic fixture over a private non-loopback HTTP address. Enabling its advertised audio displayed “AudioWorklet needs a compatible browser and secure context. A localhost SSH tunnel is sufficient.” Video continued at 20 fps; a click and key down/up reached the fake HID controller, with no browser errors. The fixture supplied no PCM and opened no hardware. |
 | MCP screenshot coordinates and endpoints | Earlier real screenshot `(960,540)` → target `(640,360)`, resize invalidation and scaled drag pass. Token-enabled MCP again showed center `(640,360)` and drag endpoints `(320,180)` → `(960,540)`; this smoke's first OCR did not establish the complete event sequence. All four physical corners subsequently passed in a local-file Firefox kiosk recorder: screenshot pixels `(0,0)`, `(1919,0)`, `(1919,1079)`, `(0,1079)` produced target `(0,0)`, `(1279,0)`, `(1279,719)`, `(0,719)`, with all twelve move/down/up events. Autocrop was enabled. The harness first waited for the page to finish reloading; API completion alone does not establish target-page readiness. Earlier normal-window attempts hit desktop controls. No coordinate code change was needed. |
+| Limited read-only Windows laptop smoke | **PASS, 2026-11-18.** Capture and safe keyboard/pointer actions passed after owner-handled setup. Only actions and pass/fail are recorded; no screen content or images are retained. The agent placed no scripts on the target and changed no target files or settings. Scope and limits are below. |
 | Local gate and release packaging | The preparation gate includes actionlint, release-script syntax/ShellCheck, 85 Node cases, Go race/lint and supported cross-builds. Eight CGO-disabled release-scheme binaries are checked locally with a validation version; these are not published release artifacts. Repeat after final release edits and record the actual tagged identity before publication. |
 
 Physical input checks remain one-operator tests. Multiple passive viewers do not
@@ -512,18 +520,76 @@ The viewer navigation-before-close probe additionally retained an `updateLayout`
 interruption warning and a RemoteAgent `Realm.sys.mjs` TypeError; it is not
 claimed as warning-free. Their exact logs are in the Firefox evidence archive.
 
-**CAPTURE_USB_RECOVERY_PENDING — result placeholder.** Insert the owner's actual
-physical capture/audio unplug-and-replug result here, including the selected
-USB identity, returned device nodes, observed failure and repair trigger,
-fresh-source image/timestamps, audio config/generation ordering and owner
-shutdown. This draft makes no pass claim for that check.
+### Capture/audio USB recovery and ALSA fix, 2026-11-18
+
+The initial physical UGREEN removal returned `unavailable` for capture and later
+restored media after explicit same-path selection. It nevertheless exposed a
+real ALSA recovery defect: audio configuration count rose from 2 to 3845, with
+generations reaching 10501 in under 0.6 seconds before unavailable. This failed
+trial remains in the evidence; eventual video/audio restoration was not accepted
+as a pass.
+
+The fix permits one PREPARE without an intervening validated PCM read. Another
+EPIPE/ESTRPIPE before valid sample progress ends the source rather than spinning
+through recovery generations. Valid PCM re-arms recovery for a later genuine
+overrun. The [ALSA notes](../alsa/README.md) describe terminal repair and ownership.
+
+The owner repeated physical removal on the identified fixed build. Configuration
+count rose only from 2 to 4 (available generation 2, then unavailable) and remained
+4 through the absent interval. Capture returned `unavailable` in 1.674 ms.
+Serial input remained independent and released its button. Coordinates differed
+while HDMI capture was absent—requested `(400,280)` appeared at `(600,420)`,
+consistent with target display reconfiguration; no desktop-resolution query was
+taken during absence. This establishes input/release, with restored mapping
+checked separately.
+
+The same UGREEN USB port `4-1` and `/dev/video0` returned. Explicit same-path
+`set_capture_device` completed in 241.014 ms. Video generation 2 and 48 kHz stereo
+audio generation 3 resumed; config count reached 5, both media timestamps were
+after the host-monotonic replug observation, and config/media ordering errors
+remained zero. The first reopened capture was a valid initial black acquisition
+image. A later fresh 1920×1080 JPEG took 61.498 ms, and the settled target recorded
+all three move/down/up events exactly at `(520,330)`.
+
+The observer exited 0, the daemon exited 1, both processes were reaped and ports
+9329/9330 closed. Exit 1 retains the earlier disconnected V4L2 descriptor's close
+`ENODEV` diagnostic; it does not mean ownership was abandoned. Serial zero-keyboard
+and zero-relative-mouse releases succeeded. No universal kernel-call cancellation
+or shutdown bound is inferred.
+
+The [capture USB record](validation/capture-usb-2026-11-18.json) preserves the
+initial failure, fixed binary/source identity, raw metadata and limits. Exact
+helpers/metadata are in `autopaws-capture-usb-validation-2026-11-18.tar.gz`, SHA256
+`071a7ea668f8c8102d1c426643f5704b221631209fe408be2d32698dcde4a8ac`
+(20,698 bytes, 36 files); it contains no physical pictures, PCM, credentials or
+binaries. This retest completes the required physical capture/audio recovery row;
+it makes no new acoustic or ten-minute latency claim.
+
+### Limited read-only Windows laptop smoke, 2026-11-18
+
+The native Linux daemon used the clean `965b89c` release candidate with
+`-autocrop=false` on the host. The API and relative button mode used their
+defaults. Capture API metadata reported 1920×1080. The owner prepared a stable
+video signal and reconnected the target HID USB after an initial input attempt
+had no effect. Post-reconnect checks passed: keyboard modifiers/shortcuts,
+Tab/arrow focus navigation, Escape/menu dismissal, pointer movement, positioned
+left/right clicks and a repeated click. Testing finished with a return to the
+normal idle interface. All owned processes stopped with exit 0.
+
+The agent typed no target text or commands, launched no target applications,
+placed no scripts on the target and changed no target files or settings. Only test actions and
+pass/fail are recorded; no screen contents, labels, identifiers, screenshots or
+OCR are retained. The exact target OS/build and model were not recorded. No
+text-layout, dragging, audio or broader Windows compatibility claim is made.
+The [sanitized record](validation/windows-readonly-2026-11-18.json) contains only
+permitted metadata and test outcomes.
 
 ### Optional or explicitly unrequired coverage not run
 
 | Coverage | Status |
 |---|---|
 | ARM64 physical host | Not run; not required by the current owner scope. Linux arm64 cross-build remains required. |
-| Windows/macOS physical target layouts/input | Not run; not required by the current owner scope. Their layout fixtures and portable MCP builds are separate evidence. |
+| Broader Windows target layouts/input and macOS physical targets | Not run; optional beyond the separately recorded limited Windows laptop smoke. Layout fixtures and portable MCP builds are separate evidence. |
 | Safari and other platform browser engines | Not run; optional under the current issue 43 scope. No video/audio compatibility claim is made. |
 | Second capture chipset / two identical physical cards | Not run; one UGREEN card only. USB-path matching has fake-tree coverage. |
 | CH9329 configured for 115200 baud | Not run; physical serial observations use 9600 baud. |
@@ -573,5 +639,33 @@ observes host cleanup and target event ordering, not a universal kernel or
 physical input-latency deadline.
 
 The [2026-11-18 compact record](validation/recovery-firefox-2026-11-18.json)
-contains serial, cancellation and Firefox results and archive identities. Physical
-captureUSB recovery remains pending and the release marker remains in place.
+contains serial, cancellation and Firefox results and archive identities. The
+[capture USB record](validation/capture-usb-2026-11-18.json) separately records the
+initial ALSA failure and successful fixed-build physical recovery. Required Linux
+core validation is complete; final artifacts and publication follow the release
+procedure.
+
+### Flattened CLI and default startup, 2026-11-18
+
+The revised binary started with no arguments and listened only on
+`127.0.0.1:9329`; the web port stayed closed. Device info reported default
+`relative` buttons. The native MCP client also launched with no arguments and
+read the physical target through its default connection. `--version`, help and
+`--list-devices` worked without starting the daemon.
+
+The bare run used the built-in 1920×1080 target dimensions while Firefox reported
+a 1280×720 viewport. Its raw drag/clipping events remain in the evidence; this
+run establishes connectivity and released buttons, not exact coordinate mapping.
+Viewport size alone does not independently establish desktop geometry or explain
+those events. With the previously validated 1280×720 target configuration and the
+API/mouse-mode flags still omitted, a fresh page recorded click move/down/up at
+`(640,360)` and drag down at `(320,180)`, held movement to `(960,540)`, then release
+at that endpoint. Both daemon runs exited 0; helpers exited and test listeners
+closed. No new USB or long audio measurement is claimed.
+
+The [CLI/default record](validation/cli-defaults-2026-11-18.json) retains command
+arguments, source/binary identity, raw OCR/API metadata and scope. Its local
+`autopaws-cli-validation-2026-11-18.tar.gz` archive has SHA256
+`695e39b750884765a5e05a2622b0ba2935a50d7a97ec0c4c55031eb3d1af8f62`
+(19,031 bytes, 26 files); it contains no physical pictures, PCM, credentials or
+binaries.

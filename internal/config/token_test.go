@@ -18,16 +18,16 @@ func TestTokenFileSettingPrecedenceAndHelp(t *testing.T) {
 		{[]string{"-config", path, "-token-file", "another"}, "another"},
 		{[]string{"-config", path, "-token-file="}, ""},
 	} {
-		got, err := ParseServe(vector.args)
+		got, _, err := Parse(vector.args)
 		if err != nil || got.TokenFile != vector.want {
 			t.Fatalf("token file setting = %q, %v; want %q", got.TokenFile, err, vector.want)
 		}
 	}
-	if _, err := ParseServe([]string{"-token-file", "missing", "-help"}); !errors.Is(err, flag.ErrHelp) {
+	if _, _, err := Parse([]string{"-token-file", "missing", "-help"}); !errors.Is(err, flag.ErrHelp) {
 		t.Fatalf("help read token file: %v", err)
 	}
 	var usage bytes.Buffer
-	WriteServeUsage(&usage)
+	WriteUsage(&usage)
 	if !strings.Contains(usage.String(), "-token-file") {
 		t.Fatal("token file omitted from usage")
 	}
