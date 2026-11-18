@@ -11,6 +11,8 @@ jobs:
   check:
     name: Linux amd64 checks and cross-builds
     runs-on: ubuntu-latest
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -37,10 +39,26 @@ jobs:
         run: |
           go build ./...
           go build -o /dev/null ./cmd/autopaws-kvm
-      - name: Race tests
+      - name: Race tests with coverage
         env:
           CGO_ENABLED: "1"
-        run: go test -race ./...
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: Calculate code coverage
+        id: coverage
+        run: |
+          go tool cover -func=coverage.out | tee coverage-summary.out
+          coverage="$(awk '/^total:/ {print $3}' coverage-summary.out)"
+          printf 'coverage=%s\n' "$coverage" >> "$GITHUB_OUTPUT"
+          go tool cover -html=coverage.out -o=coveragereport.html.out
+      - name: Upload code coverage
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage
+          path: |
+            coverage.out
+            coveragereport.html.out
+          if-no-files-found: error
+          retention-days: 7
       - name: Cross-build Linux arm64
         env:
           CGO_ENABLED: "0"
@@ -55,3 +73,24 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
           CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+
+  coverage:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Download code coverage
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: coverage
+      - name: Publish code coverage badge and report
+        uses: linkdata/gitcoverage@03383ad3a6ff45e117a50d29d21c3a95c2d5d12a # v11
+        with:
+          coverage: ${{ needs.check.outputs.coverage }}
+          report: coveragereport.html.out
+          token: ${{ github.token }}
