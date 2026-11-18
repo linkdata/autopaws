@@ -157,6 +157,8 @@ func sdkDefaultReply(request apiwire.Request, capture sdkCapture) sdkReply {
 		}}}
 	case "list_capture_devices":
 		return sdkReply{result: map[string]any{"devices": []map[string]string{{"device": "/dev/video-test", "name": "fake HDMI capture"}}}}
+	case "list_keyboard_layouts":
+		return sdkReply{result: map[string]any{"keyboard_layout": "us104", "layouts": []map[string]string{{"name": "us104", "source": "builtin"}, {"name": "custom-target", "source": "custom"}}}}
 	case "type_text":
 		return sdkReply{result: map[string]int{"chars_typed": 2}}
 	case "send_key_sequence":
@@ -284,7 +286,7 @@ func sdkInputRequests(requests []apiwire.Request) []apiwire.Request {
 	var inputs []apiwire.Request
 	for _, request := range requests {
 		switch request.Method {
-		case "capture_frame", "get_device_info", "list_capture_devices":
+		case "capture_frame", "get_device_info", "list_capture_devices", "list_keyboard_layouts":
 		default:
 			inputs = append(inputs, request)
 		}
@@ -303,11 +305,11 @@ func TestSDKToolsGolden(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.SortFunc(result.Tools, func(a, b *mcp.Tool) int { return cmp.Compare(a.Name, b.Name) })
-	wantNames := []string{"capture_screen", "get_device_info", "list_capture_devices", "mouse_click", "mouse_drag", "mouse_move", "mouse_scroll", "send_key", "send_key_sequence", "set_capture_device", "set_capture_resolution", "type_text"}
+	wantNames := []string{"capture_screen", "get_device_info", "list_capture_devices", "list_keyboard_layouts", "mouse_click", "mouse_drag", "mouse_move", "mouse_scroll", "send_key", "send_key_sequence", "set_capture_device", "set_capture_resolution", "set_keyboard_layout", "type_text"}
 	var names []string
 	for _, tool := range result.Tools {
 		names = append(names, tool.Name)
-		readOnly := slices.Contains([]string{"capture_screen", "get_device_info", "list_capture_devices"}, tool.Name)
+		readOnly := slices.Contains([]string{"capture_screen", "get_device_info", "list_capture_devices", "list_keyboard_layouts"}, tool.Name)
 		if (tool.Annotations != nil && tool.Annotations.ReadOnlyHint) != readOnly {
 			t.Errorf("%s readOnlyHint is wrong: %+v", tool.Name, tool.Annotations)
 		}
@@ -364,6 +366,8 @@ func TestSDKAllToolsCallTheAPI(t *testing.T) {
 		{"mouse_scroll", map[string]any{"amount": -9}, map[string]any{"amount": -9}},
 		{"get_device_info", map[string]any{}, map[string]any{}},
 		{"list_capture_devices", map[string]any{}, map[string]any{}},
+		{"list_keyboard_layouts", map[string]any{}, map[string]any{}},
+		{"set_keyboard_layout", map[string]any{"layout": "custom-target"}, map[string]any{"layout": "custom-target"}},
 		{"set_capture_device", map[string]any{"device": "/dev/video-test"}, map[string]any{"device": "/dev/video-test"}},
 		{"set_capture_resolution", map[string]any{"width": 640, "height": 480}, map[string]any{"width": 640, "height": 480}},
 	} {
@@ -373,7 +377,7 @@ func TestSDKAllToolsCallTheAPI(t *testing.T) {
 			if sdkText(result) == "" {
 				t.Fatal("tool returned no text")
 			}
-			if (tc.name == "get_device_info" || tc.name == "list_capture_devices") && !json.Valid([]byte(sdkText(result))) {
+			if (tc.name == "get_device_info" || tc.name == "list_capture_devices" || tc.name == "list_keyboard_layouts") && !json.Valid([]byte(sdkText(result))) {
 				t.Fatalf("%s did not return JSON text: %s", tc.name, sdkText(result))
 			}
 			after := fake.snapshot()
@@ -543,6 +547,64 @@ func TestSDKCaptureChangeInvalidatesSnapshotEvenOnFailure(t *testing.T) {
 				sdkTool(t, session, "mouse_move", map[string]any{"x": 4, "y": 2}, false)
 			})
 		}
+	}
+}
+
+func TestSDKKeyboardLayoutChangePreservesSnapshot(t *testing.T) {
+	for _, failed := range []bool{false, true} {
+		t.Run(fmt.Sprintf("failed=%t", failed), func(t *testing.T) {
+			capture := sdkCapture{jpeg: sdkJPEG(t, 5, 3), width: 5, height: 3, targetWidth: 9, targetHigh: 7}
+			fake := sdkNewAPI(t, func(_ net.Conn, request apiwire.Request) sdkReply {
+				if request.Method == "set_keyboard_layout" {
+					if failed {
+						return sdkReply{code: apiwire.ErrInvalidParams, detail: "unknown keyboard layout"}
+					}
+					return sdkReply{result: map[string]string{"keyboard_layout": "custom-target"}}
+				}
+				return sdkDefaultReply(request, capture)
+			})
+			session := sdkConnect(t, newServer(t.Context(), mcpOptions{}, apiclient.New(fake.listener.Addr().String())))
+			sdkTool(t, session, "capture_screen", map[string]any{}, false)
+			before := len(fake.snapshot())
+			result := sdkTool(t, session, "set_keyboard_layout", map[string]any{"layout": "custom-target"}, failed)
+			if !failed && strings.TrimSpace(sdkText(result)) != `{"keyboard_layout":"custom-target"}` {
+				t.Fatalf("layout result changed: %s", sdkText(result))
+			}
+			sdkTool(t, session, "list_keyboard_layouts", map[string]any{}, false)
+			sdkTool(t, session, "mouse_move", map[string]any{"x": 4, "y": 2}, false)
+			requests := fake.snapshot()[before:]
+			if len(requests) != 3 || requests[0].Method != "set_keyboard_layout" || requests[1].Method != "list_keyboard_layouts" || requests[2].Method != "mouse_move" {
+				t.Fatalf("layout switch and cached-coordinate move calls = %+v", requests)
+			}
+			sdkEqualParams(t, requests[0], map[string]any{"layout": "custom-target"})
+			sdkEqualParams(t, requests[1], map[string]any{})
+			sdkEqualParams(t, requests[2], map[string]any{"x": 8, "y": 6})
+		})
+	}
+}
+
+func TestSDKKeyboardLayoutToolSchemasRejectInvalidArguments(t *testing.T) {
+	fake := sdkNewAPI(t, func(_ net.Conn, _ apiwire.Request) sdkReply {
+		t.Error("invalid tool arguments reached API")
+		return sdkReply{code: apiwire.ErrUnavailable}
+	})
+	session := sdkConnect(t, newServer(t.Context(), mcpOptions{}, apiclient.New(fake.listener.Addr().String())))
+	for _, tc := range []struct {
+		name string
+		args any
+	}{
+		{"set_keyboard_layout", map[string]any{}},
+		{"set_keyboard_layout", map[string]any{"layout": 123}},
+		{"set_keyboard_layout", map[string]any{"layout": "se105", "path": "/tmp/layout.yaml"}},
+		{"list_keyboard_layouts", map[string]any{"layout": "se105"}},
+	} {
+		result, err := session.client.CallTool(sdkContext(t), &mcp.CallToolParams{Name: tc.name, Arguments: tc.args})
+		if err == nil && (result == nil || !result.IsError) {
+			t.Fatalf("%s accepted invalid arguments %v: %+v", tc.name, tc.args, result)
+		}
+	}
+	if requests := fake.snapshot(); len(requests) != 0 {
+		t.Fatalf("schema failures contacted API: %+v", requests)
 	}
 }
 

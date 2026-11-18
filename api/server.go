@@ -32,6 +32,7 @@ type Options struct {
 	SerialBaud                int
 	ScreenWidth, ScreenHeight int
 	KeyboardLayout            string
+	LayoutsDir                string
 	ButtonMode                string
 	Logger, KeyLogger         *slog.Logger
 	Capture                   *capture.Manager
@@ -43,10 +44,11 @@ type handler func(context.Context, json.RawMessage) (any, error)
 // Server handles one request/response per connection. The caller owns HID
 // shutdown; Serve stops networking without waiting for input cleanup to drain.
 type Server struct {
-	keyboard *hid.Keyboard
-	mouse    *hid.Mouse
-	options  Options
-	handlers map[string]handler
+	keyboard   *hid.Keyboard
+	mouse      *hid.Mouse
+	options    Options
+	layoutName string
+	handlers   map[string]handler
 
 	mu        sync.Mutex
 	conns     map[net.Conn]struct{}
@@ -62,7 +64,8 @@ func New(keyboard *hid.Keyboard, mouse *hid.Mouse, options Options) *Server {
 	}
 	server := &Server{
 		keyboard: keyboard, mouse: mouse, options: options,
-		conns: make(map[net.Conn]struct{}), serveDone: make(chan struct{}),
+		layoutName: options.KeyboardLayout,
+		conns:      make(map[net.Conn]struct{}), serveDone: make(chan struct{}),
 	}
 	server.handlers = server.methods()
 	return server

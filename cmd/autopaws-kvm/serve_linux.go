@@ -109,7 +109,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 			Token:        secret,
 			SerialDevice: cfg.SerialDevice, SerialBaud: cfg.SerialBaud,
 			ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
-			KeyboardLayout: cfg.TargetLayout, ButtonMode: cfg.MouseButtonMode,
+			KeyboardLayout: cfg.TargetLayout, LayoutsDir: cfg.LayoutsDir, ButtonMode: cfg.MouseButtonMode,
 			Logger: logger, KeyLogger: keys,
 			Capture: video, DiscoverCapture: factories.discoverCapture,
 		})

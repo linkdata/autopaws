@@ -96,7 +96,7 @@ func TestCommandSDKRunAndShutdown(t *testing.T) {
 			}
 			defer session.Close()
 			tools, err := session.ListTools(callCtx, nil)
-			if err != nil || len(tools.Tools) != 12 {
+			if err != nil || len(tools.Tools) != 14 {
 				t.Fatalf("command did not start the MCP tools: %v, %v", tools, err)
 			}
 			if signal {

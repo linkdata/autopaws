@@ -39,7 +39,7 @@ type KeyStep struct {
 	Delay     *time.Duration
 }
 
-// Keyboard resolves text through one immutable target layout.
+// Keyboard resolves text through its currently selected immutable layout.
 type Keyboard struct {
 	controller *Controller
 	layout     *Layout
@@ -52,6 +52,16 @@ func NewKeyboard(controller *Controller, layout *Layout) *Keyboard {
 		panic("hid: nil keyboard dependency")
 	}
 	return &Keyboard{controller: controller, layout: layout}
+}
+
+// SetLayout selects an immutable text map without preparing or sending to the
+// transport. Call it between keyboard operations; concurrent changes are not
+// supported. A nil layout is a programming error and panics.
+func (keyboard *Keyboard) SetLayout(layout *Layout) {
+	if layout == nil {
+		panic("hid: nil keyboard layout")
+	}
+	keyboard.layout = layout
 }
 
 type keyGroup struct {

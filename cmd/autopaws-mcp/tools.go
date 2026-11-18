@@ -77,10 +77,14 @@ type captureResolutionInput struct {
 	Height uint32 `json:"height" jsonschema:"Positive capture height in pixels."`
 }
 
+type keyboardLayoutInput struct {
+	Layout string `json:"layout" jsonschema:"Target text layout name: us104, uk105, de105, fr105, jp106, se105, or a custom name from the daemon's configured layouts directory."`
+}
+
 func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *mcp.Server {
 	owner := &toolServer{lifetime: lifetime, options: options, caller: caller, sessions: make(map[*mcp.ServerSession]*screenState)}
 	server := mcp.NewServer(&mcp.Implementation{Name: "autopaws-mcp", Version: options.Version}, &mcp.ServerOptions{Logger: options.Logger})
-	addTool(server, owner, "type_text", "Type text on the target keyboard. The entire text is validated against the configured target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.", false, owner.typeText)
+	addTool(server, owner, "type_text", "Type text on the target keyboard. The entire text is validated against the active target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.", false, owner.typeText)
 	addTool(server, owner, "send_key", "Press and release one named key or 0x-prefixed HID keycode, with optional ctrl, shift, alt or super modifiers.", false, owner.sendKey)
 	addTool(server, owner, "send_key_sequence", "Send one atomic keyboard sequence of at most 4096 steps. The complete sequence is validated first. Step delays default to 100 ms and may be 0 through 60000 ms.", false, owner.sendKeySequence)
 	addTool(server, owner, "mouse_move", "Move the target pointer. Absolute x/y are integer pixels in this session's latest successful capture_screen image; capture first. Relative deltas are unchanged and each must be -127 through 127.", false, owner.mouseMove)
@@ -88,10 +92,12 @@ func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *
 	addTool(server, owner, "mouse_drag", "Drag in one atomic daemon action, with 50 ms after button down and after the move. Both endpoints are pixels in this session's latest successful capture_screen image. Default button left; button_mode may override the daemon setting.", false, owner.mouseDrag)
 	addTool(server, owner, "mouse_scroll", "Scroll the target's wheel by a signed amount, clamped to -127 through 127.", false, owner.mouseScroll)
 	addTool(server, owner, "capture_screen", "Capture the current screen as an unchanged JPEG image with its width and height. Establishes this session's pixel coordinates for later absolute mouse actions.", true, owner.captureScreen)
-	addTool(server, owner, "get_device_info", "Read configured serial, target screen, keyboard layout and capture information from the daemon.", true, owner.deviceInfo)
+	addTool(server, owner, "get_device_info", "Read configured serial and target screen settings, active keyboard layout, and capture information from the daemon.", true, owner.deviceInfo)
 	addTool(server, owner, "list_capture_devices", "List capture devices available to the daemon.", true, owner.listCaptureDevices)
+	addTool(server, owner, "list_keyboard_layouts", "List the daemon's built-in and configured custom text layouts and current selection. Entries report their source and any load error; this does not change the layout or target OS input source.", true, owner.listKeyboardLayouts)
 	addTool(server, owner, "set_capture_device", "Select a capture device by path. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureDevice)
 	addTool(server, owner, "set_capture_resolution", "Set a positive capture width and height. Every attempt invalidates this session's screenshot coordinates, including failed attempts; capture_screen again before absolute mouse input.", false, owner.setCaptureResolution)
+	addTool(server, owner, "set_keyboard_layout", "Select the daemon's target text layout for subsequent keyboard actions without restarting or reconnecting. Use list_keyboard_layouts to discover names. This runtime setting does not change the target OS input source or screenshot coordinates; restart restores the configured startup layout. Selecting the same name reloads its file. Use sequential requests through one MCP connection.", false, owner.setKeyboardLayout)
 	if options.TesseractPath != "" {
 		addTool(server, owner, "get_screen_text", "Capture the current target screen and extract English text with local Tesseract OCR. Prefer this to an image for terminal text. Does not establish screenshot coordinates for mouse actions.", true, owner.getScreenText)
 		addTool(server, owner, "execute_and_read", "Type command plus Enter in one raw keyboard action, wait for output, then capture a fresh frame and extract English text with local Tesseract OCR. The wait is cancellable, defaults to 1 second and accepts 0 through 60 seconds; a fresh frame does not prove the command has completed. Does not establish screenshot coordinates.", false, owner.executeAndRead)
@@ -173,6 +179,10 @@ func (owner *toolServer) listCaptureDevices(ctx context.Context, _ *mcp.CallTool
 	return owner.call(ctx, "list_capture_devices", input)
 }
 
+func (owner *toolServer) listKeyboardLayouts(ctx context.Context, _ *mcp.CallToolRequest, input struct{}) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "list_keyboard_layouts", input)
+}
+
 func (owner *toolServer) setCaptureDevice(ctx context.Context, request *mcp.CallToolRequest, input captureDeviceInput) (*mcp.CallToolResult, error) {
 	owner.state(request.Session).invalidate()
 	return owner.call(ctx, "set_capture_device", input)
@@ -181,4 +191,8 @@ func (owner *toolServer) setCaptureDevice(ctx context.Context, request *mcp.Call
 func (owner *toolServer) setCaptureResolution(ctx context.Context, request *mcp.CallToolRequest, input captureResolutionInput) (*mcp.CallToolResult, error) {
 	owner.state(request.Session).invalidate()
 	return owner.call(ctx, "set_capture_resolution", input)
+}
+
+func (owner *toolServer) setKeyboardLayout(ctx context.Context, _ *mcp.CallToolRequest, input keyboardLayoutInput) (*mcp.CallToolResult, error) {
+	return owner.call(ctx, "set_keyboard_layout", input)
 }

@@ -5,6 +5,8 @@ package api
 import (
 	"context"
 	"errors"
+	"io/fs"
+	"syscall"
 
 	"github.com/linkdata/autopaws/apiwire"
 	"github.com/linkdata/autopaws/capture"
@@ -24,6 +26,13 @@ func classifyError(err error) (apiwire.Code, string) {
 		code = apiwire.ErrCaptureChanged
 	case errors.Is(err, hid.ErrUnsupported):
 		code = apiwire.ErrUnsupported
+	case errors.Is(err, hid.ErrLayout):
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) && !errors.Is(err, syscall.ENAMETOOLONG) {
+			code = apiwire.ErrUnavailable
+		} else {
+			code = apiwire.ErrInvalidParams
+		}
 	case errors.Is(err, hid.ErrModifier), errors.Is(err, hid.ErrKeycode),
 		errors.Is(err, hid.ErrDelay), errors.Is(err, hid.ErrSequence),
 		errors.Is(err, hid.ErrCoordinates), errors.Is(err, hid.ErrMovement),

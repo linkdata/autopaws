@@ -134,9 +134,11 @@ func TestLayoutPrecedence(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertLookup(t, mustLoad(t, "custom", directory), 'a', []Stroke{{Keycode: 0x04}})
-	for _, name := range []string{"unknown", "", ".", "..", "a/b", `a\b`} {
-		if _, err := LoadLayout(name, ""); !errors.Is(err, ErrUnknownLayout) || !errors.Is(err, ErrLayout) {
-			t.Errorf("LoadLayout(%q) error = %v; want unknown layout", name, err)
+	for _, directory := range []string{"", directory} {
+		for _, name := range []string{"unknown", "", ".", "..", "a/b", `a\b`, "a\x00"} {
+			if _, err := LoadLayout(name, directory); !errors.Is(err, ErrUnknownLayout) || !errors.Is(err, ErrLayout) {
+				t.Errorf("LoadLayout(%q, %q) error = %v; want unknown layout", name, directory, err)
+			}
 		}
 	}
 }

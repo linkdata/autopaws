@@ -20,8 +20,10 @@ func (server *Server) methods() map[string]handler {
 		"mouse_move": server.mouseMove, "mouse_click": server.mouseClick,
 		"mouse_down": server.mouseDown, "mouse_up": server.mouseUp,
 		"mouse_scroll": server.mouseScroll, "mouse_drag": server.mouseDrag,
-		"get_device_info": server.deviceInfo,
-		"capture_frame":   server.captureFrame, "list_capture_devices": server.listCaptureDevices,
+		"get_device_info":       server.deviceInfo,
+		"set_keyboard_layout":   server.setKeyboardLayout,
+		"list_keyboard_layouts": server.listKeyboardLayouts,
+		"capture_frame":         server.captureFrame, "list_capture_devices": server.listCaptureDevices,
 		"set_capture_device": server.setCaptureDevice, "set_capture_resolution": server.setCaptureResolution,
 	}
 }
@@ -50,6 +52,48 @@ func (server *Server) ping(_ context.Context, data json.RawMessage) (any, error)
 		return nil, err
 	}
 	return map[string]bool{"pong": true}, nil
+}
+
+func (server *Server) setKeyboardLayout(ctx context.Context, data json.RawMessage) (any, error) {
+	var request struct {
+		Layout *string `json:"layout"`
+	}
+	if err := params(data, &request); err != nil {
+		return nil, err
+	}
+	if request.Layout == nil {
+		return nil, required("layout")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	layout, err := hid.LoadLayout(*request.Layout, server.options.LayoutsDir)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	server.keyboard.SetLayout(layout)
+	server.layoutName = *request.Layout
+	return map[string]string{"keyboard_layout": server.layoutName}, nil
+}
+
+func (server *Server) listKeyboardLayouts(ctx context.Context, data json.RawMessage) (any, error) {
+	if err := params(data, &struct{}{}); err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	layouts, err := hid.ListLayouts(server.options.LayoutsDir)
+	if err != nil {
+		return nil, err
+	}
+	return struct {
+		KeyboardLayout string           `json:"keyboard_layout"`
+		Layouts        []hid.LayoutInfo `json:"layouts"`
+	}{server.layoutName, layouts}, nil
 }
 
 func (server *Server) typeText(ctx context.Context, data json.RawMessage) (any, error) {
@@ -259,7 +303,7 @@ func (server *Server) deviceInfo(ctx context.Context, data json.RawMessage) (any
 		"serial": map[string]any{"device": options.SerialDevice, "baud": options.SerialBaud, "auto_detect": options.SerialDevice == ""},
 		"config": map[string]any{
 			"screen_width": options.ScreenWidth, "screen_height": options.ScreenHeight,
-			"keyboard_layout": options.KeyboardLayout, "serial_baud": options.SerialBaud,
+			"keyboard_layout": server.layoutName, "serial_baud": options.SerialBaud,
 			"mouse_button_mode": options.ButtonMode,
 		},
 		"capture": server.captureInfo(ctx),

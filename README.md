@@ -474,10 +474,24 @@ exits 0.
 | Tools | Purpose |
 |---|---|
 | `type_text`, `send_key`, `send_key_sequence` | Complete keyboard actions through the API |
+| `list_keyboard_layouts` | Report the active layout and available built-in/custom maps |
+| `set_keyboard_layout` | Select the daemon's active text map without restarting or reconnecting MCP |
 | `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions; a drag is one API request |
 | `capture_screen` | Return the daemon's JPEG unchanged plus image dimensions |
 | `get_screen_text`, `execute_and_read` | Optional local English OCR, with command execution through the keyboard |
 | `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Read target/device information and select capture settings |
+
+Call `list_keyboard_layouts` with no arguments to inspect the active map and
+available names. Entries report their `builtin` or `custom` source; an `error`
+marks a map that cannot be loaded. Then call `set_keyboard_layout` with
+`{"layout":"se105"}` after separately selecting
+Swedish on the target OS. It returns `{"keyboard_layout":"se105"}` and applies
+to subsequent keyboard actions; `get_device_info` reports the active name.
+Built-in and custom names use the daemon's configured `layouts-dir`. Selecting
+the same name reloads its file; an invalid selection leaves the working map
+unchanged. Runtime selection supports one MCP connection with sequential
+requests. Restarting the daemon restores its CLI/YAML startup layout. See
+[changing the active layout](CREATING_LAYOUTS.md#changing-the-active-layout).
 
 MCP absolute coordinates are integer pixels in that session's latest successful
 `capture_screen` image. Capture first before an absolute move, positioned click
@@ -485,7 +499,8 @@ or drag. Both screenshot endpoints map to the target endpoints, including croppe
 or scaled images; a one-pixel image or target axis maps to zero. Relative deltas
 remain unscaled and a click at the current pointer needs no screenshot. A capture
 device/resolution change attempt invalidates the old screenshot even when the API
-reports failure. Screenshots use the shared pipeline's fresh, optionally cropped
+reports failure. Listing or changing keyboard layouts preserves screenshot coordinates.
+Screenshots use the shared pipeline's fresh, optionally cropped
 JPEG; MCP returns those bytes unchanged.
 
 Cancelling a tool or closing its MCP connection closes the active API call,
