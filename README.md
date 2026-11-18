@@ -7,7 +7,7 @@ It is a Go rewrite of two Python projects:
 - [serial-hid-kvm](https://github.com/linkdata/serial-hid-kvm), the KVM server
 - [mcp-serial-hid-kvm](https://github.com/linkdata/mcp-serial-hid-kvm), its MCP server
 
-Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, browser video/audio, optional OCR and shared-token access are implemented. First-release validation is still pending; see [tested configurations and limits](#tested-configurations-and-limits). The [tracking epic](../../issues/23) records the port.
+Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, browser video/audio, optional OCR and shared-token access are implemented. Required Linux core validation is recorded; see [tested configurations and limits](#tested-configurations-and-limits). The [tracking epic](../../issues/23) records the port.
 
 ## Components
 
@@ -600,11 +600,11 @@ The browser replaces the native preview.
 The [hardware validation record](docs/hardware-validation.md) identifies the
 tested Linux host, target, hardware and browser configurations and their actual
 results. [Release notes](docs/release-notes.md) track the first-release gate.
-Physical serial USB recovery and native Firefox 154 video/audio checks are now
-recorded, including the Firefox document-close diagnostic described in the
-validation record. Physical capture/audio USB recovery remains pending.
-First-release validation is incomplete; every required Linux core check must
-pass before publication.
+Required Linux core checks passed on the recorded setup, including physical
+serial and capture/audio USB recovery, Chromium/Firefox video/audio, and
+screenshot-scaled input. The validation record retains the initial ALSA recovery
+defect, its fixed-build physical retest and known browser/shutdown diagnostics.
+Final tagged artifacts follow the [release procedure](docs/releasing.md).
 
 Separate Windows/macOS target tests, physical ARM64 hardware, Safari and browser
 checks on other operating systems have not been run and are optional extended

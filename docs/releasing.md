@@ -19,7 +19,9 @@ repository visibility; downloads require an account/token with access.
    while that marker remains. Keep runtime-tested and build-only platforms
    distinct. Include optional environments not run.
    Confirm every required physical recovery and browser row, retaining diagnosed
-   browser limits. Do not infer a pass from unit tests or crossbuilds.
+   browser limits and the initial failed ALSA recovery trial. Check the successful
+   fixed-build retest, bounded recovery and actual retained-close exit diagnostics.
+   Do not infer a pass from eventual media restoration, unit tests or crossbuilds.
 5. Run actionlint and the complete final README local CI gate. Run the eight
    release builds from a clean tree with a new output directory:
 

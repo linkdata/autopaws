@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-11-18",
-  "release_acceptance": "incomplete",
+  "release_acceptance": "required Linux core complete; publication follows release procedure",
   "source_commit": "0b2e606413c49e5d0ef21fe31e8c3ae7a3e483a4",
   "serial_usb_recovery": {
     "removed": {
@@ -292,8 +292,9 @@
     ]
   },
   "capture_usb_recovery": {
-    "status": "pending",
-    "reason": "No physical captureUSB removal observed yet; UGREEN video/audio continue streaming. No missing-path or serial test substitutes for this required check."
+    "status": "PASS after progress-guard fix",
+    "record": "capture-usb-2026-11-18.json",
+    "scope": "Initial physical removal exposed ALSA no-progress generation churn. Fixed-source physical retest reached bounded unavailable, explicitly repaired same-path video/audio and confirmed fresh media, target input release and joined ownership."
   },
   "archives": [
     {
