@@ -669,3 +669,30 @@ arguments, source/binary identity, raw OCR/API metadata and scope. Its local
 `695e39b750884765a5e05a2622b0ba2935a50d7a97ec0c4c55031eb3d1af8f62`
 (19,031 bytes, 26 files); it contains no physical pictures, PCM, credentials or
 binaries.
+
+## Swedish keyboard patch validation, 2026-11-18
+
+The proposed v0.1.1 layout data was tested before merge against the connected
+Windows laptop using its standard Swedish layout. A host SDK client launched
+the candidate `autopaws-mcp`, which sent every text batch through the candidate
+`autopaws-kvm` and physical HID connection. The complete custom Windows map
+passed 13 batches covering all 154 printable characters, Tab and Enter, including
+all 32 ASCII punctuation characters, `åäöÅÄÖ`, the 49 accented outputs in the
+standard composition tables, literal accents, repetition and modifier release.
+Four of those accented outputs use their native letter keys in the text map.
+The 53 additions had been individually rejected by v0.1.0's `type_text` before
+target input.
+
+Only controlled synthetic inputs, pass/fail and permitted host/capture metadata
+are recorded. Visual comparisons used transient MCP captures in memory, without
+saved screenshots or OCR; they do not constitute Unicode readback. The owned
+Notepad test buffer was cleared and closed without saving, its original zoom
+was restored, and both test services exited zero with no remaining processes or
+listeners. No script was placed on the target.
+
+The built-in Linux map and complete Windows custom map differ only for literal
+`´` and `¨`; all 154 Linux mappings were independently checked with libxkbcommon
+and its compose table. This is a data-only patch check, separate from the
+historical first-release media and recovery matrix. The
+[sanitized record](validation/swedish-keyboard-2026-11-18.json) identifies the
+tested candidate binaries and exact layout files.

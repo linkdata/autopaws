@@ -1,0 +1,1600 @@
+{
+  "provenance": {
+    "source_url": "https://learn.microsoft.com/en-us/globalization/keyboards/kbdsw.html",
+    "source_html_sha256": "e53000d2ab1535e0cb96ab2a81c7bb7786e5a3c4c23ed12ea42f88c2cb9fa4d7",
+    "source_keycode_mapping": "Microsoft physical key positions mapped to USB HID usages; normal, Shift and AltGr tables plus documented dead-key compositions.",
+    "target": "Windows standard Swedish (KBDSW)",
+    "printable_characters": 154,
+    "note": "109 unique direct/literal outputs plus 45 additional composed letters. Prefer direct key paths over equivalent compositions; Euro uses AltGr+5. Tab and LF inherit US104. Fixture generation reads public reference data only; physical validation is recorded separately."
+  },
+  "layouts": {
+    "se105-windows": [
+      {
+        "character": " ",
+        "strokes": [
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "!",
+        "strokes": [
+          [
+            2,
+            30
+          ]
+        ]
+      },
+      {
+        "character": "\"",
+        "strokes": [
+          [
+            2,
+            31
+          ]
+        ]
+      },
+      {
+        "character": "#",
+        "strokes": [
+          [
+            2,
+            32
+          ]
+        ]
+      },
+      {
+        "character": "$",
+        "strokes": [
+          [
+            64,
+            33
+          ]
+        ]
+      },
+      {
+        "character": "%",
+        "strokes": [
+          [
+            2,
+            34
+          ]
+        ]
+      },
+      {
+        "character": "&",
+        "strokes": [
+          [
+            2,
+            35
+          ]
+        ]
+      },
+      {
+        "character": "'",
+        "strokes": [
+          [
+            0,
+            49
+          ]
+        ]
+      },
+      {
+        "character": "(",
+        "strokes": [
+          [
+            2,
+            37
+          ]
+        ]
+      },
+      {
+        "character": ")",
+        "strokes": [
+          [
+            2,
+            38
+          ]
+        ]
+      },
+      {
+        "character": "*",
+        "strokes": [
+          [
+            2,
+            49
+          ]
+        ]
+      },
+      {
+        "character": "+",
+        "strokes": [
+          [
+            0,
+            45
+          ]
+        ]
+      },
+      {
+        "character": ",",
+        "strokes": [
+          [
+            0,
+            54
+          ]
+        ]
+      },
+      {
+        "character": "-",
+        "strokes": [
+          [
+            0,
+            56
+          ]
+        ]
+      },
+      {
+        "character": ".",
+        "strokes": [
+          [
+            0,
+            55
+          ]
+        ]
+      },
+      {
+        "character": "/",
+        "strokes": [
+          [
+            2,
+            36
+          ]
+        ]
+      },
+      {
+        "character": "0",
+        "strokes": [
+          [
+            0,
+            39
+          ]
+        ]
+      },
+      {
+        "character": "1",
+        "strokes": [
+          [
+            0,
+            30
+          ]
+        ]
+      },
+      {
+        "character": "2",
+        "strokes": [
+          [
+            0,
+            31
+          ]
+        ]
+      },
+      {
+        "character": "3",
+        "strokes": [
+          [
+            0,
+            32
+          ]
+        ]
+      },
+      {
+        "character": "4",
+        "strokes": [
+          [
+            0,
+            33
+          ]
+        ]
+      },
+      {
+        "character": "5",
+        "strokes": [
+          [
+            0,
+            34
+          ]
+        ]
+      },
+      {
+        "character": "6",
+        "strokes": [
+          [
+            0,
+            35
+          ]
+        ]
+      },
+      {
+        "character": "7",
+        "strokes": [
+          [
+            0,
+            36
+          ]
+        ]
+      },
+      {
+        "character": "8",
+        "strokes": [
+          [
+            0,
+            37
+          ]
+        ]
+      },
+      {
+        "character": "9",
+        "strokes": [
+          [
+            0,
+            38
+          ]
+        ]
+      },
+      {
+        "character": ":",
+        "strokes": [
+          [
+            2,
+            55
+          ]
+        ]
+      },
+      {
+        "character": ";",
+        "strokes": [
+          [
+            2,
+            54
+          ]
+        ]
+      },
+      {
+        "character": "<",
+        "strokes": [
+          [
+            0,
+            100
+          ]
+        ]
+      },
+      {
+        "character": "=",
+        "strokes": [
+          [
+            2,
+            39
+          ]
+        ]
+      },
+      {
+        "character": ">",
+        "strokes": [
+          [
+            2,
+            100
+          ]
+        ]
+      },
+      {
+        "character": "?",
+        "strokes": [
+          [
+            2,
+            45
+          ]
+        ]
+      },
+      {
+        "character": "@",
+        "strokes": [
+          [
+            64,
+            31
+          ]
+        ]
+      },
+      {
+        "character": "A",
+        "strokes": [
+          [
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "B",
+        "strokes": [
+          [
+            2,
+            5
+          ]
+        ]
+      },
+      {
+        "character": "C",
+        "strokes": [
+          [
+            2,
+            6
+          ]
+        ]
+      },
+      {
+        "character": "D",
+        "strokes": [
+          [
+            2,
+            7
+          ]
+        ]
+      },
+      {
+        "character": "E",
+        "strokes": [
+          [
+            2,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "F",
+        "strokes": [
+          [
+            2,
+            9
+          ]
+        ]
+      },
+      {
+        "character": "G",
+        "strokes": [
+          [
+            2,
+            10
+          ]
+        ]
+      },
+      {
+        "character": "H",
+        "strokes": [
+          [
+            2,
+            11
+          ]
+        ]
+      },
+      {
+        "character": "I",
+        "strokes": [
+          [
+            2,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "J",
+        "strokes": [
+          [
+            2,
+            13
+          ]
+        ]
+      },
+      {
+        "character": "K",
+        "strokes": [
+          [
+            2,
+            14
+          ]
+        ]
+      },
+      {
+        "character": "L",
+        "strokes": [
+          [
+            2,
+            15
+          ]
+        ]
+      },
+      {
+        "character": "M",
+        "strokes": [
+          [
+            2,
+            16
+          ]
+        ]
+      },
+      {
+        "character": "N",
+        "strokes": [
+          [
+            2,
+            17
+          ]
+        ]
+      },
+      {
+        "character": "O",
+        "strokes": [
+          [
+            2,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "P",
+        "strokes": [
+          [
+            2,
+            19
+          ]
+        ]
+      },
+      {
+        "character": "Q",
+        "strokes": [
+          [
+            2,
+            20
+          ]
+        ]
+      },
+      {
+        "character": "R",
+        "strokes": [
+          [
+            2,
+            21
+          ]
+        ]
+      },
+      {
+        "character": "S",
+        "strokes": [
+          [
+            2,
+            22
+          ]
+        ]
+      },
+      {
+        "character": "T",
+        "strokes": [
+          [
+            2,
+            23
+          ]
+        ]
+      },
+      {
+        "character": "U",
+        "strokes": [
+          [
+            2,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "V",
+        "strokes": [
+          [
+            2,
+            25
+          ]
+        ]
+      },
+      {
+        "character": "W",
+        "strokes": [
+          [
+            2,
+            26
+          ]
+        ]
+      },
+      {
+        "character": "X",
+        "strokes": [
+          [
+            2,
+            27
+          ]
+        ]
+      },
+      {
+        "character": "Y",
+        "strokes": [
+          [
+            2,
+            28
+          ]
+        ]
+      },
+      {
+        "character": "Z",
+        "strokes": [
+          [
+            2,
+            29
+          ]
+        ]
+      },
+      {
+        "character": "[",
+        "strokes": [
+          [
+            64,
+            37
+          ]
+        ]
+      },
+      {
+        "character": "\\",
+        "strokes": [
+          [
+            64,
+            45
+          ]
+        ]
+      },
+      {
+        "character": "]",
+        "strokes": [
+          [
+            64,
+            38
+          ]
+        ]
+      },
+      {
+        "character": "^",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "_",
+        "strokes": [
+          [
+            2,
+            56
+          ]
+        ]
+      },
+      {
+        "character": "`",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "a",
+        "strokes": [
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "b",
+        "strokes": [
+          [
+            0,
+            5
+          ]
+        ]
+      },
+      {
+        "character": "c",
+        "strokes": [
+          [
+            0,
+            6
+          ]
+        ]
+      },
+      {
+        "character": "d",
+        "strokes": [
+          [
+            0,
+            7
+          ]
+        ]
+      },
+      {
+        "character": "e",
+        "strokes": [
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "f",
+        "strokes": [
+          [
+            0,
+            9
+          ]
+        ]
+      },
+      {
+        "character": "g",
+        "strokes": [
+          [
+            0,
+            10
+          ]
+        ]
+      },
+      {
+        "character": "h",
+        "strokes": [
+          [
+            0,
+            11
+          ]
+        ]
+      },
+      {
+        "character": "i",
+        "strokes": [
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "j",
+        "strokes": [
+          [
+            0,
+            13
+          ]
+        ]
+      },
+      {
+        "character": "k",
+        "strokes": [
+          [
+            0,
+            14
+          ]
+        ]
+      },
+      {
+        "character": "l",
+        "strokes": [
+          [
+            0,
+            15
+          ]
+        ]
+      },
+      {
+        "character": "m",
+        "strokes": [
+          [
+            0,
+            16
+          ]
+        ]
+      },
+      {
+        "character": "n",
+        "strokes": [
+          [
+            0,
+            17
+          ]
+        ]
+      },
+      {
+        "character": "o",
+        "strokes": [
+          [
+            0,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "p",
+        "strokes": [
+          [
+            0,
+            19
+          ]
+        ]
+      },
+      {
+        "character": "q",
+        "strokes": [
+          [
+            0,
+            20
+          ]
+        ]
+      },
+      {
+        "character": "r",
+        "strokes": [
+          [
+            0,
+            21
+          ]
+        ]
+      },
+      {
+        "character": "s",
+        "strokes": [
+          [
+            0,
+            22
+          ]
+        ]
+      },
+      {
+        "character": "t",
+        "strokes": [
+          [
+            0,
+            23
+          ]
+        ]
+      },
+      {
+        "character": "u",
+        "strokes": [
+          [
+            0,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "v",
+        "strokes": [
+          [
+            0,
+            25
+          ]
+        ]
+      },
+      {
+        "character": "w",
+        "strokes": [
+          [
+            0,
+            26
+          ]
+        ]
+      },
+      {
+        "character": "x",
+        "strokes": [
+          [
+            0,
+            27
+          ]
+        ]
+      },
+      {
+        "character": "y",
+        "strokes": [
+          [
+            0,
+            28
+          ]
+        ]
+      },
+      {
+        "character": "z",
+        "strokes": [
+          [
+            0,
+            29
+          ]
+        ]
+      },
+      {
+        "character": "{",
+        "strokes": [
+          [
+            64,
+            36
+          ]
+        ]
+      },
+      {
+        "character": "|",
+        "strokes": [
+          [
+            64,
+            100
+          ]
+        ]
+      },
+      {
+        "character": "}",
+        "strokes": [
+          [
+            64,
+            39
+          ]
+        ]
+      },
+      {
+        "character": "~",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "£",
+        "strokes": [
+          [
+            64,
+            32
+          ]
+        ]
+      },
+      {
+        "character": "¤",
+        "strokes": [
+          [
+            2,
+            33
+          ]
+        ]
+      },
+      {
+        "character": "§",
+        "strokes": [
+          [
+            0,
+            53
+          ]
+        ]
+      },
+      {
+        "character": "¨",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "´",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            44
+          ]
+        ]
+      },
+      {
+        "character": "µ",
+        "strokes": [
+          [
+            64,
+            16
+          ]
+        ]
+      },
+      {
+        "character": "½",
+        "strokes": [
+          [
+            2,
+            53
+          ]
+        ]
+      },
+      {
+        "character": "À",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "Á",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "Â",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "Ã",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "Ä",
+        "strokes": [
+          [
+            2,
+            52
+          ]
+        ]
+      },
+      {
+        "character": "Å",
+        "strokes": [
+          [
+            2,
+            47
+          ]
+        ]
+      },
+      {
+        "character": "È",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            2,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "É",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "Ê",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            2,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "Ë",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            2,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "Ì",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            2,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "Í",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "Î",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            2,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "Ï",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            2,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "Ñ",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            2,
+            17
+          ]
+        ]
+      },
+      {
+        "character": "Ò",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            2,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "Ó",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "Ô",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            2,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "Õ",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            2,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "Ö",
+        "strokes": [
+          [
+            2,
+            51
+          ]
+        ]
+      },
+      {
+        "character": "Ù",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            2,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "Ú",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "Û",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            2,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "Ü",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            2,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "Ý",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            2,
+            28
+          ]
+        ]
+      },
+      {
+        "character": "à",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "á",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "â",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "ã",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "character": "ä",
+        "strokes": [
+          [
+            0,
+            52
+          ]
+        ]
+      },
+      {
+        "character": "å",
+        "strokes": [
+          [
+            0,
+            47
+          ]
+        ]
+      },
+      {
+        "character": "è",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "é",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "ê",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "ë",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "character": "ì",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "í",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "î",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "ï",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            0,
+            12
+          ]
+        ]
+      },
+      {
+        "character": "ñ",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            0,
+            17
+          ]
+        ]
+      },
+      {
+        "character": "ò",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "ó",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "ô",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "õ",
+        "strokes": [
+          [
+            64,
+            48
+          ],
+          [
+            0,
+            18
+          ]
+        ]
+      },
+      {
+        "character": "ö",
+        "strokes": [
+          [
+            0,
+            51
+          ]
+        ]
+      },
+      {
+        "character": "ù",
+        "strokes": [
+          [
+            2,
+            46
+          ],
+          [
+            0,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "ú",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "û",
+        "strokes": [
+          [
+            2,
+            48
+          ],
+          [
+            0,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "ü",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            0,
+            24
+          ]
+        ]
+      },
+      {
+        "character": "ý",
+        "strokes": [
+          [
+            0,
+            46
+          ],
+          [
+            0,
+            28
+          ]
+        ]
+      },
+      {
+        "character": "ÿ",
+        "strokes": [
+          [
+            0,
+            48
+          ],
+          [
+            0,
+            28
+          ]
+        ]
+      },
+      {
+        "character": "€",
+        "strokes": [
+          [
+            64,
+            34
+          ]
+        ]
+      }
+    ]
+  }
+}

@@ -42,12 +42,33 @@ in the fixture. Every chosen sequence was checked through libxkbcommon, includin
 the `C.UTF-8` compose table for dead key followed by Space. No target input was
 generated while exporting these fixtures.
 
-The XKB fixtures cover all 95 printable ASCII characters for UK, German and French,
-and those characters plus `åäöÅÄÖ` for Swedish. Tab and LF inherit the US104 base.
+The XKB fixtures cover all 95 printable ASCII characters for UK, German and French.
+Swedish covers 154 printable characters: ASCII, `åäöÅÄÖ`, eight further literal
+symbols and 45 additional composed letters. This is the character inventory of
+Microsoft's [standard Swedish layout](https://learn.microsoft.com/en-us/globalization/keyboards/kbdsw.html),
+with every selected sequence independently evaluated against Linux/XKB. Tab and
+LF inherit the US104 base.
 Physical XKB key names and HID usages are recorded as generation inputs. Where
 XKB offers several ways to type a character, the selected mapping prefers fewer
 strokes, then no modifier, Shift, Right Alt and Shift+Right Alt. Equivalent choices
 can be valid; changing a fixture requires checking the replacement against XKB.
+
+`windows_swedish_layout.json` independently records the same 154-character
+inventory from Microsoft's normal, Shift, AltGr and dead-key tables. It checks
+the complete custom file in `examples/layouts/se105-windows.yaml`, including all
+ASCII overrides; a user file starts from US104 rather than inheriting `se105`.
+Its original 101 ASCII/native-letter mappings match the Linux map. Of the 53
+additions, only literal acute (`´`) and diaeresis (`¨`) need different sequences:
+
+| Character | Linux/XKB built-in | Windows custom file |
+|---|---|---|
+| `´` | AltGr + HID `0x31` | HID `0x2E`, then Space |
+| `¨` | HID `0x30` twice | HID `0x30`, then Space |
+
+On the tested Linux compose table, the Windows dead-key/Space sequences instead
+produce ASCII apostrophe and double quote. The fixture records the Microsoft
+reference URL and its source digest; physical target checks are separate from
+this public-reference fixture generation.
 
 These files are committed test data. Go tests do not need Python, XKB or
 libxkbcommon installed.
