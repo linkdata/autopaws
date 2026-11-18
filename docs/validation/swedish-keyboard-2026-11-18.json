@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "purpose": "Pre-merge Windows Swedish keyboard validation for v0.1.1",
+  "scope": {
+    "target_os": "Windows",
+    "keyboard_layout": "standard Swedish",
+    "host_os_arch": "Linux amd64",
+    "application": "owner-prepared new blank unsaved Notepad buffer",
+    "authorization": "Owner allowed text tests and temporary uncropped memory-only viewing; no files saved or scripts placed on target.",
+    "reference_url": "https://learn.microsoft.com/en-us/globalization/keyboards/kbdsw.html"
+  },
+  "candidate": {
+    "base_commit": "cbdcca77827d9a5dc1347e413f4b1e73fb2f8fa3",
+    "version": "v0.1.1-rc1",
+    "build": "CGO_ENABLED=0 go build -trimpath with -s -w -X main.version=v0.1.1-rc1; working tree layout data changes identified below",
+    "kvm_sha256": "ace70dcb1ad88d413f2d82e852bd82a672737bd94414ab1a215eb412a9d42f4e",
+    "mcp_sha256": "0c6e5f1b3de6e5075286805166d06eda84075201acd69aac453e993af99802b3",
+    "linux_layout_sha256": "7fc6fb3a124621a7de615706f1cb41c5b30ce6521d23a045f7b15135e61a925f",
+    "windows_custom_layout_sha256": "2db63bc4b55ae9083eacbbd96e012cb96e859146fffaef7c9d0a8b56f403cb7b",
+    "note": "Candidate binaries were tested before merge; final release differs in version and source metadata. No runtime code changes in this patch."
+  },
+  "stack": {
+    "kvm_arguments": [
+      "-target-layout",
+      "se105-windows",
+      "-layouts-dir",
+      "/home/johlin/Proj/autopaws/examples/layouts",
+      "-autocrop=false"
+    ],
+    "mcp_arguments": [],
+    "connection": "MCP Go SDK stdio client -> candidate autopaws-mcp -> loopback API -> candidate autopaws-kvm -> physical CH9329 HID",
+    "input_tool": "type_text",
+    "text_options": {
+      "raw": true,
+      "char_delay_ms": 40
+    },
+    "observation_tool": "capture_screen",
+    "observation": "Transient memory-only visual comparison of controlled input; no screenshot/OCR files. Visual matches do not independently read back Unicode code points.",
+    "image_dimensions": [
+      1920,
+      1080
+    ]
+  },
+  "coverage": {
+    "printable_characters": 154,
+    "previously_supported_printables": 101,
+    "added_printables": 53,
+    "ascii_punctuation_characters": 32,
+    "native_swedish_letters": "åäöÅÄÖ",
+    "literal_dead_accents": "´¨`^~",
+    "controls": [
+      "Tab",
+      "Enter"
+    ],
+    "caps_lock_changed": false,
+    "cases_passed": 13,
+    "standard_accented_outputs": 49,
+    "accented_outputs_using_direct_native_keys": 4
+  },
+  "cases": [
+    {
+      "id": "ascii_letters_digits_space",
+      "controlled_input": "abcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n0123456789\nspace space",
+      "result": "PASS"
+    },
+    {
+      "id": "ascii_punctuation",
+      "controlled_input": "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "result": "PASS"
+    },
+    {
+      "id": "swedish_and_case",
+      "controlled_input": "åäö ÅÄÖ\naA åÅ äÄ öÖ zZ\nräksmörgås RÄKSMÖRGÅS",
+      "result": "PASS"
+    },
+    {
+      "id": "altgr_and_release",
+      "controlled_input": "a@A a$A a[A a]A a{A a}A a\\A a|A",
+      "result": "PASS"
+    },
+    {
+      "id": "literal_dead_keys_and_release",
+      "controlled_input": "a^a a`a a~a\n^^ `` ~~\na^A a`A a~A",
+      "result": "PASS"
+    },
+    {
+      "id": "tab_and_enter",
+      "controlled_input": "LEFT\tRIGHT\nSECOND LINE",
+      "result": "PASS"
+    },
+    {
+      "id": "eight_missing_literals_nine_key_paths",
+      "controlled_input": "§ ´ ¨ ½ ¤ £ € € µ",
+      "result": "PASS"
+    },
+    {
+      "id": "compose_acute",
+      "controlled_input": "á Á é É í Í ó Ó ú Ú ý Ý",
+      "result": "PASS"
+    },
+    {
+      "id": "compose_diaeresis",
+      "controlled_input": "ä Ä ë Ë ï Ï ö Ö ü Ü ÿ",
+      "result": "PASS"
+    },
+    {
+      "id": "compose_grave",
+      "controlled_input": "à À è È ì Ì ò Ò ù Ù",
+      "result": "PASS"
+    },
+    {
+      "id": "compose_circumflex",
+      "controlled_input": "â Â ê Ê î Î ô Ô û Û",
+      "result": "PASS"
+    },
+    {
+      "id": "compose_tilde",
+      "controlled_input": "ã Ã ñ Ñ õ Õ",
+      "result": "PASS"
+    },
+    {
+      "id": "all_five_literal_accents_and_release",
+      "controlled_input": "´a ¨e `i ^o ~u ´´ ¨¨ `a ^A ~Z",
+      "result": "PASS"
+    }
+  ],
+  "platform_differences": {
+    "linux_builtin": "se105",
+    "windows_custom_file": "examples/layouts/se105-windows.yaml",
+    "different_characters": "´¨",
+    "other_152_printables": "Identical stroke plans",
+    "linux_reference": "All154 built-in plans independently evaluated with installed libxkbcommon and C.UTF-8 compose; see hid/testdata/README.md.",
+    "v0_1_0_observation": "All101 existing printables passed; type_text individually rejected53 missing printables before input. Native raw-key tests passed their physical key paths, prompting this data-only extension."
+  },
+  "cleanup": {
+    "test_buffer_cleared": true,
+    "zoom_restored_to_original": true,
+    "owned_test_tab_closed_without_save": true,
+    "target_files_saved": 0,
+    "target_scripts_created": 0,
+    "screenshots_retained": 0,
+    "ocr_retained": 0,
+    "mcp_passive_capture_exit_code": 0,
+    "kvm_exit_code": 0,
+    "test_ports_closed": [
+      9329,
+      9330
+    ],
+    "owned_processes_remaining": 0
+  },
+  "limits": [
+    "Physical Windows target only; no Windows-host MCP runtime claim.",
+    "No scripts or Unicode readback on Windows.",
+    "No additional media/recovery or target OS physical matrix repeated for this data-only patch.",
+    "Linux native layout validated against XKB/compose reference rather than a new physical Linux typing run."
+  ]
+}

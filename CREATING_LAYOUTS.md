@@ -5,7 +5,9 @@ machine. Select the target's layout, regardless of the development host's layout
 Browser keyboard events use physical key positions and do not use these text maps.
 
 The built-in layouts are `us104`, `uk105`, `de105`, `fr105`, `jp106` and `se105`.
-They cover printable ASCII, Tab and Enter. `se105` also covers `åäöÅÄÖ`.
+They cover printable ASCII, Tab and Enter. `se105` covers 154 printable
+characters, including `åäöÅÄÖ`, `£€§½¤µ`, literal accents and accented letters
+formed with the Swedish acute, diaeresis, grave, circumflex and tilde dead keys.
 The UK, German, French and Swedish maps follow Linux/XKB's basic layouts.
 Windows and macOS variants can differ and require custom files.
 
@@ -78,9 +80,24 @@ For macOS German, `@` uses Option+L rather than a PC's AltGr+Q; a custom file ca
 map it to `[alt, 0x0F]`. Verify mappings against the exact layout enabled on the
 target. No built-in OS variants are included.
 
-Further non-ASCII characters, such as German umlauts, `ß` or French `é`, can be
-added through custom files using their own keys or stroke sequences. Built-ins
-currently guarantee only the character sets listed above.
+For standard Swedish Windows targets, use the complete
+[se105-windows.yaml](examples/layouts/se105-windows.yaml) custom map:
+
+```sh
+autopaws-kvm -target-layout se105-windows -layouts-dir ./examples/layouts
+```
+
+Run this from the repository root, or copy the file into your own layout
+directory and pass that directory to `-layouts-dir`. This map covers the same
+154 printable characters as `se105`, plus Tab and Enter. Windows emits literal
+`´` and `¨` with their dead key followed by Space; Linux/XKB's compose table uses
+different sequences. The other mappings in these two files agree. The Windows
+map was physically checked through both commands; see the
+[Swedish validation record](docs/validation/swedish-keyboard-2026-11-18.json).
+
+Further non-ASCII characters, such as German umlauts, `ß` or French `é` in their
+respective layouts, can be added through custom files using their own keys or
+stroke sequences. Built-ins guarantee only the character sets listed above.
 
 ## Finding and checking mappings
 

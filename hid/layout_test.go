@@ -49,18 +49,23 @@ func assertLookup(t *testing.T, layout *Layout, character rune, want []Stroke) {
 }
 
 func TestLayoutGoldens(t *testing.T) {
-	for fixture, wantNames := range map[string][]string{
-		"python_layouts.json": {"jp106", "us104"},
-		"xkb_layouts.json":    {"de105", "fr105", "se105", "uk105"},
+	for fixture, source := range map[string]struct {
+		names             []string
+		userDirectory     string
+		inheritedControls bool
+	}{
+		"python_layouts.json":         {names: []string{"jp106", "us104"}},
+		"xkb_layouts.json":            {names: []string{"de105", "fr105", "se105", "uk105"}, inheritedControls: true},
+		"windows_swedish_layout.json": {names: []string{"se105-windows"}, userDirectory: filepath.Join("..", "examples", "layouts"), inheritedControls: true},
 	} {
 		var golden layoutGolden
 		readJSON(t, fixture, &golden)
-		if got := slices.Sorted(maps.Keys(golden.Layouts)); !slices.Equal(got, wantNames) {
-			t.Fatalf("%s layout names = %v; want %v", fixture, got, wantNames)
+		if got := slices.Sorted(maps.Keys(golden.Layouts)); !slices.Equal(got, source.names) {
+			t.Fatalf("%s layout names = %v; want %v", fixture, got, source.names)
 		}
 		for name, vectors := range golden.Layouts {
 			t.Run(name, func(t *testing.T) {
-				layout := mustLoad(t, name, "")
+				layout := mustLoad(t, name, source.userDirectory)
 				for _, vector := range vectors {
 					want := make([]Stroke, len(vector.Strokes))
 					for i, stroke := range vector.Strokes {
@@ -69,7 +74,7 @@ func TestLayoutGoldens(t *testing.T) {
 					assertLookup(t, layout, []rune(vector.Character)[0], want)
 				}
 				wantCount := len(vectors)
-				if fixture == "xkb_layouts.json" {
+				if source.inheritedControls {
 					wantCount += 2 // Tab and LF inherit the US104 base.
 				}
 				if len(layout.characters) != wantCount {

@@ -244,7 +244,7 @@ func TestKeyboardValidationBeforePreparation(t *testing.T) {
 func TestKeyboardSequenceDefaultsAndRunePosition(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		_, keyboard, transport := keyboardFixture(t, "se105")
-		if err := keyboard.TypeText(context.Background(), "åé", TypeOptions{}); !errors.Is(err, ErrUnsupported) || !strings.Contains(err.Error(), "rune 1") {
+		if err := keyboard.TypeText(context.Background(), "å😀", TypeOptions{}); !errors.Is(err, ErrUnsupported) || !strings.Contains(err.Error(), "rune 1") {
 			t.Fatalf("expected original rune position 1: %v", err)
 		}
 		if prepares, writes, _, _ := transport.snapshot(); prepares != 0 || writes != 0 {
