@@ -1,3 +1,6 @@
+[![build](https://github.com/linkdata/autopaws/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/linkdata/autopaws/actions/workflows/ci.yml)
+[![coverage](https://github.com/linkdata/autopaws/blob/gitcoverage/main/badge.svg)](https://html-preview.github.io/?url=https://github.com/linkdata/autopaws/blob/gitcoverage/main/report.html)
+
 # autopaws
 
 autopaws is a software KVM for Linux hosts. It controls a target machine through a CH9329 USB HID emulator and shows the target's screen in a browser through a USB HDMI capture card. AI agents get the same keyboard, mouse and screen access through an MCP server.
@@ -657,7 +660,9 @@ node --test web/*.test.mjs
 CGO_ENABLED=0 go build ./...
 CGO_ENABLED=0 go build -o /dev/null ./cmd/autopaws-kvm
 golangci-lint run
-CGO_ENABLED=1 go test -race ./...
+CGO_ENABLED=1 go test -race -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+go tool cover -html=coverage.out -o=coveragereport.html.out
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./...
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
@@ -671,6 +676,14 @@ WebSocket, timer and deferred-image harness. Physical and real-browser checks
 are recorded in [the hardware validation document](docs/hardware-validation.md).
 
 The race check needs a C compiler and cgo enabled; release and cross-build checks use `CGO_ENABLED=0`.
+
+CI uploads the Go coverage profile and HTML report as a `coverage` artifact.
+Successful `main` pushes also publish the coverage badge and report to the
+`gitcoverage` branch using [gitcoverage](https://github.com/linkdata/gitcoverage),
+as in [jaws](https://github.com/linkdata/jaws). The badge measures Go statement
+coverage; browser tests run separately. Its HTML preview link will work once this
+repository is public. While it is private, download the `coverage` artifact to
+view the HTML locally. No additional secret is needed.
 
 To build both Linux commands locally:
 
