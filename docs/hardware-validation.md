@@ -333,7 +333,7 @@ Safari and other platform browsers are optional. Keep supported cross-builds.
 | Video reference | MJPG 1920×1080; native driver rate, viewer limit 20 fps; negotiated source metadata and dimensions were checked during capture/WS/MCP runs |
 | Negotiated audio | S16_LE, 48,000 Hz stereo, 960-frame/20 ms periods, 7,680-frame/160 ms kernel buffer |
 | Exclusive PCM access | No competing PCM owner at test start; no PipeWire/WirePlumber policy change applied |
-| Browser under validation | Linux Chromium 157; exact saved user agent is in each QA record |
+| Browser under validation | Linux Chromium 157 and native headless Firefox 154.0; exact user agents are retained with their evidence. The Firefox checks below do not claim a second ten-minute latency run. |
 | Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Final release artifact identity remains pending. |
 
 The earlier input section's unspecified OS versions describe the same lab setup;
@@ -346,14 +346,14 @@ historical component observations into a completed release matrix.
 |---|---|
 | Linux keyboard/API input and relative drag | Observed on real hardware. Latest Ctrl+R, move `(120,110)` and drag `(240,180)` → `(1040,560)` produced the expected five mouse events in a fresh OCR read; no coordinate code change was required. Earlier screenshot-to-click and scaled drag evidence is above. |
 | 9600-baud timing, exclusivity and cancellation | Physical flock passed: a second `Port.Prepare` returned `ErrBusy` in 161.209 µs, generation 0, with no input admitted. Successful `Prepare` (open/configure, release-all reset and baud pacing together) took 31.71986 ms; joined `Close` took 518.406 µs. Component tests cover host-queue wait/baud guard and cancellation of application waits. These observations do not impose a universal Linux kernel-call bound. |
-| Ordinary shutdown and input release | Earlier actual API/MCP/WebSocket runs exited 0; controlling disconnect released held buttons, while passive disconnect did not. **PENDING final physical interrupted-input/recovery record**; synthetic cancellation tests are separate. |
-| Serial physical unplug/replug | **PENDING owner-assisted check.** Verify held-state reset/release and no interrupted-action replay, then fresh input after replug. |
-| Capture/audio physical unplug/replug | **PENDING owner-assisted check.** Verify unavailable status, retained ownership, reopen/repair, fresh video/audio and generation/config order. A missing path and a forced reader pause are not this check. |
+| Ordinary shutdown and input release | Earlier actual API/MCP/WebSocket runs exited 0; controlling disconnect released held buttons, while passive disconnect did not. The 2026-11-18 physical serial replug check also released the held left button before fresh input, with no failed-action replay. The Firefox document-close diagnostic and completed backend cleanup are described below. |
+| Serial physical unplug/replug | **PASS, 2026-11-18.** The owner removed the host serial USB connection while left was held at `(240,220)`. A move to `(900,550)` while absent returned `unavailable` in 1.509 ms. After replug, the first fresh move to `(500,350)` completed in 51.123 ms; release-all preceded that move, and the target recorded mouseup at `(240,220)` before the new movement, with no `(900,550)` replay. Details below. |
+| Capture/audio physical unplug/replug | **CAPTURE_USB_RECOVERY_PENDING — owner confirmation and physical evidence required.** Record actual removed/returned video and PCM nodes, USB identity, unavailable status, explicit repair/retry, fresh video/audio generations and config order, and joined ownership. A missing path, serial unplug or forced reader pause does not complete this check. |
 | 1080p MJPG, timestamp/format listing and live size/device repair | Physical component checks above pass; valid acquisition black/noisy images were not content-filtered. Corrupt-frame/DHT normalization is covered synthetically. A native Chromium fixture additionally displayed production-normalized DHT-less input: raw 1280×800 JPEG with zero DHT segments became a decodable one-DHT frame, cropped to `(40,40,1200,720)`. Its displayed corners produced exact fake-HID endpoints 0/4095. This fixture used synthetic source/HID, not another physical card. |
 | Real HDMI audio content | Observed: a target-generated quiet 440 Hz tone reached both captured channels for about five seconds. Details below. |
 | Real ALSA overrun and same-format playback recovery | Run 4 paused the owned reader for 0.400324 s: generation 2 → 3 retained context 1/node 1, with no new gesture or reported browser error. The final result is recorded below and in the compact JSON. |
 | Chromium video/audio, mute/unmute and reconnect | The completed run 4 recorded 644.887 s of mapped output span and 641.419 s of real PCM, including overrun and transport-stall recovery. All measured estimates plus their engineering allowance remained below 200 ms on this run. Component crop/toolbar/denied-lock results are above; this is not an all-browser or acoustic guarantee. |
-| Firefox video/audio, mute/unmute/reconnect/crop | **PENDING authorized native browser check.** No synthetic or Chromium result substitutes for it. |
+| Firefox video/audio, mute/unmute/reconnect/crop | **PASS, native headless Firefox 154.0.** The synthetic DHT/crop/input/corner fixture rendered nonzero 48 kHz stereo PCM through its AudioWorklet. A separate physical strict-view-only run decoded 1920×1080 video near 20 fps and received 48 kHz stereo PCM with advancing native worklet clock/ACKs, mute/unmute and reconnect, with zero application input sends. The document-close warning reproduced without product/audio code is retained as a known diagnostic below; this is not an all-warning-free or ten-minute Firefox latency claim. |
 | SSH viewer/API access | Token-protected `http://localhost:9330` displayed video near 20 fps and 48 kHz stereo audio; enable/mute/unmute worked without browser errors. The fragment was removed, cookie authentication worked, and API port 9329 rejected missing/wrong tokens. Both ports were forwarded; no secret is in the evidence. |
 | AudioWorklet unavailable explanation | Native Chromium loaded the synthetic fixture over a private non-loopback HTTP address. Enabling its advertised audio displayed “AudioWorklet needs a compatible browser and secure context. A localhost SSH tunnel is sufficient.” Video continued at 20 fps; a click and key down/up reached the fake HID controller, with no browser errors. The fixture supplied no PCM and opened no hardware. |
 | MCP screenshot coordinates and endpoints | Earlier real screenshot `(960,540)` → target `(640,360)`, resize invalidation and scaled drag pass. Token-enabled MCP again showed center `(640,360)` and drag endpoints `(320,180)` → `(960,540)`; this smoke's first OCR did not establish the complete event sequence. All four physical corners subsequently passed in a local-file Firefox kiosk recorder: screenshot pixels `(0,0)`, `(1919,0)`, `(1919,1079)`, `(0,1079)` produced target `(0,0)`, `(1279,0)`, `(1279,719)`, `(0,719)`, with all twelve move/down/up events. Autocrop was enabled. The harness first waited for the page to finish reloading; API completion alone does not establish target-page readiness. Earlier normal-window attempts hit desktop controls. No coordinate code change was needed. |
@@ -432,13 +432,91 @@ mean a QA process was left running. The [compact result](validation/audio-2026-1
 retains context/generation history, clock statistics, the historical failures and
 precise pre-pause outliers. These source-to-estimated-output observations meet
 the stated target on this Chromium run, within the method's limits. They do not
-close the remaining physical unplug/replug, Firefox or other pending core checks.
+alone establish physical USB recovery or all browser behavior; the later checks
+above record that separate evidence.
 
 The subsequent token-enabled MCP smoke completed fresh screenshot, typed-key,
 click, drag and OCR calls in approximately 63, 79, 72, 180 and 743 ms respectively;
 stdin EOF exited 0. These are sample call times, not general latency bounds.
 Earlier dedicated physical checks above establish complete drag sequences;
 the first OCR after this newer smoke had not yet shown its final mouseup.
+
+### Physical serial recovery, 2026-11-18
+
+The daemon used automatic serial selection at 9600 baud and relative button
+mode. The owner physically disconnected the host serial USB cable while the
+CH9329 target-side connection remained in place and left was held at `(240,220)`.
+Sysfs recorded `/sys/class/tty/ttyUSB0` disappearing and returning. While absent,
+the distinct move to `(900,550)` returned `unavailable` in 1.509 ms, with a write
+I/O error and no CH340/CH341 available for release preparation.
+
+After replug, the first fresh move to `(500,350)` completed in 51.123 ms. The
+successful transport trace first sent zero-keyboard and zero-relative-mouse
+reset reports, then the fresh absolute move. The target recorder showed:
+
+| Event | Buttons | Target position |
+|---|---:|---|
+| mousemove | 0 | `(240,220)` |
+| mousedown | 1 | `(240,220)` |
+| mouseup | 0 | `(240,220)` |
+| mousemove | 0 | `(500,350)` |
+
+The failed `(900,550)` move was never replayed. This validates recovery and
+release before fresh input, without asserting that an unplugged host UART can
+release the still-connected target immediately. A passive video/audio observer
+reported zero generation/config ordering errors during this serial phase.
+Exact records are `serial-summary.json`, `serial-removed.json`,
+`serial-returned.json`, `api-events.jsonl` and `serial-phase-observer.json` in the
+local `/tmp/autopaws-usb-recovery` evidence directory.
+
+### Firefox 154 browser checks, 2026-11-18
+
+Native headless Firefox 154.0 on the recorded Linux host decoded the
+production-normalized DHT-less fixture and its 1200×720 crop. Trusted browser
+pointer actions at all four displayed corners reached fake HID endpoints
+0/4095. Modifier/button release, view-only input rejection, toolbar shortcuts,
+fit/native sizing and cursor controls passed. Native AudioWorklet playback
+rendered nonzero quiet synthetic 48 kHz stereo PCM; mute/unmute and reconnect
+preserved the intended audio and view-only choices. The application browser-log
+collection was empty during these checks.
+
+A separate real-media check enabled strict view-only mode before trusted UI
+actions. It decoded 1920×1080 video near 20 fps and received physical 48 kHz
+stereo PCM. Native AudioContext time and worklet ACK counts advanced after
+initial enable, unmute and reconnect. The physical stream was quiet in the
+sampled analysis; this is playback/progress evidence, not another audible-tone
+or latency measurement. Every WebSocket application-input send list remained
+empty, and no target screenshot was stored. Keyboard Lock was unavailable and
+the viewer showed its fallback explanation. Raw results are `native.json` and
+`physical.json` in `/tmp/autopaws-firefox-qa`.
+
+**Known Firefox 154 document-close diagnostic.** Forced WebDriver BiDi tab close
+and script `window.close()` emitted a script-timeout warning. The same warning
+reproduced on a minimal HTTP page containing only a synchronous one-assignment
+`pagehide` handler, with no product or audio code. Plain pages without that
+handler and minimal-page ordinary navigation-away were clean. Traced viewer teardown entered
+and returned from its pagehide handler, and backend cleanup completed. The
+comparison reproduced the warning independently of product code; no product
+functional defect or useful code change was identified.
+
+`close-probe.json`, `close-probe-minimal.json`, `close-probe-script-close.json`
+and their exact scripts/stderr are retained in
+`autopaws-firefox-validation-2026-11-18.tar.gz`, SHA256
+`37bd0c1d27445c54a39e340e50338f36223cc800c86b2963f885bd6c0ec3be75`
+(526,833 bytes, 30 files). It contains the exact fixtures and result metadata,
+plus synthetic-only PNGs; no physical-target pictures or PCM are included.
+The owned Firefox processes and their synthetic fixture/helper processes were
+reaped after the checks.
+
+The viewer navigation-before-close probe additionally retained an `updateLayout`
+interruption warning and a RemoteAgent `Realm.sys.mjs` TypeError; it is not
+claimed as warning-free. Their exact logs are in the Firefox evidence archive.
+
+**CAPTURE_USB_RECOVERY_PENDING — result placeholder.** Insert the owner's actual
+physical capture/audio unplug-and-replug result here, including the selected
+USB identity, returned device nodes, observed failure and repair trigger,
+fresh-source image/timestamps, audio config/generation ordering and owner
+shutdown. This draft makes no pass claim for that check.
 
 ### Optional or explicitly unrequired coverage not run
 
@@ -482,3 +560,18 @@ a 1920×1080 MCP screenshot and a click at target `(640,360)` all worked; MCP EO
 exited zero. No system service or udev rule was installed. Example
 rule/unit syntax checks and the real foreground/SSH checks are separate evidence;
 this is not a clean-room distribution installation claim.
+
+### Connected cancellation, 2026-11-18
+
+With the serial device connected, the client began a drag at `(720,220)` toward
+`(1000,600)`. It closed its TCP connection only after the successful relative
+button-down report appeared in the trace, while the action was in its application
+wait. The API logged `canceled` and completed host cleanup about 15.455 ms after
+the close. The target recorded down then up at `(720,220)`, followed by a fresh
+button-free move to `(600,300)`; the cancelled endpoint never appeared. This
+observes host cleanup and target event ordering, not a universal kernel or
+physical input-latency deadline.
+
+The [2026-11-18 compact record](validation/recovery-firefox-2026-11-18.json)
+contains serial, cancellation and Firefox results and archive identities. Physical
+captureUSB recovery remains pending and the release marker remains in place.

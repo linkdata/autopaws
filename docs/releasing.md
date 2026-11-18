@@ -18,8 +18,8 @@ repository visibility; downloads require an account/token with access.
    removing `RELEASE_VALIDATION_PENDING`. The release workflow refuses to publish
    while that marker remains. Keep runtime-tested and build-only platforms
    distinct. Include optional environments not run.
-   Physical unplug/replug recovery and the available Firefox checks are still
-   pending; do not infer a pass from unit tests or crossbuilds.
+   Confirm every required physical recovery and browser row, retaining diagnosed
+   browser limits. Do not infer a pass from unit tests or crossbuilds.
 5. Run actionlint and the complete final README local CI gate. Run the eight
    release builds from a clean tree with a new output directory:
 

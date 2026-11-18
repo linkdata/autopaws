@@ -600,10 +600,11 @@ The browser replaces the native preview.
 The [hardware validation record](docs/hardware-validation.md) identifies the
 tested Linux host, target, hardware and browser configurations and their actual
 results. [Release notes](docs/release-notes.md) track the first-release gate.
-Physical serial/video unplug/replug recovery and the available Firefox checks
-remain pending. First-release validation is incomplete; required Linux HID,
-video/audio, recovery and MCP screenshot-coordinate checks must pass before
-publication.
+Physical serial USB recovery and native Firefox 154 video/audio checks are now
+recorded, including the Firefox document-close diagnostic described in the
+validation record. Physical capture/audio USB recovery remains pending.
+First-release validation is incomplete; every required Linux core check must
+pass before publication.
 
 Separate Windows/macOS target tests, physical ARM64 hardware, Safari and browser
 checks on other operating systems have not been run and are optional extended
