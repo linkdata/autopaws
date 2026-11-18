@@ -2,11 +2,11 @@
 
 Required Linux core hardware and browser checks completed on the recorded setup,
 including physical serial/capture USB recovery and the fixed ALSA recovery path.
-The [validation record](hardware-validation.md#release-validation-draft-2026-11-17)
+The [validation record](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/hardware-validation.md#release-validation-draft-2026-11-17)
 retains original failures, exact evidence and measurement limits. Release assets
 remain private and require repository access.
 
-The additional owner-required [limited read-only Windows laptop smoke](validation/windows-readonly-2026-11-18.json)
+The additional owner-required [limited read-only Windows laptop smoke](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/validation/windows-readonly-2026-11-18.json)
 also passed. It covered capture and safe keyboard/pointer actions after
 owner-handled setup. Only actions and pass/fail are recorded; screen contents and
 images are not retained. The agent placed no scripts on the target and changed no target files
@@ -21,7 +21,7 @@ the browser viewer. Use `--version` and `--list-devices` for those operations.
 There are no subcommands: the earlier `serve`, `version` and `list-devices`
 spellings are no longer accepted. Explicit flags or YAML can change the defaults.
 
-[Physical startup checks](validation/cli-defaults-2026-11-18.json) verified the
+[Physical startup checks](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/validation/cli-defaults-2026-11-18.json) verified the
 bare daemon/default MCP connection and click/drag with the target dimensions
 configured while the API/mouse-mode flags remained omitted. Both runs exited 0.
 
@@ -57,7 +57,7 @@ configured while the API/mouse-mode flags remained omitted. Both runs exited 0.
   recovered in the same audio graph; a transport pause discarded its backlog
   and reconnected. A separate native injected video-write delay of 201 ms
   replaced the old audio queue and resumed in the same graph, with a 91.637 ms
-  maximum estimate. See [measurement method and limits](audio-measurement.md):
+  maximum estimate. See [measurement method and limits](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/audio-measurement.md):
   this is timestamp-based estimation of its identified pre-guard build, not an
   acoustic guarantee or a new-binary measurement. The later terminal-recovery
   guard has separate physical evidence. A separate
@@ -82,9 +82,9 @@ listeners still joined and closed. Kernel calls have no universal cancellation
 bound.
 
 Exact binary/source identities, counters, initial failures and fixed-build
-results are in the [hardware validation record](hardware-validation.md) and
-[physical capture record](validation/capture-usb-2026-11-18.json). Final local CI,
-packaging and reviews follow the [release procedure](releasing.md).
+results are in the [hardware validation record](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/hardware-validation.md) and
+[physical capture record](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/validation/capture-usb-2026-11-18.json). Final local CI,
+packaging and reviews follow the [release procedure](https://github.com/linkdata/autopaws/blob/v0.1.0/docs/releasing.md).
 
 ## Build targets and coverage limits
 
