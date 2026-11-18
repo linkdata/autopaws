@@ -92,7 +92,7 @@ directory and pass that directory to `-layouts-dir`. This map covers the same
 154 printable characters as `se105`, plus Tab and Enter. Windows emits literal
 `´` and `¨` with their dead key followed by Space; Linux/XKB's compose table uses
 different sequences. The other mappings in these two files agree. The Windows
-map was physically checked through both commands; see the
+map was physically checked through `autopaws-mcp` and `autopaws-kvm`; see the
 [Swedish validation record](docs/validation/swedish-keyboard-2026-11-18.json).
 
 Further non-ASCII characters, such as German umlauts, `ß` or French `é` in their

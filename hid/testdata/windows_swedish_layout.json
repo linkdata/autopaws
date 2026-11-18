@@ -5,7 +5,7 @@
     "source_keycode_mapping": "Microsoft physical key positions mapped to USB HID usages; normal, Shift and AltGr tables plus documented dead-key compositions.",
     "target": "Windows standard Swedish (KBDSW)",
     "printable_characters": 154,
-    "note": "109 unique direct/literal outputs plus45 additional composed letters. Prefer direct key paths over equivalent compositions; Euro uses AltGr+5. Tab and LF inherit US104. Fixture generation reads public reference data only; physical validation is recorded separately."
+    "note": "109 unique direct/literal outputs plus 45 additional composed letters. Prefer direct key paths over equivalent compositions; Euro uses AltGr+5. Tab and LF inherit US104. Fixture generation reads public reference data only; physical validation is recorded separately."
   },
   "layouts": {
     "se105-windows": [

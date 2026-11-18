@@ -679,9 +679,9 @@ the candidate `autopaws-mcp`, which sent every text batch through the candidate
 passed 13 batches covering all 154 printable characters, Tab and Enter, including
 all 32 ASCII punctuation characters, `åäöÅÄÖ`, the 49 accented outputs in the
 standard composition tables, literal accents, repetition and modifier release.
-Four of those accented outputs use their native letter keys in the text map. The original 101-character
-subset also passed. The 53 additions had been individually rejected by v0.1.0's
-`type_text` before target input.
+Four of those accented outputs use their native letter keys in the text map.
+The 53 additions had been individually rejected by v0.1.0's `type_text` before
+target input.
 
 Only controlled synthetic inputs, pass/fail and permitted host/capture metadata
 are recorded. Visual comparisons used transient MCP captures in memory, without

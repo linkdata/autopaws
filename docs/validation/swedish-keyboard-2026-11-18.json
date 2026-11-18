@@ -25,7 +25,7 @@
       "-target-layout",
       "se105-windows",
       "-layouts-dir",
-      "/home/johlin/Proj/autopaws/examples/layouts",
+      "./examples/layouts",
       "-autocrop=false"
     ],
     "mcp_arguments": [],
@@ -40,7 +40,8 @@
     "image_dimensions": [
       1920,
       1080
-    ]
+    ],
+    "argument_path_note": "Layout directory shown relative to the repository root; the test used its equivalent absolute path."
   },
   "coverage": {
     "printable_characters": 154,
@@ -90,7 +91,7 @@
       "result": "PASS"
     },
     {
-      "id": "eight_missing_literals_nine_key_paths",
+      "id": "eight_added_literals",
       "controlled_input": "§ ´ ¨ ½ ¤ £ € € µ",
       "result": "PASS"
     },
@@ -130,8 +131,8 @@
     "windows_custom_file": "examples/layouts/se105-windows.yaml",
     "different_characters": "´¨",
     "other_152_printables": "Identical stroke plans",
-    "linux_reference": "All154 built-in plans independently evaluated with installed libxkbcommon and C.UTF-8 compose; see hid/testdata/README.md.",
-    "v0_1_0_observation": "All101 existing printables passed; type_text individually rejected53 missing printables before input. Native raw-key tests passed their physical key paths, prompting this data-only extension."
+    "linux_reference": "All 154 built-in plans independently evaluated with installed libxkbcommon and C.UTF-8 compose; see hid/testdata/README.md.",
+    "v0_1_0_observation": "All 101 existing printables passed; type_text individually rejected 53 missing printables before input. Native raw-key tests passed their physical key paths, prompting this data-only extension."
   },
   "cleanup": {
     "test_buffer_cleared": true,
