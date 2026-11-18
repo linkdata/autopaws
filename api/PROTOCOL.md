@@ -125,11 +125,67 @@ positioned button changes as a button-free absolute move plus a relative report.
 must call this method rather than composing down/move/up requests when they need
 one complete drag action.
 
+## Keyboard layout selection
+
+| Method | Parameters | Successful result |
+|---|---|---|
+| `list_keyboard_layouts` | none | Active `keyboard_layout` and sorted `layouts` catalog, described below |
+| `set_keyboard_layout` | nonempty string `layout` name | `{"keyboard_layout":"se105"}` (selected name) |
+
+The read-only listing reports available names with their effective source. For
+example, a malformed custom file named `my-layout.yaml` produces an entry with
+an error alongside the built-ins:
+
+```json
+{
+  "keyboard_layout":"se105",
+  "layouts":[
+    {"name":"de105","source":"builtin"},
+    {"name":"fr105","source":"builtin"},
+    {"name":"jp106","source":"builtin"},
+    {"name":"my-layout","source":"custom","error":"/path/to/my-layout.yaml: invalid keyboard layout: expected only an overrides mapping"},
+    {"name":"se105","source":"builtin"},
+    {"name":"uk105","source":"builtin"},
+    {"name":"us104","source":"builtin"}
+  ]
+}
+```
+
+The `layouts` array is sorted by name. Each custom `*.yaml` file name is listed
+once; a custom override replaces the built-in entry with the same name. An
+entry's optional `error` means it cannot be loaded. Invalid overrides keep
+`source:"custom"` and their error rather than falling back to a built-in.
+An empty or missing configured layout directory yields built-ins only; other
+directory-read failures return `unavailable`. Listing does not change the active
+selection, touch hardware, or invalidate capture/screenshot state.
+
+Select one of `us104`, `uk105`, `de105`, `fr105`, `jp106`, `se105`, or a custom
+filename stem from the daemon's configured `layouts-dir`. The existing custom
+file precedence and validation rules apply. Request-supplied directory paths
+are invalid. Selecting the same name reloads its file.
+
+The replacement is loaded and validated before activation. Missing, empty,
+unknown or invalid names and malformed layout files return `invalid params`;
+filesystem read failures return `unavailable`. Failures and cancellation before
+activation leave the previous map and active name unchanged.
+
+This runtime setting belongs to the daemon and supports one active MCP connection
+with sequential control requests. Subsequent text, tags, single-character keys
+and character-based sequences use the selected map. Restarting restores the
+CLI/YAML startup choice; configuration files are not rewritten. The operator
+selects the target OS's matching input source separately.
+
+Selection performs no serial preparation, HID reports or input releases, and
+works without connected hardware. It preserves capture generations, MCP
+screenshot coordinates, physical browser keycodes, named special keys,
+hexadecimal HID usages and mouse behavior.
+
 ## Device information and capture
 
 `get_device_info` takes no parameters and succeeds without opening serial hardware
 or finding a capture card. Serial/config fields describe **configured settings**,
-not a claim that the device is connected:
+not a claim that the device is connected. `config.keyboard_layout` is the active
+runtime selection, initially the CLI/YAML startup layout:
 
 ```json
 {
@@ -230,11 +286,11 @@ minimal `{"error":"unavailable"}` capture object.
 | `invalid request` | Malformed envelope/framing or extra input |
 | `request too large` | Request exceeds the line limit |
 | `unknown method` | No registered method with that name |
-| `invalid params` | Missing, wrong-type or out-of-range input |
+| `invalid params` | Missing, wrong-type or out-of-range input; invalid layout name or malformed selected layout |
 | `unsupported character` | A text/key character is absent from the target layout |
 | `canceled` | Request context was cancelled |
 | `timeout` | Context deadline or snapshot acquisition deadline |
-| `unavailable` | Service/device unavailable, disconnected or closing |
+| `unavailable` | Service/device unavailable, disconnected or closing; selected layout cannot be read |
 | `device busy` | Another cooperating process owns the serial port |
 | `capture changed` | Pending snapshot cancelled by a capture selection/resolution change |
 

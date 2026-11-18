@@ -38,6 +38,14 @@ type Layout struct {
 	characters map[rune][]Stroke
 }
 
+// LayoutInfo describes a selectable name and whether its current source loads.
+// Source is "builtin" or "custom". A nonempty Error marks an unusable entry.
+type LayoutInfo struct {
+	Name   string `json:"name"`
+	Source string `json:"source"`
+	Error  string `json:"error,omitempty"`
+}
+
 // Lookup returns a copy of the strokes for character. It is safe to call
 // concurrently; changing the returned slice does not change the layout.
 func (layout *Layout) Lookup(character rune) ([]Stroke, bool) {
@@ -48,12 +56,51 @@ func (layout *Layout) Lookup(character rune) ([]Stroke, bool) {
 //go:embed layouts/*.yaml
 var builtins embed.FS
 
+// ListLayouts lists built-in and configured custom names in sorted order.
+// Custom files take precedence, including broken overrides, which are reported
+// with Error instead of silently falling back. A missing directory is allowed,
+// matching LoadLayout. Failure to read an existing directory is returned.
+func ListLayouts(userDirectory string) ([]LayoutInfo, error) {
+	entries, err := builtins.ReadDir("layouts")
+	if err != nil {
+		return nil, err
+	}
+	sources := make(map[string]string)
+	for _, entry := range entries {
+		sources[strings.TrimSuffix(entry.Name(), ".yaml")] = "builtin"
+	}
+	if userDirectory != "" {
+		entries, err := os.ReadDir(userDirectory)
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("%w: list %s: %w", ErrLayout, userDirectory, err)
+		}
+		for _, entry := range entries {
+			name, ok := strings.CutSuffix(entry.Name(), ".yaml")
+			if ok && name != "" {
+				sources[name] = "custom"
+			}
+		}
+	}
+	result := make([]LayoutInfo, 0, len(sources))
+	for name, source := range sources {
+		info := LayoutInfo{Name: name, Source: source}
+		if _, err := LoadLayout(name, userDirectory); err != nil {
+			info.Error = err.Error()
+		}
+		result = append(result, info)
+	}
+	slices.SortFunc(result, func(left, right LayoutInfo) int {
+		return strings.Compare(left.Name, right.Name)
+	})
+	return result, nil
+}
+
 // LoadLayout loads name.yaml from userDirectory when present, otherwise from
 // the embedded layouts. Its overrides apply to a fresh US104 base, even when
 // a user file replaces a built-in layout with the same name. A selected user
 // file's read or parse error is returned without falling back to a built-in.
 func LoadLayout(name, userDirectory string) (*Layout, error) {
-	if name == "" || strings.ContainsAny(name, `/\`) {
+	if name == "" || strings.ContainsAny(name, "/\\\x00") {
 		return nil, fmt.Errorf("%w: %w %q", ErrLayout, ErrUnknownLayout, name)
 	}
 	if userDirectory != "" {

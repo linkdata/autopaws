@@ -71,6 +71,45 @@ German, for example, copy [de105.yaml](hid/layouts/de105.yaml) into the user lay
 directory and edit that copy. Other built-in files are in [hid/layouts](hid/layouts).
 Each loaded layout is independent and cannot be changed through a lookup result.
 
+## Changing the active layout
+
+Call the API method or read-only MCP tool `list_keyboard_layouts` with no
+parameters to discover maps. Its result contains the active `keyboard_layout`
+and a `layouts` array sorted by name. Each entry has a `name`, a `source` of
+`builtin` or `custom`, and an optional `error` when the map cannot be loaded.
+Choose an entry without an error when switching.
+
+Custom `*.yaml` names come from the daemon's configured `-layouts-dir`; a custom
+map replaces the same built-in name in this list. An invalid custom override is
+reported with its error rather than silently falling back to the built-in map.
+An empty or missing configured directory yields the built-in maps only. Other
+directory-read failures return `unavailable`.
+
+`-target-layout` selects the daemon's startup map. To select another map while it
+is running, call the API method or MCP tool `set_keyboard_layout`:
+
+```json
+{"layout":"se105"}
+```
+
+The result is `{"keyboard_layout":"se105"}`. Subsequent text, key tags,
+single-character `send_key` values and character-based sequences use the selected
+map. `get_device_info.config.keyboard_layout` reports its active name.
+
+Use one active MCP connection with sequential requests. The selection belongs to
+the running daemon; it does not rewrite configuration. Restarting restores the
+CLI/YAML startup layout. Select the matching input source on the target OS
+separately. Physical browser key positions, named special keys and hexadecimal
+HID usages keep their existing behavior.
+
+The tool accepts any built-in name listed above or a custom filename stem in the
+daemon's configured `-layouts-dir`. Custom-file precedence is unchanged, and a
+request cannot supply a directory path. Selecting the same name reloads its file.
+The complete replacement is loaded and validated before activation; an invalid,
+unreadable or malformed selection leaves the previous map active. Listing and
+switching perform no hardware input, work with disconnected devices, and
+preserve capture and screenshot-coordinate state.
+
 ## Target OS differences
 
 The Linux French map can type `~` and grave directly. A Windows French custom

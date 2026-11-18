@@ -16,7 +16,7 @@
       "idempotentHint": false,
       "readOnlyHint": true
     },
-    "description": "Read configured serial, target screen, keyboard layout and capture information from the daemon.",
+    "description": "Read configured serial and target screen settings, active keyboard layout, and capture information from the daemon.",
     "inputSchema": {
       "additionalProperties": false,
       "type": "object"
@@ -34,6 +34,18 @@
       "type": "object"
     },
     "name": "list_capture_devices"
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": true
+    },
+    "description": "List the daemon's built-in and configured custom text layouts and current selection. Entries report their source and any load error; this does not change the layout or target OS input source.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "name": "list_keyboard_layouts"
   },
   {
     "description": "Click left, right or middle (default left). Optional x and y are pixels in this session's latest successful capture_screen; supply both. A click at the current pointer needs no screenshot. Optional button_mode overrides the daemon setting.",
@@ -278,7 +290,24 @@
     "name": "set_capture_resolution"
   },
   {
-    "description": "Type text on the target keyboard. The entire text is validated against the configured target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.",
+    "description": "Select the daemon's target text layout for subsequent keyboard actions without restarting or reconnecting. Use list_keyboard_layouts to discover names. This runtime setting does not change the target OS input source or screenshot coordinates; restart restores the configured startup layout. Selecting the same name reloads its file. Use sequential requests through one MCP connection.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "description": "Target text layout name: us104, uk105, de105, fr105, jp106, se105, or a custom name from the daemon's configured layouts directory.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "layout"
+      ],
+      "type": "object"
+    },
+    "name": "set_keyboard_layout"
+  },
+  {
+    "description": "Type text on the target keyboard. The entire text is validated against the active target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
