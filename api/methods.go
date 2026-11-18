@@ -64,9 +64,6 @@ func (server *Server) setKeyboardLayout(ctx context.Context, data json.RawMessag
 	if request.Layout == nil {
 		return nil, required("layout")
 	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
 	layout, err := hid.LoadLayout(*request.Layout, server.options.LayoutsDir)
 	if err != nil {
 		return nil, err
@@ -79,16 +76,13 @@ func (server *Server) setKeyboardLayout(ctx context.Context, data json.RawMessag
 	return map[string]string{"keyboard_layout": server.layoutName}, nil
 }
 
-func (server *Server) listKeyboardLayouts(ctx context.Context, data json.RawMessage) (any, error) {
+func (server *Server) listKeyboardLayouts(_ context.Context, data json.RawMessage) (any, error) {
 	if err := params(data, &struct{}{}); err != nil {
-		return nil, err
-	}
-	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	layouts, err := hid.ListLayouts(server.options.LayoutsDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", apiwire.ErrUnavailable, err)
 	}
 	return struct {
 		KeyboardLayout string           `json:"keyboard_layout"`

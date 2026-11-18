@@ -487,8 +487,9 @@ marks a map that cannot be loaded. Then call `set_keyboard_layout` with
 `{"layout":"se105"}` after separately selecting
 Swedish on the target OS. It returns `{"keyboard_layout":"se105"}` and applies
 to subsequent keyboard actions; `get_device_info` reports the active name.
-Built-in and custom names use the daemon's configured `layouts-dir`. Selecting
-the same name reloads its file; an invalid selection leaves the working map
+Custom names are `*.yaml` stems in the daemon's configured `layouts-dir`; a
+custom file overrides a built-in of the same name. Selecting the same name
+reloads its file; an invalid selection leaves the working map
 unchanged. Runtime selection supports one MCP connection with sequential
 requests. Restarting the daemon restores its CLI/YAML startup layout. See
 [changing the active layout](CREATING_LAYOUTS.md#changing-the-active-layout).

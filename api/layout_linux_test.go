@@ -131,12 +131,14 @@ func TestKeyboardLayoutDirectoryReadFailure(t *testing.T) {
 	if err := os.WriteFile(path, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	server, _, transport := bareServer(t, Options{LayoutsDir: path})
-	_, err := server.handlers["list_keyboard_layouts"](context.Background(), json.RawMessage(`{}`))
-	if err == nil {
-		t.Fatal("accepted an unreadable layout directory")
-	}
-	if code, _ := classifyError(err); code != apiwire.ErrUnavailable || transport.prepares != 0 || transport.writes != 0 {
-		t.Fatalf("unreadable directory: %v", err)
+	for _, directory := range []string{path, filepath.Join(t.TempDir(), strings.Repeat("x", 256))} {
+		server, _, transport := bareServer(t, Options{LayoutsDir: directory})
+		_, err := server.handlers["list_keyboard_layouts"](context.Background(), json.RawMessage(`{}`))
+		if err == nil {
+			t.Fatal("accepted an unreadable layout directory")
+		}
+		if code, _ := classifyError(err); code != apiwire.ErrUnavailable || transport.prepares != 0 || transport.writes != 0 {
+			t.Fatalf("unreadable directory: %v", err)
+		}
 	}
 }
