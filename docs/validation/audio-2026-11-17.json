@@ -2,7 +2,7 @@
   "schema_version": 1,
   "date": "2026-11-17",
   "release_acceptance": "incomplete",
-  "scope": "Available Linux host/target and Chromium; Firefox and physical USB recovery remain pending.",
+  "scope": "Available Linux host/target; Chromium157 and native headless Firefox154 have been checked. Physical capture/audio USB recovery remains pending; see current_validation_record for the later serial/cancellation/Firefox evidence.",
   "measurement": {
     "method": "../audio-measurement.md",
     "from": "ALSA first-sample CLOCK_MONOTONIC timestamp estimate",
@@ -1022,9 +1022,7 @@
     }
   },
   "pending_release_checks": [
-    "Physical serial unplug/replug and interrupted-input recovery.",
-    "Physical capture/audio unplug/replug.",
-    "Native Firefox browser validation."
+    "Physical capture/audio USB unplug/replug recovery; serial recovery and native Firefox checks are recorded as completed in current_validation_record."
   ],
   "evidence_archive": {
     "archive": "autopaws-audio-validation-2026-11-17.tar.gz",
@@ -1713,5 +1711,7 @@
       ]
     },
     "limit": "Preparation checks only. Repeat after final release edits; actual tagged release identity is still pending required core validation."
-  }
+  },
+  "status_as_of": "2026-11-18",
+  "current_validation_record": "recovery-firefox-2026-11-18.json"
 }

@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "release_acceptance": "incomplete",
+  "source_commit": "0b2e606413c49e5d0ef21fe31e8c3ae7a3e483a4",
+  "serial_usb_recovery": {
+    "removed": {
+      "event": "serial_removed",
+      "utc": "2026-11-18T08:51:35.114506+00:00",
+      "wait_seconds": 71.84480971899757,
+      "sysfs_path": "/sys/class/tty/ttyUSB0"
+    },
+    "returned": {
+      "event": "serial_returned",
+      "utc": "2026-11-18T08:52:55.017205+00:00",
+      "wait_seconds": 38.05298262300494,
+      "tty_nodes": [
+        "ttyUSB0"
+      ]
+    },
+    "failed_position": [
+      900,
+      550
+    ],
+    "first_fresh_position": [
+      500,
+      350
+    ],
+    "observed_target_events": [
+      {
+        "type": "mousemove",
+        "buttons": 0,
+        "x": 240,
+        "y": 220
+      },
+      {
+        "type": "mousedown",
+        "buttons": 1,
+        "x": 240,
+        "y": 220
+      },
+      {
+        "type": "mouseup",
+        "buttons": 0,
+        "x": 240,
+        "y": 220
+      },
+      {
+        "type": "mousemove",
+        "buttons": 0,
+        "x": 500,
+        "y": 350
+      }
+    ],
+    "failed_position_replayed": false,
+    "reset_frames_before_fresh_move": [
+      "57ab00020800000000000000000c",
+      "57ab00050501000000000d"
+    ],
+    "video_audio_observer_order_errors": 0
+  },
+  "serial_api_events": [
+    {
+      "utc": "2026-11-18T08:49:39.095416+00:00",
+      "method": "send_key",
+      "params": {
+        "key": "r",
+        "modifiers": [
+          "ctrl"
+        ]
+      },
+      "elapsed_seconds": 0.047148291996563785,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "sent": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T08:49:52.318203+00:00",
+      "method": "mouse_down",
+      "params": {
+        "button": "left",
+        "x": 240,
+        "y": 220
+      },
+      "elapsed_seconds": 0.03274503999273293,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "button": "left",
+          "pressed": true
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T08:51:35.142591+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 900,
+        "y": 550
+      },
+      "elapsed_seconds": 0.0015087369974935427,
+      "response": {
+        "id": 1,
+        "ok": false,
+        "error": "unavailable",
+        "detail": "serial write: write /dev/ttyUSB0: input/output error\nprepare release: serial: no CH340/CH341 serial device found"
+      }
+    },
+    {
+      "utc": "2026-11-18T08:52:55.098605+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 500,
+        "y": 350
+      },
+      "elapsed_seconds": 0.051123232988175005,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "position": {
+            "relative": false,
+            "x": 500,
+            "y": 350
+          }
+        }
+      }
+    },
+    {
+      "utc": "2026-11-18T09:06:43.853808+00:00",
+      "method": "mouse_move",
+      "params": {
+        "x": 600,
+        "y": 300
+      },
+      "elapsed_seconds": 0.017659058008575812,
+      "response": {
+        "id": 1,
+        "ok": true,
+        "result": {
+          "position": {
+            "relative": false,
+            "x": 600,
+            "y": 300
+          }
+        }
+      }
+    }
+  ],
+  "connected_drag_cancellation": {
+    "utc": "2026-11-18T09:06:43.805550+00:00",
+    "request": {
+      "id": "cancel-drag",
+      "method": "mouse_drag",
+      "params": {
+        "start_x": 720,
+        "start_y": 220,
+        "end_x": 1000,
+        "end_y": 600
+      }
+    },
+    "confirmed_absolute_start_frame": "57ab00040702000109e5040002",
+    "confirmed_button_down_frame": "57ab00050501010000000e",
+    "client_closed_after_confirmed_press": true,
+    "close_after_request_seconds": 0.031530987995211035,
+    "completion_after_close_seconds": 0.015455144995939918,
+    "trace": [
+      "time=2026-11-18T10:06:43.774+01:00 level=DEBUG msg=\"serial frame\" hex=57ab00040702000109e5040002",
+      "time=2026-11-18T10:06:43.788+01:00 level=DEBUG msg=\"serial frame\" hex=57ab00050501010000000e",
+      "time=2026-11-18T10:06:43.804+01:00 level=DEBUG msg=\"serial frame\" hex=57ab00050501000000000d",
+      "time=2026-11-18T10:06:43.804+01:00 level=DEBUG msg=\"API request\" method=mouse_drag outcome=canceled"
+    ]
+  },
+  "connected_cancellation_target_events": [
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "x": 720,
+      "y": 220
+    },
+    {
+      "type": "mousedown",
+      "buttons": 1,
+      "x": 720,
+      "y": 220
+    },
+    {
+      "type": "mouseup",
+      "buttons": 0,
+      "x": 720,
+      "y": 220
+    },
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "x": 600,
+      "y": 300
+    }
+  ],
+  "cancellation_measurement_limit": "15.455ms is host cancellation/cleanup completion after client TCP close, not measured physical target or acoustic latency. Target event ordering separately establishes release before fresh movement; canceled end1000600 was absent.",
+  "firefox": {
+    "date": "2026-11-18",
+    "browser": {
+      "acceptInsecureCerts": false,
+      "browserName": "firefox",
+      "browserVersion": "154.0",
+      "platformName": "linux",
+      "setWindowRect": true,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:154.0) Gecko/20100101 Firefox/154.0",
+      "moz:buildID": "20260814105733",
+      "moz:headless": true,
+      "moz:platformVersion": "7.0.0-43-generic",
+      "moz:processID": 327674,
+      "moz:profile": "/tmp/autopaws-firefox-qa/profile",
+      "moz:shutdownTimeout": 60000
+    },
+    "functionalSyntheticStatus": "PASS",
+    "physicalViewOnlyStatus": "PASS",
+    "physicalApplicationSends": 0,
+    "physicalImagesOrPCMStored": false,
+    "syntheticPNGFiles": [
+      "initial.png",
+      "native.png"
+    ],
+    "syntheticChecks": [
+      "Native repaired-DHT JPEG decoded and cropped to1200x720",
+      "All four real Firefox pointer corners reached fake HID0/4095",
+      "Control held through ordinary mouseup and released on keyup",
+      "View-only rejected keyboard input",
+      "Toolbar Ctrl+Alt+Delete reached fake HID",
+      "Fit/native scaling and cursor toggle",
+      "48k stereo native AudioWorklet rendered nonzero quiet synthetic PCM",
+      "Mute closed/flushed the graph; unmute created working native playback",
+      "Reconnect retained audio choice and view-only, resumed nonzero output"
+    ],
+    "physicalChecks": [
+      "Actual Go video decoded in strict view-only mode;48k stereo PCM received and native AudioWorklet clock/ACKs advanced",
+      "Mute closed/flushed native playback; unmute resumed physical PCM",
+      "Reconnect retained audio and view-only choices; all WebSocket application sends remained zero"
+    ],
+    "closeDiagnostic": {
+      "conclusion": "Firefox154 document destruction warns even with a minimal synchronous one-assignment pagehide handler; no product functional defect demonstrated. Not unique to BiDi.close: script window.close reproduced with contextGone:true.",
+      "blankWithoutHandlerWarned": false,
+      "minimalOrdinaryNavigationWarned": false,
+      "nativeCtrlWAttempt": "inconclusive; did not close tab; fallback BiDi close is explicitly recorded",
+      "files": [
+        "close-probe.stderr.log",
+        "close-probe.json",
+        "close-probe-minimal.json",
+        "close-probe-script-close.json"
+      ]
+    },
+    "cleanup": {
+      "checkedUTC": "2026-11-18T09:04:03.460727+00:00",
+      "ownedPIDs": [
+        {
+          "pid": 327674,
+          "processExists": false
+        },
+        {
+          "pid": 332224,
+          "processExists": false
+        },
+        {
+          "pid": 327988,
+          "processExists": false
+        },
+        {
+          "pid": 329569,
+          "processExists": false
+        },
+        {
+          "pid": 332580,
+          "processExists": false
+        }
+      ],
+      "fixtureExitStatus": 0,
+      "firefoxExitStatusAfterSIGINT": 1,
+      "browserAndFixtureProcessesReaped": true,
+      "temporaryProfilesAndCacheRemoved": true
+    },
+    "limits": [
+      "No acoustic or end-to-end latency claim.",
+      "Physical PCM was quiet; synthetic native analyser separately observed nonzero output.",
+      "Interaction-time JS error logs empty; document-close warnings retained, not waived or hidden.",
+      "Only the explicitly handed-off Go WebSocket was used for physical viewer checks; no target input or API actions."
+    ]
+  },
+  "capture_usb_recovery": {
+    "status": "pending",
+    "reason": "No physical captureUSB removal observed yet; UGREEN video/audio continue streaming. No missing-path or serial test substitutes for this required check."
+  },
+  "archives": [
+    {
+      "filename": "autopaws-serial-validation-2026-11-18.tar.gz",
+      "sha256": "dcc1182313f2d04cd61e4dc9351f2489bbb58dcc48f770d7f3974f4c990bd300",
+      "bytes": 9718,
+      "files": 16,
+      "contents": "Completed serial USB recovery and connected cancellation metadata, exact running passive-observer source and helper scripts; no physical images, PCM, credentials or binaries."
+    },
+    {
+      "sha256": "37bd0c1d27445c54a39e340e50338f36223cc800c86b2963f885bd6c0ec3be75",
+      "bytes": 526833,
+      "files": 30,
+      "containsPhysicalImagesOrPCM": false,
+      "containsSyntheticPNGs": true,
+      "filename": "autopaws-firefox-validation-2026-11-18.tar.gz"
+    }
+  ],
+  "test_binaries": [
+    {
+      "filename": "autopaws-kvm-final-validation",
+      "sha256": "0b81eb0ee66ce09fe03a0e607cb761915aa5916c6adb336567f2954827ac7627",
+      "go_build_metadata": [
+        "\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm",
+        "\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261117214049-0b2e606413c4\t",
+        "\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=",
+        "\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=",
+        "\tbuild\t-buildmode=exe",
+        "\tbuild\t-compiler=gc",
+        "\tbuild\tCGO_ENABLED=0",
+        "\tbuild\tGOARCH=amd64",
+        "\tbuild\tGOOS=linux",
+        "\tbuild\tGOAMD64=v1",
+        "\tbuild\tvcs=git",
+        "\tbuild\tvcs.revision=0b2e606413c49e5d0ef21fe31e8c3ae7a3e483a4",
+        "\tbuild\tvcs.time=2026-11-17T21:40:49Z",
+        "\tbuild\tvcs.modified=false"
+      ]
+    },
+    {
+      "filename": "autopaws-mcp-final-validation",
+      "sha256": "2a259f039358a0659fb245646e5a7e366aed02ed1096303e3ff798cfa813bb7f",
+      "go_build_metadata": [
+        "\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-mcp",
+        "\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261117214049-0b2e606413c4\t",
+        "\tdep\tgithub.com/google/jsonschema-go\tv0.4.3\th1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=",
+        "\tdep\tgithub.com/modelcontextprotocol/go-sdk\tv1.8.0\th1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=",
+        "\tdep\tgithub.com/segmentio/asm\tv1.1.3\th1:WM03sfUOENvvKexOLp+pCqgb/WDjsi7EK8gIsICtzhc=",
+        "\tdep\tgithub.com/segmentio/encoding\tv0.5.4\th1:OW1VRern8Nw6ITAtwSZ7Idrl3MXCFwXHPgqESYfvNt0=",
+        "\tdep\tgithub.com/yosida95/uritemplate/v3\tv3.0.2\th1:Ed3Oyj9yrmi9087+NczuL5BwkIc4wvTb5zIM+UJPGz4=",
+        "\tdep\tgolang.org/x/oauth2\tv0.35.0\th1:Mv2mzuHuZuY2+bkyWXIHMfhNdJAdwW3FuWeCPYN5GVQ=",
+        "\tdep\tgolang.org/x/sync\tv0.20.0\th1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=",
+        "\tdep\tgolang.org/x/sys\tv0.41.0\th1:Ivj+2Cp/ylzLiEU89QhWblYnOE9zerudt9Ftecq2C6k=",
+        "\tdep\tgolang.org/x/time\tv0.15.0\th1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=",
+        "\tbuild\t-buildmode=exe",
+        "\tbuild\t-compiler=gc",
+        "\tbuild\tCGO_ENABLED=0",
+        "\tbuild\tGOARCH=amd64",
+        "\tbuild\tGOOS=linux",
+        "\tbuild\tGOAMD64=v1",
+        "\tbuild\tvcs=git",
+        "\tbuild\tvcs.revision=0b2e606413c49e5d0ef21fe31e8c3ae7a3e483a4",
+        "\tbuild\tvcs.time=2026-11-17T21:40:49Z",
+        "\tbuild\tvcs.modified=false"
+      ]
+    }
+  ]
+}

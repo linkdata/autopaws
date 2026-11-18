@@ -198,8 +198,8 @@ and exact sources are archived; full-precision statistics and context history
 are in [the compact result](validation/audio-2026-11-17.json).
 
 This establishes the observed target result for this configuration and method,
-not an acoustic guarantee or completed release acceptance. Firefox and physical
-USB recovery remain pending. Historical failures and the diagnostic output-pause
+not an acoustic guarantee or completed release acceptance. The [current hardware matrix](hardware-validation.md#release-validation-draft-2026-11-17)
+records the independent Firefox and physical USB recovery results. Historical failures and the diagnostic output-pause
 limitation remain part of the record; do not exclude them from the conclusion.
 
 ## Native server-writer recovery probe

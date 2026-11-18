@@ -3,11 +3,11 @@
 RELEASE_VALIDATION_PENDING
 
 The implementation and release packaging are ready for validation. No first
-release has been published. Required physical serial/capture unplug-and-replug,
-available Firefox checks and the remaining input/recovery evidence in
+release has been published. Physical serial recovery and native Firefox 154
+video/audio checks are recorded. **CAPTURE_USB_RECOVERY_PENDING** in
 [the validation record](hardware-validation.md#release-validation-draft-2026-11-17)
-keep publication blocked. Remove the marker only after every required Linux
-core row passes; a follow-up issue cannot replace a required check.
+keeps publication blocked. Remove the marker only after the owner confirms every
+required Linux core row; a follow-up issue cannot replace a required check.
 
 ## Recorded configuration and results
 
@@ -18,7 +18,10 @@ core row passes; a follow-up issue cannot replace a required check.
   Physical typing, API/MCP screenshot-scaled clicks and drags work. A second
   process was rejected by flock in 161 µs. Open/configure plus release-all and
   baud pacing took 31.72 ms; joined close took 0.519 ms in the recorded run.
-  These observations impose no universal kernel-call deadline.
+  These observations impose no universal kernel-call deadline. Physical host-USB
+  removal while left was held then passed: a failed `(900,550)` move was not
+  replayed, and release-all produced target mouseup before the first fresh
+  `(500,350)` move after replug.
 - UGREEN U15389/MACROSILICON USB `2b89:5389`, MJPG at 1920×1080, monotonic
   capture timestamps, shared snapshots and a 20-fps browser limit. Device/size
   changes and failed-path repair were exercised; physical replug is pending.
@@ -38,6 +41,13 @@ core row passes; a follow-up issue cannot replace a required check.
   this is timestamp-based estimation, not an acoustic guarantee. A separate
   deliberate DSP pause delayed audio already handed to browser output and is
   retained as diagnostic evidence.
+- Native headless Firefox 154.0 passed synthetic DHT/crop/input/corner checks
+  and nonzero 48 kHz stereo AudioWorklet playback. A separate strict-view-only
+  physical run showed 20-fps video, 48 kHz stereo PCM/worklet progress,
+  mute/unmute and reconnect, with zero application input sends. Document-close
+  timeout diagnostics also reproduced on a minimal non-product page; the
+  comparison and completed teardown are retained in the validation record.
+  These checks are not a second ten-minute latency measurement.
 - Token-protected API/MCP and browser access worked through authenticated SSH
   forwards for API port 9329 and web port 9330. Missing/wrong API tokens were
   rejected. Browser bootstrap removed the fragment before connecting; video,
