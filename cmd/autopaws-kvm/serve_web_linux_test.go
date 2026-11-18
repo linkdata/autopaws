@@ -384,7 +384,7 @@ func TestRuntimeWebStartupErrorsAndCanceledProductionCommands(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	for _, args := range [][]string{{"serve", "-web", ":0"}, {"serve", "-api", ":0", "-web", ":0"}} {
+	for _, args := range [][]string{nil, {"-api", "", "-web", ":0"}, {"-api", ":0", "-web", ":0"}} {
 		var stdout, stderr bytes.Buffer
 		if code := run(ctx, args, &stdout, &stderr, commandHooks{}); code != 0 || stdout.Len() != 0 || stderr.Len() != 0 {
 			t.Fatalf("pre-canceled production startup performed work: exit%d stdout%q stderr%q", code, stdout.String(), stderr.String())

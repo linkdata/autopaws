@@ -6,6 +6,18 @@ The [validation record](hardware-validation.md#release-validation-draft-2026-11-
 retains original failures, exact evidence and measurement limits. Release assets
 remain private and require repository access.
 
+## Command line
+
+Run `autopaws-kvm` to start the daemon. It enables the API at `127.0.0.1:9329`
+and relative mouse button reports by default; `-web 127.0.0.1:9330` also enables
+the browser viewer. Use `--version` and `--list-devices` for those operations.
+There are no subcommands: the earlier `serve`, `version` and `list-devices`
+spellings are no longer accepted. Explicit flags or YAML can change the defaults.
+
+[Physical startup checks](validation/cli-defaults-2026-11-18.json) verified the
+bare daemon/default MCP connection and click/drag with the target dimensions
+configured while the API/mouse-mode flags remained omitted. Both runs exited 0.
+
 ## Recorded configuration and results
 
 - Linux amd64 host: Dell XPS 17 9700, Ubuntu 26.04.1 LTS,

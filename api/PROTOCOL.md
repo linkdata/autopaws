@@ -38,9 +38,9 @@ before hardware preparation or input emission.
 
 ## Optional shared token
 
-With `serve -token-file PATH`, each request must include the matching secret as
-an envelope string field, for example `"token":"your-secret"`. It is checked
-before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
+With `autopaws-kvm -token-file PATH`, each request must include the matching
+secret as an envelope string field, for example `"token":"your-secret"`. It is
+checked before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
 receive `{"id":1,"ok":false,"error":"unauthorized"}` (with the request's ID).
 The token is never logged. Without a configured token, existing requests work
 unchanged; the optional token field is ignored.
@@ -136,7 +136,7 @@ not a claim that the device is connected:
   "serial":{"device":"","baud":9600,"auto_detect":true},
   "config":{
     "screen_width":1920,"screen_height":1080,"keyboard_layout":"us104",
-    "serial_baud":9600,"mouse_button_mode":"absolute"
+    "serial_baud":9600,"mouse_button_mode":"relative"
   },
   "capture":{
     "device":"","requested_width":1920,"requested_height":1080,

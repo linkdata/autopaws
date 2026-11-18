@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-18",
+  "result": "PASS with scoped bare-startup and configured-target input checks",
+  "source_base_commit": "cba2589",
+  "cli": {
+    "daemon": "autopaws-kvm [flags]",
+    "informational_options": [
+      "--version",
+      "--list-devices"
+    ],
+    "removed_subcommands": [
+      "serve",
+      "version",
+      "list-devices"
+    ],
+    "api_default": "127.0.0.1:9329",
+    "button_mode_default": "relative",
+    "absolute_override_retained": true,
+    "web_default": "disabled",
+    "web_only": "autopaws-kvm -api \"\" -web 127.0.0.1:9330"
+  },
+  "bare_startup": {
+    "date": "2026-11-18",
+    "status": "PASS startup, connectivity and released buttons; geometry requires target configuration",
+    "daemon_argv": [
+      "/tmp/autopaws-kvm-defaults-cli-validation"
+    ],
+    "api": "127.0.0.1:9329",
+    "web_listener_enabled": false,
+    "button_mode": "relative",
+    "mcp_argv": [
+      "/tmp/autopaws-mcp-final-validation"
+    ],
+    "target_reported_viewport": [
+      1280,
+      720
+    ],
+    "configured_target": [
+      1920,
+      1080
+    ],
+    "api_events": [
+      {
+        "utc": "2026-11-18T10:39:46.313301+00:00",
+        "method": "get_device_info",
+        "params": {},
+        "elapsed_seconds": 0.002384889012319036,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "capture": {
+              "device": "/dev/video0",
+              "requested_width": 1920,
+              "requested_height": 1080,
+              "autocrop": true,
+              "running": false,
+              "generation": 1,
+              "available_devices": [
+                {
+                  "device": "/dev/video0",
+                  "name": "UGREEN 15389: UGREEN 15389",
+                  "formats": [
+                    {
+                      "fourcc": 1448695129,
+                      "description": "YUYV 4:2:2",
+                      "flags": 0
+                    },
+                    {
+                      "fourcc": 1196444237,
+                      "description": "Motion-JPEG",
+                      "flags": 1
+                    }
+                  ],
+                  "usb": {
+                    "vid": "2b89",
+                    "pid": "5389",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:1c.4/0000:03:00.0/0000:04:02.0/0000:39:00.0/usb4/4-1"
+                  }
+                },
+                {
+                  "device": "/dev/video2",
+                  "name": "Integrated_Webcam_HD: Integrate",
+                  "formats": [
+                    {
+                      "fourcc": 1196444237,
+                      "description": "Motion-JPEG",
+                      "flags": 1
+                    },
+                    {
+                      "fourcc": 1448695129,
+                      "description": "YUYV 4:2:2",
+                      "flags": 0
+                    }
+                  ],
+                  "usb": {
+                    "vid": "0bda",
+                    "pid": "5510",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                  }
+                },
+                {
+                  "device": "/dev/video4",
+                  "name": "Integrated_Webcam_HD: Integrate",
+                  "formats": [
+                    {
+                      "fourcc": 1497715271,
+                      "description": "8-bit Greyscale",
+                      "flags": 0
+                    }
+                  ],
+                  "usb": {
+                    "vid": "0bda",
+                    "pid": "5510",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                  }
+                }
+              ]
+            },
+            "config": {
+              "keyboard_layout": "us104",
+              "mouse_button_mode": "relative",
+              "screen_height": 1080,
+              "screen_width": 1920,
+              "serial_baud": 9600
+            },
+            "serial": {
+              "auto_detect": true,
+              "baud": 9600,
+              "device": ""
+            }
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:39:46.424710+00:00",
+        "method": "send_key",
+        "params": {
+          "key": "r",
+          "modifiers": [
+            "ctrl"
+          ]
+        },
+        "elapsed_seconds": 0.08004735500435345,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "sent": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:40:15.944330+00:00",
+        "method": "mouse_click",
+        "params": {
+          "x": 960,
+          "y": 540
+        },
+        "elapsed_seconds": 0.07533603000047151,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "clicked": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:40:16.201636+00:00",
+        "method": "mouse_drag",
+        "params": {
+          "start_x": 480,
+          "start_y": 270,
+          "end_x": 1440,
+          "end_y": 810
+        },
+        "elapsed_seconds": 0.18216255500738043,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "dragged": true
+          }
+        }
+      }
+    ],
+    "target_ocr": "Viewport 1280x720 DPR 1\n\n8 mousemove buttons=0 1279,719\n\n7 mouseup buttons=0 1440,610\n\n6 mousemove buttons=1 1440,810\n\n5 mousedown buttons=1 480,270\n\n4 mousemove buttons=0 480,270\n\n3 mouseup buttons=0 960,540\n\n\u00a2 mousedown buttons=1 960,540\n\n1 mousemove buttons=0 960,540\nINPUT TEST\n",
+    "limit": "This smoke proves bare-startup API/MCP connectivity, default relative button delivery and final buttons=0. Default configured dimensions are1920x1080 while the page reports a1280x720 viewport; viewport is not an independent desktop measurement. Raw out-of-viewport drag/clipping observations are retained without assigning a cause or claiming exact screenshot mapping. A separate fresh-page run with the previously validated1280x720 configuration establishes exact input below."
+  },
+  "configured_target": {
+    "daemon_argv": [
+      "/tmp/autopaws-kvm-defaults-cli-validation",
+      "-screen-width",
+      "1280",
+      "-screen-height",
+      "720"
+    ],
+    "api_and_mouse_mode_flags_omitted": true,
+    "api_events": [
+      {
+        "utc": "2026-11-18T10:43:24.018095+00:00",
+        "method": "send_key",
+        "params": {
+          "key": "r",
+          "modifiers": [
+            "ctrl"
+          ]
+        },
+        "elapsed_seconds": 0.08010608798940666,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "sent": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:43:28.294833+00:00",
+        "method": "mouse_click",
+        "params": {
+          "x": 640,
+          "y": 360
+        },
+        "elapsed_seconds": 0.07429530199442524,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "clicked": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:43:28.553401+00:00",
+        "method": "mouse_drag",
+        "params": {
+          "start_x": 320,
+          "start_y": 180,
+          "end_x": 960,
+          "end_y": 540
+        },
+        "elapsed_seconds": 0.18172712800151203,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "dragged": true
+          }
+        }
+      },
+      {
+        "utc": "2026-11-18T10:43:38.722493+00:00",
+        "method": "get_device_info",
+        "params": {},
+        "elapsed_seconds": 0.0017709270032355562,
+        "response": {
+          "id": 1,
+          "ok": true,
+          "result": {
+            "capture": {
+              "device": "/dev/video0",
+              "requested_width": 1920,
+              "requested_height": 1080,
+              "autocrop": true,
+              "running": true,
+              "generation": 1,
+              "format": {
+                "width": 1920,
+                "height": 1080,
+                "fourcc": 1196444237,
+                "bytes_per_line": 0,
+                "size_image": 4147200
+              },
+              "available_devices": [
+                {
+                  "device": "/dev/video0",
+                  "name": "UGREEN 15389: UGREEN 15389",
+                  "formats": [
+                    {
+                      "fourcc": 1448695129,
+                      "description": "YUYV 4:2:2",
+                      "flags": 0
+                    },
+                    {
+                      "fourcc": 1196444237,
+                      "description": "Motion-JPEG",
+                      "flags": 1
+                    }
+                  ],
+                  "usb": {
+                    "vid": "2b89",
+                    "pid": "5389",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:1c.4/0000:03:00.0/0000:04:02.0/0000:39:00.0/usb4/4-1"
+                  }
+                },
+                {
+                  "device": "/dev/video2",
+                  "name": "Integrated_Webcam_HD: Integrate",
+                  "formats": [
+                    {
+                      "fourcc": 1196444237,
+                      "description": "Motion-JPEG",
+                      "flags": 1
+                    },
+                    {
+                      "fourcc": 1448695129,
+                      "description": "YUYV 4:2:2",
+                      "flags": 0
+                    }
+                  ],
+                  "usb": {
+                    "vid": "0bda",
+                    "pid": "5510",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                  }
+                },
+                {
+                  "device": "/dev/video4",
+                  "name": "Integrated_Webcam_HD: Integrate",
+                  "formats": [
+                    {
+                      "fourcc": 1497715271,
+                      "description": "8-bit Greyscale",
+                      "flags": 0
+                    }
+                  ],
+                  "usb": {
+                    "vid": "0bda",
+                    "pid": "5510",
+                    "bus_path": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-5"
+                  }
+                }
+              ]
+            },
+            "config": {
+              "keyboard_layout": "us104",
+              "mouse_button_mode": "relative",
+              "screen_height": 720,
+              "screen_width": 1280,
+              "serial_baud": 9600
+            },
+            "serial": {
+              "auto_detect": true,
+              "baud": 9600,
+              "device": ""
+            }
+          }
+        }
+      }
+    ],
+    "target_ocr": "Viewport 1280x720 DPR 1\n7 mouseup buttons=0 960,540\n6 mousemove buttons=1 960,540\n5 mousedown buttons=1 320,180\n4 mousemove buttons=0 320,180\n3 mouseup buttons=0 640,360\n\u00a2 mousedown buttons=1 640,360\n1 mousemove buttons=0 640,360\nINPUT TEST\nh\n",
+    "observed_center": [
+      640,
+      360
+    ],
+    "observed_drag_start": [
+      320,
+      180
+    ],
+    "observed_held_drag_end": [
+      960,
+      540
+    ],
+    "final_buttons": 0
+  },
+  "binary_and_sources": {
+    "metadata_recorded_utc": "2026-11-18T10:40:42.925321+00:00",
+    "argv": [
+      "/tmp/autopaws-kvm-defaults-cli-validation"
+    ],
+    "binary_sha256": "05d9ae88009e3bb65de570c75b69cbcfc1fade031c141acc61b227ec9628f8c9",
+    "native_version": "autopaws-kvm devel",
+    "source_hashes": {
+      "cmd/autopaws-kvm/run_linux.go": "9159fc16674307a5f1c1fa12651d924048f9eae1bd6a26eb0dd6bd7fc85914fb",
+      "internal/config/config.go": "d2dee96a8975bc09ea30f8bcb6a6646820357b1ec709c5d44af376c8eb05a990",
+      "internal/config/parse.go": "afc391ae3865279a86f86430e7b188b68de5d17c116db5e48d847ebbe7f8aad0",
+      "hid/mouse.go": "fac83d052d5577899c62be49a43dac515d7dcad108b510848ef5c73d3dc623ba",
+      "alsa/capture_linux.go": "3005d92a7d96aa9bb376a2d4d3c573ae6c9910409c12a2255ded00b54b9b690c"
+    },
+    "build_metadata": "/tmp/autopaws-kvm-defaults-cli-validation: go1.27.4\n\tpath\tgithub.com/linkdata/autopaws/cmd/autopaws-kvm\n\tmod\tgithub.com/linkdata/autopaws\tv0.0.0-20261118102638-cba2589740e2+dirty\t\n\tdep\tgithub.com/coder/websocket\tv1.8.15\th1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=\n\tdep\tgo.yaml.in/yaml/v3\tv3.0.6\th1:zcDfvjXEqTQmpjniUBLc91xYJMB2c4QOFxEF/LCEckM=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=cba2589740e2b09a80f430c215e97818056c390e\n\tbuild\tvcs.time=2026-11-18T10:26:38Z\n\tbuild\tvcs.modified=true\n",
+    "mcp_helper_argv": [
+      "/tmp/autopaws-mcp-final-validation"
+    ],
+    "mcp_helper_source_sha256": "2ad21b5afc93446f0e043482cc0c9fd9b9fb6a6db900916cfe686d6d98d95d37"
+  },
+  "shutdown": {
+    "metadata_recorded_utc": "2026-11-18T10:45:33.290706+00:00",
+    "bare_daemon_exit": 0,
+    "configured_daemon_exit": 0,
+    "mcp_helpers_exited": true,
+    "test_listeners_closed": [
+      9329,
+      9330
+    ]
+  },
+  "limits": [
+    "No physical images, PCM or credentials stored; OCR text and API metadata only.",
+    "CLI/default changes do not alter coordinate conversion or the earlier ALSA progress guard. Prior browser/USB/audio timing evidence retains its original binary identities.",
+    "Version/help/list and parser/override cases have hermetic test coverage separately; listing itself also ran against the attached hardware."
+  ],
+  "archive": {
+    "filename": "autopaws-cli-validation-2026-11-18.tar.gz",
+    "sha256": "695e39b750884765a5e05a2622b0ba2935a50d7a97ec0c4c55031eb3d1af8f62",
+    "bytes": 19031,
+    "files": 26,
+    "contains_physical_images_pcm_credentials_or_binaries": false
+  }
+}

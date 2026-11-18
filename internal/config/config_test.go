@@ -26,21 +26,49 @@ func writeConfig(t *testing.T, contents string) string {
 
 func TestDefaults(t *testing.T) {
 	want := Config{
+		API:        "127.0.0.1:9329",
 		SerialBaud: 9600, ScreenWidth: 1920, ScreenHeight: 1080,
-		TargetLayout: "us104", MouseButtonMode: "absolute",
+		TargetLayout: "us104", MouseButtonMode: "relative",
 		CaptureWidth: 1920, CaptureHeight: 1080, Autocrop: true,
 		WebFPS: 20, LogLevel: "info",
 	}
 	if got := Defaults(); got != want {
 		t.Fatalf("Defaults = %+v; want %+v", got, want)
 	}
-	if err := want.Validate(); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "at least one") {
-		t.Fatalf("disabled listeners = %v", err)
+	if err := want.Validate(); err != nil {
+		t.Fatalf("default configuration = %v", err)
 	}
-	want.API = "127.0.0.1:9329"
-	got, err := ParseServe([]string{"-api", want.API})
+	got, _, err := Parse(nil)
 	if err != nil || got != want {
 		t.Fatalf("flag defaults = %+v, %v; want %+v", got, err, want)
+	}
+}
+
+func TestListenerAndButtonDefaultsCanBeOverridden(t *testing.T) {
+	for _, vector := range []struct {
+		name, yaml string
+		args       []string
+		api, web   string
+		mode       string
+	}{
+		{"file", "api: ''\nweb: 127.0.0.1:9330\nmouse-button-mode: absolute\n", nil, "", "127.0.0.1:9330", "absolute"},
+		{"flags", "api: 127.0.0.1:1234\nmouse-button-mode: relative\n", []string{"-api", "", "-web", "127.0.0.1:9330", "-mouse-button-mode", "absolute"}, "", "127.0.0.1:9330", "absolute"},
+		{"disable default API", "{}", []string{"-api=", "-web", ":0"}, "", ":0", "relative"},
+		{"restore file-disabled API", "api: ''\nmouse-button-mode: absolute\n", []string{"-api", "127.0.0.1:9329", "-mouse-button-mode", "relative"}, "127.0.0.1:9329", "", "relative"},
+	} {
+		t.Run(vector.name, func(t *testing.T) {
+			path := writeConfig(t, vector.yaml)
+			args := append([]string{"-config", path}, vector.args...)
+			got, _, err := Parse(args)
+			if err != nil || got.API != vector.api || got.Web != vector.web || got.MouseButtonMode != vector.mode {
+				t.Fatalf("settings = %+v, %v; want API %q, web %q, mode %q", got, err, vector.api, vector.web, vector.mode)
+			}
+		})
+	}
+	for _, args := range [][]string{{"-api="}, {"-api=", "-web="}, {"-config", writeConfig(t, "api: ''\n")}} {
+		if _, _, err := Parse(args); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "at least one") {
+			t.Fatalf("both listeners disabled by %v: %v", args, err)
+		}
 	}
 }
 
@@ -69,21 +97,21 @@ debug-keys: true
 		MouseButtonMode: "relative", CaptureDevice: "/dev/video7", CaptureWidth: 640,
 		CaptureHeight: 480, WebFPS: 30, AudioDevice: "off", LogLevel: "WARN", DebugKeys: true,
 	}
-	got, err := ParseServe([]string{"-config", path})
+	got, _, err := Parse([]string{"-config", path})
 	if err != nil || got != want {
 		t.Fatalf("YAML settings = %+v, %v; want %+v", got, err, want)
 	}
 
 	want.API, want.Web, want.Autocrop, want.DebugKeys = "", ":0", true, false
 	want.SerialDevice, want.AudioDevice, want.WebFPS = "", "", 1
-	got, err = ParseServe([]string{
+	got, _, err = Parse([]string{
 		"-config", path, "-api=", "-web", ":0", "-autocrop", "-debug-keys=false",
 		"-serial-device=", "-audio-device=", "-web-fps", "1",
 	})
 	if err != nil || got != want {
 		t.Fatalf("explicit zero/false/empty overlay = %+v, %v; want %+v", got, err, want)
 	}
-	if _, err := ParseServe([]string{"-config", path, "-api=", "-web="}); !errors.Is(err, ErrInvalid) {
+	if _, _, err := Parse([]string{"-config", path, "-api=", "-web="}); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("flags did not disable both YAML listeners: %v", err)
 	}
 }
@@ -109,7 +137,7 @@ func TestEveryFlagOverridesFile(t *testing.T) {
 		MouseButtonMode: "relative", CaptureDevice: "/dev/video2", CaptureWidth: 3,
 		CaptureHeight: 4, WebFPS: 120, AudioDevice: "/dev/snd/pcmC1D0c", LogLevel: "debug", DebugKeys: true,
 	}
-	got, err := ParseServe(args)
+	got, _, err := Parse(args)
 	if err != nil || got != want {
 		t.Fatalf("all flags = %+v, %v; want %+v", got, err, want)
 	}
@@ -120,7 +148,7 @@ func TestStrictYAML(t *testing.T) {
 		"empty": "", "syntax": "api: [", "invalid UTF-8": "\xff", "root scalar": "word",
 		"root null": "null", "root sequence": "[]", "numeric key": "1: value",
 		"complex key": "[api]: value", "unknown key": "api-host: localhost",
-		"nested config": "config: another.yaml", "null string": "api: null",
+		"nested config": "config: another.yaml", "version action": "version: true", "list action": "list-devices: true", "null string": "api: null",
 		"null bool": "autocrop: null", "null int": "web-fps: null",
 		"string number": "api: 9329", "string bool": "api: true",
 		"quoted bool": "autocrop: 'false'", "legacy bool": "autocrop: yes",
@@ -137,19 +165,19 @@ func TestStrictYAML(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := writeConfig(t, contents)
-			cfg, err := ParseServe([]string{"-config", path, "-api", ":9329"})
+			cfg, _, err := Parse([]string{"-config", path, "-api", ":9329"})
 			if cfg != (Config{}) || !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), path) {
-				t.Fatalf("ParseServe = %+v, %v; want invalid file with path", cfg, err)
+				t.Fatalf("Parse = %+v, %v; want invalid file with path", cfg, err)
 			}
 		})
 	}
 	path := writeConfig(t, "api: ':9329'\nweb-fps: 044\nautocrop: FALSE\n")
-	cfg, err := ParseServe([]string{"-config", path})
+	cfg, _, err := Parse([]string{"-config", path})
 	if err != nil || cfg.WebFPS != 36 || cfg.Autocrop {
 		t.Fatalf("typed YAML values = %+v, %v", cfg, err)
 	}
 	path = writeConfig(t, "{}")
-	if _, err := ParseServe([]string{"-config", path, "-api", ":9329"}); err != nil {
+	if _, _, err := Parse([]string{"-config", path, "-api", ":9329"}); err != nil {
 		t.Fatalf("empty mapping: %v", err)
 	}
 }
@@ -157,19 +185,19 @@ func TestStrictYAML(t *testing.T) {
 func TestFileAndArgumentErrors(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing")
 	for _, path := range []string{missing, t.TempDir(), ""} {
-		if _, err := ParseServe([]string{"-config", path, "-api", ":9329"}); !errors.Is(err, ErrInvalid) {
+		if _, _, err := Parse([]string{"-config", path, "-api", ":9329"}); !errors.Is(err, ErrInvalid) {
 			t.Errorf("selected file %q: %v", path, err)
 		}
 	}
-	if _, err := ParseServe([]string{"-config", missing, "-api", ":9329"}); !errors.Is(err, os.ErrNotExist) {
+	if _, _, err := Parse([]string{"-config", missing, "-api", ":9329"}); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("missing file cause not preserved: %v", err)
 	}
 	for _, args := range [][]string{{"-unknown"}, {"-api"}, {"-web-fps", "bad"}, {"-autocrop=maybe"}, {"word", "-api", ":1"}} {
-		if _, err := ParseServe(args); !errors.Is(err, ErrUsage) {
+		if _, _, err := Parse(args); !errors.Is(err, ErrUsage) {
 			t.Errorf("args %v: %v; want ErrUsage", args, err)
 		}
 	}
-	if _, err := ParseServe([]string{"-config", missing, "-help"}); err != flag.ErrHelp {
+	if _, _, err := Parse([]string{"-config", missing, "-help"}); err != flag.ErrHelp {
 		t.Fatalf("help read config or validated listeners: %v", err)
 	}
 }
@@ -193,7 +221,7 @@ func TestAggregatedValidation(t *testing.T) {
 		}
 		last = position
 	}
-	if _, err := ParseServe([]string{"-api", ":9329", "-serial-baud", "0", "-screen-width", "0", "-web-fps", "121"}); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "screen-width:") || !strings.Contains(err.Error(), "web-fps:") {
+	if _, _, err := Parse([]string{"-api", ":9329", "-serial-baud", "0", "-screen-width", "0", "-web-fps", "121"}); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "screen-width:") || !strings.Contains(err.Error(), "web-fps:") {
 		t.Fatalf("merged validation = %v", err)
 	}
 }
@@ -215,7 +243,7 @@ func TestSupportedValuesAndBounds(t *testing.T) {
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("supported address/dimensions %q: %v", address, err)
 		}
-		got, err := ParseServe([]string{"-web", address})
+		got, _, err := Parse([]string{"-web", address})
 		if err != nil || got.Web != address {
 			t.Errorf("address changed: %+v, %v", got, err)
 		}
@@ -228,18 +256,18 @@ func TestSupportedValuesAndBounds(t *testing.T) {
 		}
 	}
 	tooLarge := uint64(math.MaxUint32) + 1
-	if _, err := ParseServe([]string{"-api", ":1", "-capture-width", strconv.FormatUint(tooLarge, 10)}); !errors.Is(err, ErrInvalid) {
+	if _, _, err := Parse([]string{"-api", ":1", "-capture-width", strconv.FormatUint(tooLarge, 10)}); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("capture dimension did not enforce uint32: %v", err)
 	}
 	for _, device := range []string{"0", "+0", "-1", "99999999999999999999999999999"} {
 		for _, setting := range []string{"capture-device", "audio-device"} {
-			if _, err := ParseServe([]string{"-api", ":1", "-" + setting + "=" + device}); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), setting) {
+			if _, _, err := Parse([]string{"-api", ":1", "-" + setting + "=" + device}); !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), setting) {
 				t.Errorf("%s index %q: %v", setting, device, err)
 			}
 		}
 	}
 	for _, device := range []string{"/dev/video0", "relative-device", "./0", "+", "-"} {
-		if _, err := ParseServe([]string{"-api", ":1", "-capture-device=" + device}); err != nil {
+		if _, _, err := Parse([]string{"-api", ":1", "-capture-device=" + device}); err != nil {
 			t.Errorf("device path %q rejected: %v", device, err)
 		}
 	}
@@ -255,7 +283,7 @@ func TestNoEnvironmentOrAutomaticFiles(t *testing.T) {
 	if err := os.WriteFile("serial-hid-kvm.yaml", []byte("api: ':1'\nserial-baud: 1"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got, err := ParseServe([]string{"-web", ":9330"})
+	got, _, err := Parse([]string{"-web", ":9330"})
 	want := Defaults()
 	want.Web = ":9330"
 	if err != nil || !reflect.DeepEqual(got, want) {
@@ -265,7 +293,7 @@ func TestNoEnvironmentOrAutomaticFiles(t *testing.T) {
 
 func TestUsageAndLoggers(t *testing.T) {
 	var usage bytes.Buffer
-	WriteServeUsage(&usage)
+	WriteUsage(&usage)
 	for _, setting := range []string{"config", "api", "web", "serial-device", "serial-baud", "screen-width", "screen-height", "target-layout", "layouts-dir", "mouse-button-mode", "capture-device", "capture-width", "capture-height", "autocrop", "web-fps", "audio-device", "log-level", "debug-keys"} {
 		if !strings.Contains(usage.String(), "-"+setting) {
 			t.Errorf("usage omitted %s: %s", setting, usage.String())

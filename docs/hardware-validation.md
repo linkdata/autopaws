@@ -4,6 +4,9 @@ This record distinguishes physical observations from builds and unit tests.
 Development checks precede the completed required Linux core matrix below.
 Browser, serial and capture/audio recovery results retain initial failures and
 retests; individual component checks do not establish the entire gate alone.
+Recorded commands and archived transcripts retain the CLI used for each run.
+Earlier builds used subcommands; the current CLI starts the daemon with
+`autopaws-kvm` and uses `--version` and `--list-devices` flags.
 
 ## Input development checks, 2026-11-17
 
@@ -336,7 +339,7 @@ Safari and other platform browsers are optional. Keep supported cross-builds.
 | Negotiated audio | S16_LE, 48,000 Hz stereo, 960-frame/20 ms periods, 7,680-frame/160 ms kernel buffer |
 | Exclusive PCM access | No competing PCM owner at test start; no PipeWire/WirePlumber policy change applied |
 | Browser under validation | Linux Chromium 157 and native headless Firefox 154.0; exact user agents are retained with their evidence. The Firefox checks below do not claim a second ten-minute latency run. |
-| Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Final release artifact identity remains pending. |
+| Build under validation | Audio implementation merged in [PR 61](https://github.com/linkdata/autopaws/pull/61); observed module hashes are in [the compact result](validation/audio-2026-11-17.json). The subsequent token-enabled smoke used the same audio DSP code. Tagged artifacts and checksums are verified separately through the release procedure. |
 
 The earlier input section's unspecified OS versions describe the same lab setup;
 this table records the subsequently obtained exact versions. It does not turn
@@ -619,3 +622,28 @@ contains serial, cancellation and Firefox results and archive identities. The
 initial ALSA failure and successful fixed-build physical recovery. Required Linux
 core validation is complete; final artifacts and publication follow the release
 procedure.
+
+### Flattened CLI and default startup, 2026-11-18
+
+The revised binary started with no arguments and listened only on
+`127.0.0.1:9329`; the web port stayed closed. Device info reported default
+`relative` buttons. The native MCP client also launched with no arguments and
+read the physical target through its default connection. `--version`, help and
+`--list-devices` worked without starting the daemon.
+
+The bare run used the built-in 1920×1080 target dimensions while Firefox reported
+a 1280×720 viewport. Its raw drag/clipping events remain in the evidence; this
+run establishes connectivity and released buttons, not exact coordinate mapping.
+Viewport size alone does not independently establish desktop geometry or explain
+those events. With the previously validated 1280×720 target configuration and the
+API/mouse-mode flags still omitted, a fresh page recorded click move/down/up at
+`(640,360)` and drag down at `(320,180)`, held movement to `(960,540)`, then release
+at that endpoint. Both daemon runs exited 0; helpers exited and test listeners
+closed. No new USB or long audio measurement is claimed.
+
+The [CLI/default record](validation/cli-defaults-2026-11-18.json) retains command
+arguments, source/binary identity, raw OCR/API metadata and scope. Its local
+`autopaws-cli-validation-2026-11-18.tar.gz` archive has SHA256
+`695e39b750884765a5e05a2622b0ba2935a50d7a97ec0c4c55031eb3d1af8f62`
+(19,031 bytes, 26 files); it contains no physical pictures, PCM, credentials or
+binaries.

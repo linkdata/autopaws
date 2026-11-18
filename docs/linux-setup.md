@@ -37,7 +37,7 @@ sudo udevadm control --reload-rules
 ```
 
 Keep the system's video/audio rules. Do not replace device permissions with a
-world-writable mode. Run `autopaws-kvm list-devices` as the eventual daemon user
+world-writable mode. Run `autopaws-kvm --list-devices` as the eventual daemon user
 to confirm inventory and permissions. It queries V4L2 capabilities but starts no
 stream and opens neither tty nor PCM devices.
 

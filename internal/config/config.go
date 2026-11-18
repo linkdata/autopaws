@@ -45,11 +45,12 @@ type Config struct {
 	DebugKeys       bool
 }
 
-// Defaults returns the built-in settings without enabling a listener.
+// Defaults returns the built-in settings with the loopback API enabled.
 func Defaults() Config {
 	return Config{
+		API:        "127.0.0.1:9329",
 		SerialBaud: 9600, ScreenWidth: 1920, ScreenHeight: 1080,
-		TargetLayout: "us104", MouseButtonMode: "absolute",
+		TargetLayout: "us104", MouseButtonMode: "relative",
 		CaptureWidth: 1920, CaptureHeight: 1080, Autocrop: true,
 		WebFPS: 20, LogLevel: "info",
 	}

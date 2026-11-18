@@ -7,7 +7,7 @@ Type=simple
 User=autopaws
 Group=autopaws
 SupplementaryGroups=dialout video audio
-ExecStart=/usr/local/bin/autopaws-kvm serve -config /etc/autopaws/autopaws.yaml
+ExecStart=/usr/local/bin/autopaws-kvm -config /etc/autopaws/autopaws.yaml
 Restart=on-failure
 RestartSec=2
 # Let owned serial/video/audio kernel calls finish; they cannot promise a wall-clock

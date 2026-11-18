@@ -30,7 +30,7 @@ repository visibility; downloads require an account/token with access.
    ```
 
    Substitute the chosen version. Check eight binaries plus `SHA256SUMS`, the
-   native KVM's `version` output, MCP's initialization `serverInfo.version`, and
+   native KVM's `--version` output, MCP's initialization `serverInfo.version`, and
    the checksums. Linux binaries should be static; macOS binaries still link
    `libSystem`. Cross-building the Windows/macOS/ARM64 artifacts is not a claim
    that those runtimes or hardware were exercised.

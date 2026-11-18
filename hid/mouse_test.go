@@ -346,6 +346,43 @@ func TestMouseDragModesAndTiming(t *testing.T) {
 	}
 }
 
+func TestMouseDefaultRelativeAndExplicitAbsoluteReports(t *testing.T) {
+	for _, vector := range []struct {
+		name, configured, action string
+		relative                 bool
+	}{
+		{"empty defaults", "", "", true},
+		{"configured absolute", "absolute", "", false},
+		{"action absolute", "", "absolute", false},
+		{"action relative", "absolute", "relative", true},
+	} {
+		t.Run(vector.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 10, Height: 20, ButtonMode: vector.configured})
+				if err := mouse.Click(t.Context(), "left", ButtonOptions{Position: &Point{9, 19}, Mode: vector.action}); err != nil {
+					t.Fatal(err)
+				}
+				want := []frameEvent{
+					{ch9329.MouseAbsolute(1, 4095, 4095, 0), 0},
+					{ch9329.MouseAbsolute(0, 4095, 4095, 0), 10 * time.Millisecond},
+				}
+				if vector.relative {
+					want = []frameEvent{
+						{ch9329.MouseAbsolute(0, 4095, 4095, 0), 0},
+						{ch9329.MouseRelative(1, 0, 0, 0), 0},
+						{ch9329.MouseAbsolute(0, 4095, 4095, 0), 10 * time.Millisecond},
+						{ch9329.MouseRelative(0, 0, 0, 0), 10 * time.Millisecond},
+					}
+				}
+				_, _, _, got := transport.snapshot()
+				if !reflect.DeepEqual(got, want) || controller.buttons != 0 {
+					t.Fatalf("click reports = %v, held buttons %d; want %v, released", got, controller.buttons, want)
+				}
+			})
+		})
+	}
+}
+
 func TestMouseTransportFailuresReleaseMouseOnly(t *testing.T) {
 	cases := []struct {
 		name   string
@@ -376,7 +413,7 @@ func TestMouseTransportFailuresReleaseMouseOnly(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
-				controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 10, Height: 20})
+				controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 10, Height: 20, ButtonMode: "absolute"})
 				failure := errors.New("send failed")
 				transport.writeHook = func(_ context.Context, n int, _ []byte) error {
 					if n == test.failAt {
@@ -530,7 +567,7 @@ func TestMouseCleanupBudgetSharedWithClose(t *testing.T) {
 
 func TestMousePositionCopiedBeforeAdmission(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 4096, Height: 4096})
+		controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 4096, Height: 4096, ButtonMode: "absolute"})
 		keyboard := NewKeyboard(controller, mustLoad(t, "us104", ""))
 		keyDone := make(chan error, 1)
 		go func() { keyDone <- keyboard.SendKey(context.Background(), "a", nil) }()

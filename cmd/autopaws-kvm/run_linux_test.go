@@ -23,23 +23,27 @@ func TestHelpAndUsageErrors(t *testing.T) {
 		code int
 		text string
 	}{
-		{nil, 2, "Usage:"},
-		{[]string{"unknown"}, 2, "unknown command"},
+		{[]string{"unknown"}, 2, "unexpected arguments"},
+		{[]string{"serve"}, 2, "unexpected arguments"},
+		{[]string{"version"}, 2, "unexpected arguments"},
+		{[]string{"list-devices"}, 2, "unexpected arguments"},
 		{[]string{"-help"}, 0, "Usage:"},
 		{[]string{"--help"}, 0, "Usage:"},
 		{[]string{"-h"}, 0, "Usage:"},
-		{[]string{"serve", "-config", missing, "-help"}, 0, "-serial-baud"},
-		{[]string{"serve", "-no-such-flag"}, 2, "flag provided but not defined"},
-		{[]string{"serve", "-api"}, 2, "flag needs an argument"},
-		{[]string{"serve", "word"}, 2, "unexpected arguments"},
-		{[]string{"serve"}, 2, "at least one of api or web"},
-		{[]string{"serve", "-config", missing}, 2, "read"},
-		{[]string{"list-devices", "-help"}, 0, "list-devices"},
-		{[]string{"list-devices", "-api", ":1"}, 2, "flag provided but not defined"},
-		{[]string{"list-devices", "word"}, 2, "unexpected arguments"},
-		{[]string{"version", "-help"}, 0, "version"},
-		{[]string{"version", "-config", missing}, 2, "flag provided but not defined"},
-		{[]string{"version", "word"}, 2, "unexpected arguments"},
+		{[]string{"-config", missing, "-help"}, 0, "-serial-baud"},
+		{[]string{"--version", "--help"}, 0, "Usage:"},
+		{[]string{"--list-devices", "--help"}, 0, "Usage:"},
+		{[]string{"-no-such-flag"}, 2, "flag provided but not defined"},
+		{[]string{"-api"}, 2, "flag needs an argument"},
+		{[]string{"word"}, 2, "unexpected arguments"},
+		{[]string{"-api=", "-web="}, 2, "at least one of api or web"},
+		{[]string{"-config", missing}, 2, "read"},
+		{[]string{"--version", "--list-devices"}, 2, "must be used alone"},
+		{[]string{"--version", "-config", missing}, 2, "must be used alone"},
+		{[]string{"--list-devices", "-token-file", missing}, 2, "must be used alone"},
+		{[]string{"--list-devices", "-api", ":1"}, 2, "must be used alone"},
+		{[]string{"--version=bad"}, 2, "invalid boolean"},
+		{[]string{"--version", "word"}, 2, "unexpected arguments"},
 	} {
 		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
@@ -69,8 +73,23 @@ func TestHelpAndUsageErrors(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	if code := run(context.Background(), []string{"version"}, &stdout, &stderr, commandHooks{}); code != 0 || stdout.String() != "autopaws-kvm "+version+"\n" || stderr.Len() != 0 {
+	if code := run(context.Background(), []string{"--version"}, &stdout, &stderr, commandHooks{}); code != 0 || stdout.String() != "autopaws-kvm "+version+"\n" || stderr.Len() != 0 {
 		t.Fatalf("version = code %d, stdout %q, stderr %q", code, stdout.String(), stderr.String())
+	}
+}
+
+func TestBareCommandUsesAPIRelativeDefaults(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	called := false
+	hooks := commandHooks{serve: func(_ context.Context, cfg config.Config) error {
+		called = true
+		if cfg.API != "127.0.0.1:9329" || cfg.Web != "" || cfg.MouseButtonMode != "relative" {
+			t.Fatalf("bare command configuration = %+v", cfg)
+		}
+		return nil
+	}}
+	if code := run(t.Context(), nil, &stdout, &stderr, hooks); code != 0 || !called || stdout.Len() != 0 || stderr.Len() != 0 {
+		t.Fatalf("bare command: exit %d, called %v, stdout %q, stderr %q", code, called, stdout.String(), stderr.String())
 	}
 }
 
@@ -106,9 +125,9 @@ func TestCommandHooks(t *testing.T) {
 						return result
 					},
 				}
-				args := []string{command}
+				args := []string{"--list-devices"}
 				if command == "serve" {
-					args = append(args, "-config", path)
+					args = []string{"-config", path}
 				}
 				code := run(ctx, args, &stdout, &stderr, hooks)
 				wantCode := 0

@@ -22,7 +22,7 @@ var (
 type Point struct{ X, Y int }
 
 // MouseOptions defines the target size and default button-report mode.
-// ButtonMode is "absolute" (also the empty default) or "relative".
+// ButtonMode is "relative" (also the empty default) or "absolute".
 type MouseOptions struct {
 	Width, Height int
 	ButtonMode    string
@@ -60,10 +60,10 @@ func NewMouse(controller *Controller, options MouseOptions) (*Mouse, error) {
 
 func buttonMode(mode string) (bool, error) {
 	switch mode {
-	case "", "absolute":
-		return false, nil
-	case "relative":
+	case "", "relative":
 		return true, nil
+	case "absolute":
+		return false, nil
 	default:
 		return false, fmt.Errorf("%w: %q", ErrButtonMode, mode)
 	}

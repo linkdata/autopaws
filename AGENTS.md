@@ -8,7 +8,7 @@ Use the available Linux setup for physical KVM validation. Separate Windows/macO
 
 The existing Python tools, `serial-hid-kvm` and `mcp-serial-hid-kvm`, are available on `PATH`. You may use them during development to test functionality while porting the projects to Go.
 
-The usual startup command is `serial-hid-kvm --api --mouse-button-mode relative`. Omitting these arguments causes MCP access or mouse clicks to fail.
+The usual Python startup command is `serial-hid-kvm --api --mouse-button-mode relative`. Omitting these arguments from the Python command causes MCP access or mouse clicks to fail. The Go command `autopaws-kvm` starts the daemon with the API at `127.0.0.1:9329` and relative mouse button mode by default; those flags are not required for Go. Use `autopaws-kvm --version` or `autopaws-kvm --list-devices` for those operations; there are no subcommands.
 
 The `claude` CLI is available on `PATH`. You may use Claude as an adversarial reviewer during development.
 
