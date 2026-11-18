@@ -143,7 +143,7 @@ an error alongside the built-ins:
     {"name":"de105","source":"builtin"},
     {"name":"fr105","source":"builtin"},
     {"name":"jp106","source":"builtin"},
-    {"name":"my-layout","source":"custom","error":"invalid keyboard layout: ..."},
+    {"name":"my-layout","source":"custom","error":"/path/to/my-layout.yaml: invalid keyboard layout: expected only an overrides mapping"},
     {"name":"se105","source":"builtin"},
     {"name":"uk105","source":"builtin"},
     {"name":"us104","source":"builtin"}
