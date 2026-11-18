@@ -6,6 +6,13 @@ The [validation record](hardware-validation.md#release-validation-draft-2026-11-
 retains original failures, exact evidence and measurement limits. Release assets
 remain private and require repository access.
 
+The additional owner-required [limited read-only Windows laptop smoke](validation/windows-readonly-2026-11-18.json)
+also passed. It covered capture and safe keyboard/pointer actions after
+owner-handled setup. Only actions and pass/fail are recorded; screen contents and
+images are not retained. The agent placed no scripts on the target and changed no target files
+or settings. Text layouts, dragging, audio and broader Windows coverage were
+not tested.
+
 ## Command line
 
 Run `autopaws-kvm` to start the daemon. It enables the API at `127.0.0.1:9329`
@@ -87,11 +94,12 @@ Windows on amd64/arm64. Linux executables are static; macOS executables link
 `libSystem`. SHA-256 checksums accompany the binaries. Cross-builds establish
 build compatibility only.
 
-Separate Windows/macOS target tests, ARM64 physical hardware, Safari and browser
+Broader Windows/macOS target tests, ARM64 physical hardware, Safari and browser
 checks on other operating systems, a second capture chipset, two physical
 identical cards, 115200-baud hardware, BIOS/UEFI and extended cross-platform OCR
-have not been run. These are optional coverage under the current plan; findings
-that affect shared implementation or required Linux behavior remain blocking.
+have not been run. These remain optional coverage beyond the limited Windows
+smoke above; findings that affect shared implementation or required behavior
+remain blocking.
 
 Control supports one operator at a time. Built-in target layouts follow Linux;
 OS-specific differences require custom files. Browser audio needs a compatible

@@ -5,7 +5,9 @@ repository visibility; downloads require an account/token with access.
 
 1. Complete every required Linux core check in #43 and record actual hardware,
    host/target architecture/OS, browser versions, negotiated media settings,
-   limits and optional coverage not run. Resolve failures in required/shared
+   limits and optional coverage not run. Also confirm the owner-required limited
+   read-only Windows laptop smoke before v0.1.0; record only test actions and
+   pass/fail, with no screen content or images. Resolve failures in required/shared
    behavior; a new follow-up issue cannot waive them.
 2. Validate the README installation path, device permissions and optional
    udev/service setup on the release setup. Preserve the CLI/audio/OCR/access

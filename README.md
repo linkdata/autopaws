@@ -620,11 +620,15 @@ screenshot-scaled input. The validation record retains the initial ALSA recovery
 defect, its fixed-build physical retest and known browser/shutdown diagnostics.
 Final tagged artifacts follow the [release procedure](docs/releasing.md).
 
-Separate Windows/macOS target tests, physical ARM64 hardware, Safari and browser
-checks on other operating systems have not been run and are optional extended
-coverage. Supported-platform cross-builds remain required; they do not establish
-runtime or hardware validation. Extended card/OCR coverage and known limits are
-recorded separately from the required Linux results.
+A separate [limited read-only Windows laptop smoke](docs/validation/windows-readonly-2026-11-18.json)
+passed capture and safe keyboard/pointer checks. Only test actions and outcomes
+are recorded; no screen content or images are retained. No scripts were placed on the target,
+and the agent changed no target files or settings. This does not establish text-layout,
+drag or audio coverage. Broader Windows/macOS target tests, physical ARM64
+hardware, Safari and browser checks on other operating systems remain optional
+extended coverage. Supported-platform cross-builds remain required; they do not
+establish runtime or hardware validation. Extended card/OCR coverage and known
+limits are recorded separately from the required Linux results.
 
 ## Development
 

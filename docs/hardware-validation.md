@@ -321,10 +321,12 @@ playback, end-to-end timing and the ten-minute audio run remain separate checks.
 scoped observations, initial failures and fixed-build retests. Tagged release
 artifacts are checked separately; these results do not assert universal latency
 or browser compatibility.
-The owner-scoped release checks use the available Linux host and target;
-Windows/macOS target tests and ARM64 physical hardware are not required by
-`AGENTS.md`. Chromium and Firefox are the required available browser engines;
-Safari and other platform browsers are optional. Keep supported cross-builds.
+The owner-scoped release checks use the available Linux host and target. The
+additional owner-required limited read-only Windows laptop smoke also passed,
+as recorded below. Broader Windows/macOS target tests and ARM64 physical hardware
+remain outside the required scope. Chromium and Firefox are the required
+available browser engines; Safari and other platform browsers are optional.
+Keep supported cross-builds.
 
 ### Current setup and build identity
 
@@ -362,6 +364,7 @@ historical component observations into a completed release matrix.
 | SSH viewer/API access | Token-protected `http://localhost:9330` displayed video near 20 fps and 48 kHz stereo audio; enable/mute/unmute worked without browser errors. The fragment was removed, cookie authentication worked, and API port 9329 rejected missing/wrong tokens. Both ports were forwarded; no secret is in the evidence. |
 | AudioWorklet unavailable explanation | Native Chromium loaded the synthetic fixture over a private non-loopback HTTP address. Enabling its advertised audio displayed “AudioWorklet needs a compatible browser and secure context. A localhost SSH tunnel is sufficient.” Video continued at 20 fps; a click and key down/up reached the fake HID controller, with no browser errors. The fixture supplied no PCM and opened no hardware. |
 | MCP screenshot coordinates and endpoints | Earlier real screenshot `(960,540)` → target `(640,360)`, resize invalidation and scaled drag pass. Token-enabled MCP again showed center `(640,360)` and drag endpoints `(320,180)` → `(960,540)`; this smoke's first OCR did not establish the complete event sequence. All four physical corners subsequently passed in a local-file Firefox kiosk recorder: screenshot pixels `(0,0)`, `(1919,0)`, `(1919,1079)`, `(0,1079)` produced target `(0,0)`, `(1279,0)`, `(1279,719)`, `(0,719)`, with all twelve move/down/up events. Autocrop was enabled. The harness first waited for the page to finish reloading; API completion alone does not establish target-page readiness. Earlier normal-window attempts hit desktop controls. No coordinate code change was needed. |
+| Limited read-only Windows laptop smoke | **PASS, 2026-11-18.** Capture and safe keyboard/pointer actions passed after owner-handled setup. Only actions and pass/fail are recorded; no screen content or images are retained. The agent placed no scripts on the target and changed no target files or settings. Scope and limits are below. |
 | Local gate and release packaging | The preparation gate includes actionlint, release-script syntax/ShellCheck, 85 Node cases, Go race/lint and supported cross-builds. Eight CGO-disabled release-scheme binaries are checked locally with a validation version; these are not published release artifacts. Repeat after final release edits and record the actual tagged identity before publication. |
 
 Physical input checks remain one-operator tests. Multiple passive viewers do not
@@ -562,12 +565,31 @@ helpers/metadata are in `autopaws-capture-usb-validation-2026-11-18.tar.gz`, SHA
 binaries. This retest completes the required physical capture/audio recovery row;
 it makes no new acoustic or ten-minute latency claim.
 
+### Limited read-only Windows laptop smoke, 2026-11-18
+
+The native Linux daemon used the clean `965b89c` release candidate with
+`-autocrop=false` on the host. The API and relative button mode used their
+defaults. Capture API metadata reported 1920×1080. The owner prepared a stable
+video signal and reconnected the target HID USB after an initial input attempt
+had no effect. Post-reconnect checks passed: keyboard modifiers/shortcuts,
+Tab/arrow focus navigation, Escape/menu dismissal, pointer movement, positioned
+left/right clicks and a repeated click. Testing finished with a return to the
+normal idle interface. All owned processes stopped with exit 0.
+
+The agent typed no target text or commands, launched no target applications,
+placed no scripts on the target and changed no target files or settings. Only test actions and
+pass/fail are recorded; no screen contents, labels, identifiers, screenshots or
+OCR are retained. The exact target OS/build and model were not recorded. No
+text-layout, dragging, audio or broader Windows compatibility claim is made.
+The [sanitized record](validation/windows-readonly-2026-11-18.json) contains only
+permitted metadata and test outcomes.
+
 ### Optional or explicitly unrequired coverage not run
 
 | Coverage | Status |
 |---|---|
 | ARM64 physical host | Not run; not required by the current owner scope. Linux arm64 cross-build remains required. |
-| Windows/macOS physical target layouts/input | Not run; not required by the current owner scope. Their layout fixtures and portable MCP builds are separate evidence. |
+| Broader Windows target layouts/input and macOS physical targets | Not run; optional beyond the separately recorded limited Windows laptop smoke. Layout fixtures and portable MCP builds are separate evidence. |
 | Safari and other platform browser engines | Not run; optional under the current issue 43 scope. No video/audio compatibility claim is made. |
 | Second capture chipset / two identical physical cards | Not run; one UGREEN card only. USB-path matching has fake-tree coverage. |
 | CH9329 configured for 115200 baud | Not run; physical serial observations use 9600 baud. |

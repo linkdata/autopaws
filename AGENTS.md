@@ -1,10 +1,12 @@
 # Agent instructions
 
-The target machine's access credentials are stored in `~/autopaws.txt` on the development host.
+The Linux test target's access credentials are stored in `~/autopaws.txt` on the development host.
 
-The target machine is dedicated to testing and contains no sensitive data or credentials. You may reboot or reinstall it whenever needed for development or testing.
+The Linux target is dedicated to testing and contains no sensitive data or credentials. You may reboot or reinstall that Linux target whenever needed for development or testing.
 
-Use the available Linux setup for physical KVM validation. Separate Windows/macOS target tests and ARM64 hardware tests are not required. Keep cross-compilation checks for the supported platforms.
+Use the available Linux setup for physical KVM validation. The additional owner-required limited read-only Windows laptop smoke passed before v0.1.0; broader Windows/macOS target tests and ARM64 hardware tests are not required. Keep cross-compilation checks for the supported platforms.
+
+For the Windows laptop test, record test actions, pass/fail and host/capture metadata. Do not reference screen contents, labels or identifiers, or retain screenshots/OCR. Place no scripts on the Windows laptop and change no target files or settings; the owner handles target setup.
 
 The existing Python tools, `serial-hid-kvm` and `mcp-serial-hid-kvm`, are available on `PATH`. You may use them during development to test functionality while porting the projects to Go.
 
