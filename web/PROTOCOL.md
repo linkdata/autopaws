@@ -41,8 +41,9 @@ The first server application message is JSON text:
 Audio status is `off`, `unavailable`, or `available`. An available configuration
 includes the negotiated `sampleRate` and `channels`; for example,
 `{"type":"config","audio":{"status":"available","generation":"7","sampleRate":48000,"channels":2}}`.
-Audio is captured lazily while web clients are connected. Auto selection follows
-the current selected video USB device; an explicit PCM path stays fixed. Each
+Audio is captured lazily while web clients are connected. On Linux, auto
+selection follows the current selected video USB device; an explicit PCM path
+stays fixed. macOS requires an explicit AVFoundation audio selector. Each
 accepted video generation reopens audio, including resolution changes, so all
 queued media starts fresh. Selection/open/read failures make audio unavailable
 without ending video or input. Every audio-generation change is sent as configuration before any
@@ -75,12 +76,16 @@ Timestamp flags have the **same meanings for both media kinds**:
 
 * Bit 0 (`1`): the timestamp is available and belongs to server CLOCK_MONOTONIC.
   Without it, offset 24 is zero and must not be used for timing.
-* Bit 1 (`2`): video timestamp denotes start of exposure. With bit 1 clear, a valid
+* Bit 1 (`2`): video timestamp denotes start of exposure. With bits 1 and 2 clear, a valid
   video timestamp denotes end of frame. Audio leaves this bit clear and its
   timestamp denotes the first sample frame of the block.
 * Bit 2 (`4`): the monotonic timestamp is an estimate rather than a device timestamp.
-  Video leaves this bit clear. Audio sets it because its first sample time is
+  Linux video leaves this bit clear. Linux audio sets it because its first sample time is
   estimated from an ALSA monotonic timestamp/delay observation and block frame count.
+  macOS video and audio both set this bit: their timestamps estimate FFmpeg pipe
+  receipt on the server monotonic clock, not device capture time. FFmpeg/OS
+  buffering is unmeasured; video uses read-start time and audio estimates its first
+  sample from read completion minus the block duration.
 * Bits 3–31 are reserved and zero. Estimated timestamps require bit 0 as well.
 
 The browser's performance clock has a different epoch. Do not compare its clock

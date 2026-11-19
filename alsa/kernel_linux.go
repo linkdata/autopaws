@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/linkdata/autopaws/internal/monotime"
 )
 
 type kernel struct {
@@ -24,7 +26,7 @@ type kernel struct {
 func systemKernel() kernel {
 	return kernel{
 		open:        func(path string, flags int) (int, error) { return syscall.Open(path, flags, 0) },
-		setNonblock: syscall.SetNonblock, ioctl: ioctl, close: syscall.Close, now: monotonicNow,
+		setNonblock: syscall.SetNonblock, ioctl: ioctl, close: syscall.Close, now: monotime.Now,
 	}
 }
 
@@ -34,15 +36,6 @@ func ioctl(fd int, request uintptr, argument unsafe.Pointer) error {
 		return errno
 	}
 	return nil
-}
-
-func monotonicNow() (int64, error) {
-	var timestamp syscall.Timespec
-	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETTIME, 1, uintptr(unsafe.Pointer(&timestamp)), 0)
-	if errno != 0 {
-		return 0, errno
-	}
-	return timestampNS(timestamp)
 }
 
 func timestampNS(timestamp syscall.Timespec) (int64, error) {

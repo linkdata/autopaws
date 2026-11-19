@@ -1,4 +1,4 @@
-//go:build linux && (amd64 || arm64)
+//go:build (linux || darwin) && (amd64 || arm64)
 
 package web
 
@@ -33,6 +33,9 @@ func videoHeader(metadata capture.Metadata, sequence uint64) [mediaHeaderSize]by
 	if metadata.TimestampFlags&v4l2.TimestampMask == v4l2.TimestampMonotonic {
 		flags |= flagMonotonic
 		binary.LittleEndian.PutUint64(header[24:], uint64(metadata.TimestampNS))
+	}
+	if flags&flagMonotonic != 0 && metadata.TimestampFlags&v4l2.TimestampEstimated != 0 {
+		flags |= flagEstimated
 	}
 	if metadata.TimestampFlags&v4l2.TimestampSourceMask == v4l2.TimestampStartOfExposure {
 		flags |= flagStartOfExposure

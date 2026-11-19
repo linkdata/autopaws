@@ -3,7 +3,7 @@
 
 # autopaws
 
-autopaws is a software KVM for Linux hosts. It controls a target machine through a CH9329 USB HID emulator and shows the target's screen in a browser through a USB HDMI capture card. AI agents get the same keyboard, mouse and screen access through an MCP server.
+autopaws is a software KVM for Linux and macOS hosts. It controls a target machine through a CH9329 USB HID emulator and shows the target's screen in a browser through a USB HDMI capture card. AI agents get the same keyboard, mouse and screen access through an MCP server.
 
 It is a Go rewrite of two Python projects:
 
@@ -14,7 +14,7 @@ Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, bro
 
 ## Components
 
-- **KVM server** (`autopaws-kvm`): a daemon on the Linux host. It owns the serial port and the capture card, and serves a JSON Lines TCP API and the web viewer.
+- **KVM server** (`autopaws-kvm`): a daemon on the Linux or macOS host. It owns the serial port and the capture card, and serves a JSON Lines TCP API and the web viewer.
 - **MCP server** (`autopaws-mcp`): a separate stdio binary that AI agents start. It is a thin client of the API, and it runs OCR with Tesseract when that is installed. It builds for Linux, macOS and Windows.
 
 ## Goals
@@ -28,11 +28,11 @@ Keyboard/mouse control, device discovery, CLI configuration, API/MCP access, bro
 
 ## Hardware and wiring
 
-The KVM host runs Linux amd64 or arm64. Use a CH9329 HID emulator behind a
+The KVM host runs Linux or macOS on amd64 or arm64. Use a CH9329 HID emulator behind a
 supported CH340/CH341 USB-UART and a UVC HDMI capture card with USB audio:
 
 1. Connect the target's HDMI output to the capture card's HDMI input.
-2. Connect the capture card's USB side to the Linux KVM host.
+2. Connect the capture card's USB side to the KVM host.
 3. Connect the CH340/CH341 serial USB side to the KVM host, and the CH9329 HID
    USB side to the target. The target sees a normal keyboard and mouse.
 
@@ -71,9 +71,10 @@ $env:CGO_ENABLED = "0"
 go build -trimpath -o dist/ ./cmd/...
 ```
 
-Linux builds produce both commands. macOS and Windows builds produce only
-`autopaws-mcp`; the KVM daemon runs on Linux. Source builds without release
-linker flags report version `devel`. On the Linux KVM host, install both commands:
+Linux and macOS builds produce both commands. Windows builds produce only
+`autopaws-mcp`. macOS capture requires a separate FFmpeg installation; see
+[macOS setup](docs/macos-setup.md). Source builds without release
+linker flags report version `devel`. On a Linux or macOS KVM host, install both commands:
 
 ```sh
 sudo install -m 0755 dist/autopaws-kvm dist/autopaws-mcp /usr/local/bin/
@@ -127,11 +128,11 @@ asset for the MCP computer and install it as `autopaws-mcp` or `autopaws-mcp.exe
 
 | Command | Release OS/architecture pairs |
 |---|---|
-| `autopaws-kvm` | `linux_amd64`, `linux_arm64` |
+| `autopaws-kvm` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64` |
 | `autopaws-mcp` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
 
 Filenames are `COMMAND_TAG_OS_ARCH`, with `.exe` on Windows. `SHA256SUMS` covers
-all eight binaries. On macOS, use `shasum -a 256 --check -` for verification.
+all ten binaries. On macOS, use `shasum -a 256 --check -` for verification.
 On Windows, compare the selected checksum with
 `Get-FileHash -Algorithm SHA256 .\autopaws-mcp_TAG_windows_ARCH.exe` before
 installing it. [Release downloads](https://cli.github.com/manual/gh_release_download)
@@ -145,6 +146,9 @@ xattr -d com.apple.quarantine /absolute/path/to/autopaws-mcp
 ```
 
 ## Quick start on the KVM host
+
+For macOS, follow [macOS setup](docs/macos-setup.md) for FFmpeg, device selectors
+and camera/microphone permissions. The commands below describe Linux.
 
 On Debian/Ubuntu-style systems, grant your login user device access, then sign
 out and back in:
@@ -223,19 +227,21 @@ Command help and `--version` work without attached hardware or a configuration f
 Help exits 0; positional arguments, malformed flags and invalid configuration exit 2.
 A runtime startup failure exits 1.
 
-`autopaws-kvm --list-devices` lists supported CH340/CH341 serial ports, capture
+On Linux, `autopaws-kvm --list-devices` lists supported CH340/CH341 serial ports, capture
 video nodes with their pixel formats, and capture PCM devices. It queries video
 capabilities and formats without starting or changing a stream; tty and PCM
 devices are not opened. Metadata-only video nodes and unrelated serial ports
 are omitted. The `*` marker shows automatic defaults. Multiple supported serial
 ports remain ambiguous and require `-serial-device`. Empty inventories are
 successful listings. Listing needs no listener or configuration file.
+On macOS, it lists AVFoundation selectors without camera format enumeration or
+USB audio pairing; see [macOS setup](docs/macos-setup.md).
 Use `--version` or `--list-devices` on its own.
 
 There are no subcommands. The former `serve`, `version` and `list-devices`
 spellings are not accepted.
 
-Video selection uses numeric node order, preferring the first name without a
+Linux video selection uses numeric node order, preferring the first name without a
 webcam keyword and otherwise the first capture node. Automatic audio matches the
 selected video's complete USB device path, so identical cards do not select each
 other's audio. With several capture PCMs on that USB device, the lowest numeric
@@ -299,12 +305,12 @@ configured paths do not have to exist while parsing configuration.
 | `target-layout` | `us104` | Target text layout name |
 | `layouts-dir` | empty | Custom layout directory searched before built-ins |
 | `mouse-button-mode` | `relative` | Relative button reports, or explicit `absolute` |
-| `capture-device` | empty | Video device path, such as `/dev/video0`; numeric indexes are unsupported |
+| `capture-device` | empty | Video device path, such as `/dev/video0`, or macOS `avfoundation:NAME`; numeric indexes are unsupported |
 | `capture-width` | `1920` | Positive requested capture width, at most 4294967295 |
 | `capture-height` | `1080` | Positive requested capture height, at most 4294967295 |
 | `autocrop` | `true` | Automatically crop detected black borders |
 | `web-fps` | `20` | Viewer frame rate, from 1 through 120 |
-| `audio-device` | empty | Empty auto-selects audio for the video USB device; `off` disables it; otherwise a PCM device path |
+| `audio-device` | empty | On Linux, empty matches the video USB device; on macOS select `avfoundation:NAME` explicitly. `off` disables audio; Linux also accepts a PCM device path |
 | `log-level` | `info` | `debug`, `info`, `warn` or `error` |
 | `debug-keys` | `false` | Emit input/packet debug records independently of ordinary log level |
 
@@ -350,14 +356,20 @@ cache the driver's expected pre-stream `EPOLLERR` and prevent frame reads. ABI
 checks and their C-header provenance are in [v4l2/testdata](v4l2/testdata/README.md).
 Actual capture observations are recorded in [hardware validation](docs/hardware-validation.md).
 
+On macOS, [the AVFoundation backend](docs/macos-setup.md) uses FFmpeg and
+estimated pipe receipt timing, with weaker snapshot freshness guarantees than
+Linux device timestamps.
+
 The `capture` package shares one producer between subscriptions and snapshots.
 Capture starts on demand and stops after ten seconds with neither subscribers
 nor pending snapshots. A snapshot waits for a successfully decoded frame whose
-`CLOCK_MONOTONIC` capture timestamp is later than the request. Its total
+`CLOCK_MONOTONIC` timestamp is later than the request (device capture time on
+Linux, estimated pipe read-start time on macOS). Its total
 five-second acquisition deadline includes startup and corrupt warmup; an earlier
-caller cancellation wins. There is no stale-frame fallback. This establishes
-capture timing, rather than whether the target application has finished reacting
-to preceding input or whether the HDMI source has stabilized.
+caller cancellation wins. There is no stale-frame fallback. On Linux this
+establishes capture timing; on macOS FFmpeg/OS buffering is unmeasured. Neither
+proves that the target application has finished reacting to preceding input or
+that the HDMI source has stabilized.
 
 Every frame has JPEG padding removed and missing standard Huffman tables repaired.
 With autocrop enabled, the producer detects black borders on the first decodable
@@ -426,11 +438,12 @@ remain usable. Recovery at an unchanged format flushes old samples without
 restarting the running audio graph.
 
 The context requests the negotiated capture rate and verifies it before playing
-interleaved S16_LE PCM. There is no resampler. Audio shares each viewer's
+interleaved S16_LE PCM. The browser has no resampler; the macOS backend uses
+FFmpeg to convert input to 48 kHz stereo. Audio shares each viewer's
 WebSocket and takes priority over a waiting video frame. Every accepted video
 settings generation reopens the selected audio source and flushes old samples.
-Automatic selection follows the new video's USB path; an explicit PCM path stays
-fixed. Changed configuration is sent before new-generation samples. An audio
+On Linux, automatic selection follows the new video's USB path; an explicit
+PCM path stays fixed. macOS requires explicit audio selection. Changed configuration is sent before new-generation samples. An audio
 failure reports unavailable without stopping video/input; changing capture
 settings or closing and reopening the last viewer retries acquisition.
 
@@ -647,7 +660,9 @@ drag or audio coverage. Broader Windows/macOS target tests, physical ARM64
 hardware, Safari and browser checks on other operating systems remain optional
 extended coverage. Supported-platform cross-builds remain required; they do not
 establish runtime or hardware validation. Extended card/OCR coverage and known
-limits are recorded separately from the required Linux results.
+limits are recorded separately from the required Linux results. macOS host
+support has automated and synthetic coverage; physical KVM validation has not
+been run. See [macOS setup](docs/macos-setup.md).
 
 ## Development
 
@@ -664,7 +679,10 @@ shellcheck .github/scripts/build-release.sh
 ```
 
 Browser checks use Node's built-in test runner and Web APIs; no npm install is
-needed. From the repository root, run the same browser and Go gate as CI:
+needed. Run the complete gate below on Linux and macOS; a local Linux VM is sufficient
+for the Linux checks when developing on macOS. The macOS CI job runs the native
+Go build, lint and race tests; the Linux job also runs browser and cross-build
+checks. From the repository root:
 
 ```sh
 node --check web/assets/viewer-helpers.mjs
@@ -681,10 +699,23 @@ go tool cover -func=coverage.out
 go tool cover -html=coverage.out -o=coveragereport.html.out
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./...
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./...
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build ./...
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build ./...
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
 CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+```
+
+On macOS, install FFmpeg (`brew install ffmpeg`) and also run the native CI
+media fixtures. They generate test patterns and tones without opening devices:
+
+```sh
+AUTOPAWS_FFMPEG_TEST=1 CGO_ENABLED=1 go test -race ./avfoundation
 ```
 
 The browser interaction tests import the actual page module with a small DOM,
@@ -701,7 +732,7 @@ coverage; browser tests run separately. Its HTML preview link will work once thi
 repository is public. While it is private, download the `coverage` artifact to
 view the HTML locally. No additional secret is needed.
 
-To build both Linux commands locally:
+To build both host commands locally:
 
 ```sh
 go build -o dist/ ./cmd/...
@@ -752,19 +783,20 @@ Buttons are `left`, `right` and `middle`; an empty name means left. A click hold
 
 ## Repository layout
 
-- `cmd/autopaws-kvm/`: Linux KVM daemon entry point (amd64 and arm64).
+- `cmd/autopaws-kvm/`: Linux/macOS KVM daemon entry point (amd64 and arm64).
 - `cmd/autopaws-mcp/`: portable MCP stdio entry point.
 - `ch9329/`: portable keyboard and mouse frame encoders.
-- `serial/`: Linux serial transport, recovery and CH340/CH341 discovery.
-- `devices/`: Linux serial, video and audio inventory and USB-path selection.
+- `serial/`: Linux/macOS serial transport, recovery and CH340/CH341 discovery.
+- `devices/`: Platform-specific serial, video and audio inventory.
 - `v4l2/`: Linux MJPG streaming capture, timestamps and read-only format probes.
 - `capture/`: shared video lifecycle, fresh snapshots, JPEG normalization and crop metadata.
 - `web/`: HTTP/WebSocket serving, browser input and the media wire protocol.
 - `hid/`: portable keycodes, immutable layouts and serialized keyboard/mouse actions.
-- `api/`: Linux daemon API handlers and TCP connection lifecycle.
+- `api/`: Shared daemon API handlers and TCP connection lifecycle.
 - `apiwire/`: portable envelopes, stable error identities and bounded line framing.
-- `apiclient/`: portable API client, independent of daemon/Linux packages.
+- `apiclient/`: portable API client, independent of daemon packages.
 - `internal/config/`: validated command flags, YAML settings and logging setup.
+- `avfoundation/`: macOS FFmpeg device discovery and video/audio capture.
 - `alsa/`: raw Linux PCM capture, negotiation, recovery and bounded subscriber queues.
 
 ## License

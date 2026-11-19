@@ -24,14 +24,14 @@ repository visibility; downloads require an account/token with access.
    browser limits and the initial failed ALSA recovery trial. Check the successful
    fixed-build retest, bounded recovery and actual retained-close exit diagnostics.
    Do not infer a pass from eventual media restoration, unit tests or crossbuilds.
-5. Run actionlint and the complete final README local CI gate. Run the eight
+5. Run actionlint and the complete final README local CI gate. Run the ten
    release builds from a clean tree with a new output directory:
 
    ```sh
    bash .github/scripts/build-release.sh v0.1.0 dist
    ```
 
-   Substitute the chosen version. Check eight binaries plus `SHA256SUMS`, the
+   Substitute the chosen version. Check ten binaries plus `SHA256SUMS`, the
    native KVM's `--version` output, MCP's initialization `serverInfo.version`, and
    the checksums. Linux binaries should be static; macOS binaries still link
    `libSystem`. Cross-building the Windows/macOS/ARM64 artifacts is not a claim
@@ -42,7 +42,7 @@ repository visibility; downloads require an account/token with access.
 
 The tag workflow uses the Go version in `go.mod`, builds with `CGO_ENABLED=0` and
 `-trimpath`, and injects the tag through `-X main.version=TAG` for both commands.
-It publishes the eight raw binaries and `SHA256SUMS` using the job's own
+It publishes the ten raw binaries and `SHA256SUMS` using the job's own
 `GITHUB_TOKEN` with `contents: write`. `gh release create --verify-tag` requires
 the tag to exist. The reviewed validation notes precede GitHub's generated
 change notes. Current GitHub CLI uploads the assets through a temporary draft

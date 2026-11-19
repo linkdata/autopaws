@@ -14,7 +14,7 @@ for platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 
   os=${platform%/*}
   arch=${platform#*/}
   commands=(autopaws-mcp)
-  if [[ "$os" == linux ]]; then
+  if [[ "$os" == linux || "$os" == darwin ]]; then
     commands+=(autopaws-kvm)
   fi
   suffix=
@@ -30,5 +30,9 @@ done
 
 (
   cd "$output"
-  sha256sum autopaws-* > SHA256SUMS
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum autopaws-* > SHA256SUMS
+  else
+    shasum -a 256 autopaws-* > SHA256SUMS
+  fi
 )

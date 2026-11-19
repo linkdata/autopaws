@@ -1,8 +1,5 @@
 //go:build linux && (amd64 || arm64)
 
-// Package v4l2 captures single-planar MJPG video through Linux MMAP streaming.
-// Frames own their bytes. Kernel open, ioctl and close calls can outlast a
-// context; the device retains ownership until those calls return.
 package v4l2
 
 import (
@@ -10,79 +7,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"sync"
 	"syscall"
 	"time"
 	"unsafe"
 )
-
-var (
-	ErrClosed            = errors.New("v4l2: device closed")
-	ErrOptions           = errors.New("v4l2: invalid capture options")
-	ErrNotCapture        = errors.New("v4l2: not a streaming video capture device")
-	ErrUnsupportedFormat = errors.New("v4l2: MJPG capture not supported")
-	ErrInvalidBuffer     = errors.New("v4l2: invalid buffer descriptor")
-	ErrTimestamp         = errors.New("v4l2: invalid capture timestamp")
-	ErrDisconnected      = errors.New("v4l2: device disconnected")
-)
-
-// Options requests an MJPG size. Both dimensions must be positive. The driver
-// may adjust them; Format reports what it actually accepted. Frame rate remains
-// driver-selected; this package does not issue S_PARM or enumerate intervals.
-type Options struct{ Width, Height uint32 }
-
-// Format is the single-planar format returned by S_FMT.
-type Format struct {
-	Width, Height           uint32
-	FourCC                  uint32
-	BytesPerLine, SizeImage uint32
-}
-
-// PixelFormat is one ENUM_FMT result, in driver preference order.
-type PixelFormat struct {
-	FourCC      uint32
-	Description string
-	Flags       uint32
-}
-
-// Timestamp is the raw V4L2 timeval. Its clock domain and capture source are
-// given by Frame.Flags. It is not a calendar time or a Go process-relative time.
-type Timestamp struct{ Seconds, Microseconds int64 }
-
-// Nanoseconds converts a valid nonnegative timeval without overflow. Check the
-// frame's TimestampMask first before comparing it to another clock's reading.
-func (timestamp Timestamp) Nanoseconds() (int64, error) {
-	if timestamp.Seconds < 0 || timestamp.Microseconds < 0 || timestamp.Microseconds >= 1_000_000 ||
-		timestamp.Seconds > (math.MaxInt64-timestamp.Microseconds*1_000)/1_000_000_000 {
-		return 0, ErrTimestamp
-	}
-	return timestamp.Seconds*1_000_000_000 + timestamp.Microseconds*1_000, nil
-}
-
-// Timestamp flag masks preserve the Linux clock domain and capture instant.
-// UNKNOWN must not be interpreted as CLOCK_MONOTONIC. COPY is a copied timestamp,
-// rather than a promise that this source generated a monotonic capture time.
-const (
-	TimestampMask            uint32 = bufFlagTimestampMask
-	TimestampUnknown         uint32 = bufFlagTimestampUnknown
-	TimestampMonotonic       uint32 = bufFlagTimestampMonotonic
-	TimestampCopy            uint32 = bufFlagTimestampCopy
-	TimestampSourceMask      uint32 = bufFlagTimestampSourceMask
-	TimestampEndOfFrame      uint32 = bufFlagTimestampSourceEOF
-	TimestampStartOfExposure uint32 = bufFlagTimestampSourceSOE
-)
-
-// Frame owns Data independently of the MMAP buffers, subsequent reads and Close.
-// Flags and Sequence are the driver's full values, without synthesized timing.
-// ERROR-flagged and zero-byte buffers are requeued and skipped.
-type Frame struct {
-	Data      []byte
-	Timestamp Timestamp
-	Flags     uint32
-	Sequence  uint32
-}
 
 // Device owns one open capture stream. One producer should call ReadFrame;
 // concurrent calls serialize, and cancellation can stop a queued caller. Close
