@@ -188,15 +188,12 @@ func (keyboard *Keyboard) play(ctx context.Context, plan []keyGroup) error {
 				if err := current.write(ch9329.Keyboard(stroke.Modifier, stroke.Keycode)); err != nil {
 					return err
 				}
-				keyboard.controller.modifier = stroke.Modifier
-				keyboard.controller.keys = []byte{stroke.Keycode}
 				if err := wait(current.ctx, 10*time.Millisecond); err != nil {
 					return err
 				}
 				if err := current.write(ch9329.Keyboard(0)); err != nil {
 					return err
 				}
-				keyboard.controller.modifier, keyboard.controller.keys = 0, nil
 			}
 			if err := wait(current.ctx, group.delay); err != nil {
 				return err

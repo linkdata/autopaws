@@ -36,11 +36,9 @@ type Controller struct {
 	active   *cleanupAttempt
 	shutdown *cleanupAttempt
 
-	// The action gate protects transport generation and held input state.
+	// The action gate protects transport generation and held mouse buttons.
 	prepared   bool
 	generation uint64
-	modifier   byte
-	keys       []byte
 	buttons    byte
 }
 
@@ -132,7 +130,7 @@ func (controller *Controller) prepare(ctx context.Context) (bool, error) {
 	}
 	changed := !controller.prepared || controller.generation != generation
 	if changed {
-		controller.modifier, controller.keys, controller.buttons = 0, nil, 0
+		controller.buttons = 0
 	}
 	controller.prepared, controller.generation = true, generation
 	return changed, nil
@@ -227,8 +225,6 @@ func (controller *Controller) cleanup(attempt *cleanupAttempt, release releaseMa
 		err := controller.transport.WriteFrame(attempt.ctx, ch9329.Keyboard(0))
 		if err != nil {
 			attempt.err = errors.Join(attempt.err, fmt.Errorf("release keyboard: %w", err))
-		} else {
-			controller.modifier, controller.keys = 0, nil
 		}
 	}
 	if release&releaseMouse != 0 && !attempt.mouse {

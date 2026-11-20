@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-20",
+  "status": "PASS for recorded Linux physical input, capture, MCP coordinate mapping and shutdown; owner accepted shared changes without native macOS retesting",
+  "source": {
+    "base_commit": "7f2957467be5",
+    "production_changes": "HID duplicate-state removal and MCP capture-setter invalidation fix",
+    "go_patch_sha256": "28bc7d1e360a3100ebbef5ea22bfd444885c8cd6570aed90ec161c53ed92866e",
+    "kvm_binary_sha256": "b7d36a43d4b81ca29a50fc14c76e55931fa6d3a1ab1697368e7a0237117a840a",
+    "mcp_binary_sha256": "5c708bedaeed986ddf35c1c391a73f48755d878273fa557eec157edd18fd9185",
+    "build_commands": [
+      "CGO_ENABLED=0 go build -trimpath -o /tmp/autopaws-review-kvm ./cmd/autopaws-kvm",
+      "CGO_ENABLED=0 go build -trimpath -o /tmp/autopaws-review-mcp ./cmd/autopaws-mcp"
+    ]
+  },
+  "host": {
+    "os": "Linux",
+    "kernel": "7.0.0-43-generic",
+    "architecture": "x86_64"
+  },
+  "target": {
+    "os": "Linux, Ubuntu GNOME desktop",
+    "dimensions": [
+      1280,
+      720
+    ],
+    "fixture": "offline synthetic HTML in target Firefox; no target file created",
+    "browser": "Target Firefox; version not remeasured"
+  },
+  "configuration": {
+    "serial": "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
+    "serial_baud": 9600,
+    "video": "/dev/video4",
+    "capture_dimensions": [
+      1920,
+      1080
+    ],
+    "layout": "se105",
+    "button_mode": "relative",
+    "autocrop": false,
+    "api": "127.0.0.1:19329",
+    "web": "127.0.0.1:19330",
+    "audio_observed": {
+      "status": "available",
+      "rate": 48000,
+      "channels": 2,
+      "playback_or_latency_claim": false
+    }
+  },
+  "checks": [
+    {
+      "action": "Raw ASCII typing with zero character delay",
+      "expected": "Ponytail review 42 in input and keyup echo",
+      "result": "PASS; captured synthetic text checked with Tesseract"
+    },
+    {
+      "action": "Raw Swedish characters and punctuation",
+      "expected": "åäö ÅÄÖ | [] {} \\",
+      "result": "PASS by visual inspection of captured synthetic fixture; English OCR did not judge diacritics"
+    },
+    {
+      "action": "Ctrl+A, Backspace, then Shift+A / B / C sequence with zero default delay",
+      "expected": "Abc; modifier released between keys",
+      "result": "PASS; captured synthetic text checked with Tesseract"
+    },
+    {
+      "action": "Absolute click at 200,300",
+      "expected": "Pointer-up at 200,300 with buttons=0",
+      "result": "PASS"
+    },
+    {
+      "action": "Drag 240,400 to 1040,560 in relative button mode",
+      "expected": "Pointer-up at 1040,560 with buttons=0",
+      "result": "PASS"
+    },
+    {
+      "action": "Cancel ZQ after first character during 60000 ms character delay; type b in next request",
+      "expected": "Zb, no Q, next request completes",
+      "result": "PASS"
+    },
+    {
+      "action": "MCP screenshot then click at screenshot 300,450",
+      "expected": "1920x1080 image maps to target 200,300 on 1280x720 display",
+      "result": "PASS; captured synthetic pointer coordinates checked with Tesseract"
+    },
+    {
+      "action": "MCP resolution to 1280x720, same-device selection, then resolution back to 1920x1080",
+      "expected": "Absolute input rejected after each setter until a fresh capture; new JPEG dimensions match selection",
+      "result": "PASS for all three setters and subsequent captures"
+    },
+    {
+      "action": "SIGINT with live video/WebSocket and audio source",
+      "expected": "Daemon releases owners and exits",
+      "result": "PASS",
+      "observed_seconds": 0.1626
+    }
+  ],
+  "limits": [
+    "The offline synthetic fixture replaced an unsuccessful host-served fixture setup; no target file was created.",
+    "Screenshots/OCR were temporary under /tmp; no target screen images are committed.",
+    "No physical USB unplug/replug recovery, acoustic audio or latency rerun; those production paths were unchanged.",
+    "Native macOS host unavailable; owner accepted shared changes without native macOS retesting. No macOS-specific source changed; cross-builds passed.",
+    "Broader Windows/macOS target and ARM64 hardware tests are outside required scope; cross-builds are separate from runtime validation."
+  ]
+}

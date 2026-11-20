@@ -468,11 +468,7 @@ func TestMouseCleanupPreservesHeldKeyboard(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		controller, mouse, transport := mouseFixture(t, MouseOptions{Width: 10, Height: 20})
 		if err := controller.run(context.Background(), releaseKeyboard, func(current *action) error {
-			if err := current.write(ch9329.Keyboard(2, 4)); err != nil {
-				return err
-			}
-			controller.modifier, controller.keys = 2, []byte{4}
-			return nil
+			return current.write(ch9329.Keyboard(2, 4))
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -485,8 +481,9 @@ func TestMouseCleanupPreservesHeldKeyboard(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, _, _, events := transport.snapshot()
-		if len(events) != 3 || events[2].Frame[3] != 5 || controller.modifier != 2 || !bytes.Equal(controller.keys, []byte{4}) {
-			t.Fatalf("mouse-only cleanup released keyboard state: %v keys=%v modifier=%d", events, controller.keys, controller.modifier)
+		if len(events) != 3 || !bytes.Equal(events[1].Frame, ch9329.MouseRelative(1, 0, 0, 0)) ||
+			!bytes.Equal(events[2].Frame, ch9329.MouseRelative(0, 0, 0, 0)) {
+			t.Fatalf("mouse-only cleanup released keyboard state: %v", events)
 		}
 	})
 }

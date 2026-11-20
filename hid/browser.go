@@ -60,7 +60,6 @@ func (browser *Browser) keyboard(current *action, modifier byte, keys []byte) er
 		return err
 	}
 	browser.modifier, browser.keys = modifier, keys
-	browser.controller.modifier, browser.controller.keys = modifier, keys
 	return nil
 }
 

@@ -184,12 +184,16 @@ func (owner *toolServer) listKeyboardLayouts(ctx context.Context, _ *mcp.CallToo
 }
 
 func (owner *toolServer) setCaptureDevice(ctx context.Context, request *mcp.CallToolRequest, input captureDeviceInput) (*mcp.CallToolResult, error) {
-	owner.state(request.Session).invalidate()
+	state := owner.state(request.Session)
+	state.invalidate()
+	defer state.invalidate()
 	return owner.call(ctx, "set_capture_device", input)
 }
 
 func (owner *toolServer) setCaptureResolution(ctx context.Context, request *mcp.CallToolRequest, input captureResolutionInput) (*mcp.CallToolResult, error) {
-	owner.state(request.Session).invalidate()
+	state := owner.state(request.Session)
+	state.invalidate()
+	defer state.invalidate()
 	return owner.call(ctx, "set_capture_resolution", input)
 }
 
