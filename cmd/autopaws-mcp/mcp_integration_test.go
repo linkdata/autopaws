@@ -550,6 +550,87 @@ func TestSDKCaptureChangeInvalidatesSnapshotEvenOnFailure(t *testing.T) {
 	}
 }
 
+func TestSDKCaptureChangeInvalidatesOverlappingSnapshot(t *testing.T) {
+	for _, method := range []string{"set_capture_device", "set_capture_resolution"} {
+		for _, failed := range []bool{false, true} {
+			for _, pending := range []bool{false, true} {
+				t.Run(fmt.Sprintf("%s/failed=%t/pending=%t", method, failed, pending), func(t *testing.T) {
+					changeStarted, finishChange := make(chan struct{}), make(chan struct{})
+					captureStarted, finishCapture := make(chan struct{}), make(chan struct{})
+					releaseChange := sync.OnceFunc(func() { close(finishChange) })
+					releaseCapture := sync.OnceFunc(func() { close(finishCapture) })
+					defer releaseChange()
+					defer releaseCapture()
+					capture := sdkCapture{jpeg: sdkJPEG(t, 5, 3), width: 5, height: 3, targetWidth: 9, targetHigh: 7}
+					fake := sdkNewAPI(t, func(_ net.Conn, request apiwire.Request) sdkReply {
+						if request.Method == method {
+							close(changeStarted)
+							<-finishChange
+							if failed {
+								return sdkReply{code: apiwire.ErrUnavailable, detail: "reopen failed"}
+							}
+						}
+						if request.Method == "get_device_info" && pending {
+							close(captureStarted)
+							<-finishCapture
+						}
+						return sdkDefaultReply(request, capture)
+					})
+					session := sdkConnect(t, newServer(t.Context(), mcpOptions{}, apiclient.New(fake.listener.Addr().String())))
+					ctx := sdkContext(t)
+					type outcome struct {
+						result *mcp.CallToolResult
+						err    error
+					}
+					call := func(name string, arguments any) <-chan outcome {
+						done := make(chan outcome, 1)
+						go func() {
+							result, err := session.client.CallTool(ctx, &mcp.CallToolParams{Name: name, Arguments: arguments})
+							done <- outcome{result, err}
+						}()
+						return done
+					}
+					var args any = map[string]any{"device": "/dev/video-test"}
+					if method == "set_capture_resolution" {
+						args = map[string]any{"width": 640, "height": 480}
+					}
+					changed := call(method, args)
+					select {
+					case <-changeStarted:
+					case <-ctx.Done():
+						t.Fatal("capture change did not reach API")
+					}
+					captured := call("capture_screen", map[string]any{})
+					if pending {
+						select {
+						case <-captureStarted:
+						case <-ctx.Done():
+							t.Fatal("overlapping capture did not reach device info")
+						}
+					} else if result := <-captured; result.err != nil || result.result.IsError {
+						t.Fatalf("capture during change = %+v, %v", result.result, result.err)
+					}
+					releaseChange()
+					if result := <-changed; result.err != nil || result.result.IsError != failed {
+						t.Fatalf("capture change = %+v, %v", result.result, result.err)
+					}
+					if pending {
+						releaseCapture()
+						if result := <-captured; result.err != nil || !result.result.IsError || !strings.Contains(sdkText(result.result), "configuration changed") {
+							t.Fatalf("capture spanning change completion = %+v, %v", result.result, result.err)
+						}
+					}
+					before := len(fake.snapshot())
+					sdkTool(t, session, "mouse_move", map[string]any{"x": 0, "y": 0}, true)
+					if len(fake.snapshot()) != before {
+						t.Fatal("overlapping capture restored stale screenshot coordinates")
+					}
+				})
+			}
+		}
+	}
+}
+
 func TestSDKKeyboardLayoutChangePreservesSnapshot(t *testing.T) {
 	for _, failed := range []bool{false, true} {
 		t.Run(fmt.Sprintf("failed=%t", failed), func(t *testing.T) {

@@ -544,7 +544,7 @@ Tesseract is resolved once at startup: `-tesseract` wins, otherwise search `PATH
 then on Windows `Tesseract-OCR/tesseract.exe` under `ProgramFiles` and
 `ProgramFiles(x86)`. An invalid explicit override disables OCR with a warning on
 stderr and does not fall back. Restart the MCP process after installing the
-engine. The other twelve tools remain available without it.
+engine. The other tools remain available without it.
 
 OCR uses JPEG luminance, inverts dark backgrounds, scales 2× with nearest-neighbor
 sampling, and sends binary PGM over stdin to

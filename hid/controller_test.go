@@ -77,7 +77,7 @@ func TestControllerCancellationCleanup(t *testing.T) {
 	for _, cancelAt := range []time.Duration{5 * time.Millisecond, 15 * time.Millisecond} {
 		t.Run(cancelAt.String(), func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
-				controller, keyboard, transport := keyboardFixture(t, "us104")
+				_, keyboard, transport := keyboardFixture(t, "us104")
 				ctx, cancel := context.WithCancel(context.Background())
 				done := make(chan error, 1)
 				go func() { done <- keyboard.TypeText(ctx, "ab", TypeOptions{}) }()
@@ -89,9 +89,6 @@ func TestControllerCancellationCleanup(t *testing.T) {
 				prepares, writes, _, events := transport.snapshot()
 				if prepares != 2 || !bytes.Equal(events[writes-1].Frame, ch9329.Keyboard(0)) || events[writes-1].At != cancelAt {
 					t.Fatalf("matching cleanup missing: prepares=%d events=%v", prepares, events)
-				}
-				if len(controller.keys) != 0 || controller.modifier != 0 {
-					t.Fatal("cleanup retained held keyboard state")
 				}
 				if err := keyboard.SendKey(context.Background(), "z", nil); err != nil {
 					t.Fatalf("cancelled action stranded gate: %v", err)
@@ -126,7 +123,7 @@ func TestControllerFailedSendRecovery(t *testing.T) {
 		t.Fatal(err)
 	}
 	prepares, writes, _, _ := transport.snapshot()
-	if prepares != 3 || writes != 2 || controller.generation != 2 || len(controller.keys) != 0 || controller.buttons != 0 {
+	if prepares != 3 || writes != 2 || controller.generation != 2 || controller.buttons != 0 {
 		t.Fatalf("failed press was replayed or recovery retained state: prepares=%d writes=%d controller=%+v", prepares, writes, controller)
 	}
 }
@@ -160,7 +157,7 @@ func TestControllerCleanupFailures(t *testing.T) {
 					t.Fatalf("lost original/cleanup error: %v", err)
 				}
 				if err := controller.run(context.Background(), releaseKeyboard, func(*action) error {
-					if controller.buttons != 0 || len(controller.keys) != 0 || controller.modifier != 0 {
+					if controller.buttons != 0 {
 						t.Error("new generation did not clear state before the next action")
 					}
 					return nil

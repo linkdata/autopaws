@@ -49,30 +49,34 @@ func TestAudioHeaderClockSequenceGenerationAndPCM(t *testing.T) {
 }
 
 func TestAudioConfigBeforePCMAndRecoveryGeneration(t *testing.T) {
-	source := newAudioTestSource(1<<63 + 3)
-	fixture := newFixture(t, Options{Audio: sourceAudioOptions(source)})
-	conn := newFakeSocket()
-	startAudioWriter(t, fixture, conn)
-	config := receiveAudioConfig(t, conn, "available")
-	if config.Generation != "9223372036854775811" || config.SampleRate != 48000 || config.Channels != 2 {
-		t.Fatal(config)
-	}
-	source.publish(17)
-	message := receive(t, conn.output)
-	if message.kind != websocket.MessageBinary || message.data[0] != 2 || binary.LittleEndian.Uint64(message.data[8:]) != 1<<63+3 ||
-		binary.LittleEndian.Uint32(message.data[56:]) != 960 || !bytes.Equal(message.data[64:], bytes.Repeat([]byte{17}, 960*4)) {
-		t.Fatal("audio PCM/header changed in transit")
-	}
-	source.recover(1<<63 + 4)
-	source.publish(23)
-	config = receiveAudioConfig(t, conn, "available")
-	if config.Generation != "9223372036854775812" {
-		t.Fatal(config)
-	}
-	message = receive(t, conn.output)
-	if message.data[0] != 2 || binary.LittleEndian.Uint64(message.data[8:]) != 1<<63+4 || binary.LittleEndian.Uint64(message.data[16:]) != 0 || message.data[64] != 23 {
-		t.Fatal("recovery retained old-generation PCM or source sequence")
-	}
+	synctest.Test(t, func(t *testing.T) {
+		source := newAudioTestSource(1<<63 + 3)
+		fixture := newFixture(t, Options{Audio: sourceAudioOptions(source)})
+		conn := newFakeSocket()
+		startAudioWriter(t, fixture, conn)
+		config := receiveAudioConfig(t, conn, "available")
+		if config.Generation != "9223372036854775811" || config.SampleRate != 48000 || config.Channels != 2 {
+			t.Fatal(config)
+		}
+		source.publish(17)
+		message := receive(t, conn.output)
+		if message.kind != websocket.MessageBinary || message.data[0] != 2 || binary.LittleEndian.Uint64(message.data[8:]) != 1<<63+3 ||
+			binary.LittleEndian.Uint32(message.data[56:]) != 960 || !bytes.Equal(message.data[64:], bytes.Repeat([]byte{17}, 960*4)) {
+			t.Fatal("audio PCM/header changed in transit")
+		}
+		// A recovery racing the previous dequeue may legitimately drop its block.
+		synctest.Wait()
+		source.recover(1<<63 + 4)
+		source.publish(23)
+		config = receiveAudioConfig(t, conn, "available")
+		if config.Generation != "9223372036854775812" {
+			t.Fatal(config)
+		}
+		message = receive(t, conn.output)
+		if message.data[0] != 2 || binary.LittleEndian.Uint64(message.data[8:]) != 1<<63+4 || binary.LittleEndian.Uint64(message.data[16:]) != 0 || message.data[64] != 23 {
+			t.Fatal("recovery retained old-generation PCM or source sequence")
+		}
+	})
 }
 
 func TestAudioRecoveryDuringConfigWriteSendsNewConfigBeforeDequeue(t *testing.T) {
