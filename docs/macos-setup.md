@@ -17,8 +17,7 @@ FFmpeg for cameras/capture cards and microphones/audio inputs. Host display
 capture entries are excluded. Listing does not start capture streams. It can
 still be subject to macOS privacy restrictions. Missing FFmpeg or failed discovery
 returns an error. Daemon startup requires FFmpeg on `PATH`, including API-only
-or serial-only use, and reports `brew install ffmpeg` before opening devices or
-listeners when it is missing. `--help` and `--version` work without FFmpeg;
+or serial-only use. `--help` and `--version` work without FFmpeg;
 `--list-devices` needs it for AVFoundation discovery.
 
 Connect the capture card's USB and the CH340/CH341 side of the HID board to the
@@ -71,41 +70,18 @@ The output is 48 kHz stereo S16_LE, converted by FFmpeg, with a maximum 100 ms
 per-subscriber application queue and expiry. Video and audio use separate
 processes and have no hardware synchronization guarantee.
 
-Native macOS media retries failed opens or reads after one second while demand
-remains. A five-second FFmpeg read-inactivity deadline retires a stalled process;
-the old owner is joined before reopening. Successful automatic video recovery
-advances the generation and clears old frame/crop state. Healthy capture still
-stops after ten seconds without viewers or pending snapshots. Explicitly
-reselecting the video device also repairs/reopens media.
+Media retries failed opens or reads after one second while demand remains.
+FFmpeg restarts after five seconds without output. Capture stops after ten
+seconds without viewers or pending snapshots. Reselecting the video device
+also reopens media.
 
 Video and audio timestamps are **estimated FFmpeg pipe receipt times** on the
 server monotonic clock. The browser protocol marks them estimated. A snapshot
 waits for a frame whose pipe read began after the request, but FFmpeg/OS buffering
 can contain older content. This does not provide Linux V4L2's device capture
 freshness guarantee or establish that preceding input has reached the target.
-The worker continuously drains output into a latest-video slot; the daemon
-kills and joins its FFmpeg processes on stream shutdown.
 
-Physical testing on an Apple silicon Mac and Ubuntu target verified requested
-Swedish characters, API/MCP pointer coordinates, video, HDMI speaker content,
-serial unplug/replug recovery and clean shutdown. In the baseline capture reconnect
-trial, reconnection alone left FFmpeg stalled; same-device selection restored
-video and PCM transport. The updated code passed an FFmpeg process stall test
-and physical USB reconnect: video/audio resumed on the existing WebSocket
-without a daemon restart or host capture reselection. The healthy video stream
-closed about ten seconds after the last viewer left.
-
-Ubuntu's native left/right speaker tests produced captured HDMI signal only on
-the requested channel before and after reconnect. Ubuntu fell back to internal
-speakers during unplugging, so its HDMI output was selected again for the later
-speaker tests. Acoustic/browser audio playback and latency remain unmeasured.
-The [2026-11-20 record](validation/macos-host-2026-11-20.json) retains the baseline
-failure/manual repair, initial timeout, setup retries and an inconclusive trial
-whose observer expired before replugging. Deliberate unplug gaps are not
-recovery-latency measurements.
-
-Automated checks cover the shared daemon/API/viewer, macOS pseudo-terminal
-serial I/O, fixture discovery, media parsing, process cancellation and bounded
-queues. Synthetic FFmpeg checks exercise media pipes without opening devices.
-The existing Linux host observations remain in
-[hardware validation](hardware-validation.md).
+An Apple silicon Mac with an Ubuntu target passed keyboard, pointer, video,
+HDMI channel capture, USB reconnect and shutdown checks. Browser audio playback
+and latency remain unmeasured. See [hardware validation](hardware-validation.md)
+and the [macOS test record](validation/macos-host-2026-11-20.json).

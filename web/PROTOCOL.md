@@ -1,14 +1,12 @@
 # Browser WebSocket protocol, version 1
 
 The viewer uses HTTP for embedded assets and one WebSocket at `/ws`. Assets have
-`Cache-Control: no-cache`. Unknown page routes return the index page. The default
-`coder/websocket` origin check permits the request's own host; cross-origin
-browser upgrades are rejected. There is no application WebSocket compression.
+`Cache-Control: no-cache`. Unknown page routes return the index page. WebSocket
+upgrades permit the request's own host and reject cross-origin browser requests.
+WebSocket compression is disabled.
 
-Each connection has one ordered input reader and one application-data writer.
-Input shares the daemon's complete-action coordinator with the API. Concurrent
-control by different operators is unsupported; there are no leases or merged
-independent held states.
+Input actions are serialized with API actions. Use one operator at a time;
+connections do not merge independent held states.
 
 ## Optional shared token
 
@@ -25,8 +23,8 @@ The server URI-decodes the cookie value without treating `+` as a space. Reconne
 reuse the cookie; tokens never appear in WebSocket URLs or application logs.
 The fragment is processed locally and is not sent in HTTP requests.
 
-Without a configured token, assets and WebSocket behavior are unchanged. Cookies
-are scoped to a host rather than a TCP port; use one token for this viewer host.
+Without a configured token, no token is required. Cookies are scoped to a host
+rather than a TCP port; use one token for this viewer host.
 Use localhost through the documented SSH tunnel for remote access. Authentication
 does not add TLS or a supported reverse-proxy deployment.
 
@@ -45,7 +43,7 @@ Audio is captured lazily while web clients are connected. On Linux, auto
 selection follows the current selected video USB device; an explicit PCM path
 stays fixed. macOS requires an explicit AVFoundation audio selector. Each
 video generation reopens audio, including resolution changes and successful
-macOS capture recovery, so all queued media starts fresh. Selection/open/read failures make audio unavailable
+macOS capture recovery. Selection/open/read failures make audio unavailable
 without ending video or input. Native macOS audio retries an explicit selector
 after one second while viewers remain connected. Every audio-generation change
 is sent as configuration before any samples belonging to that generation.
@@ -53,8 +51,8 @@ JSON uint64 generations are decimal strings
 to preserve precision in JavaScript. Binary uint64 values are exact: clients use
 `DataView.getBigUint64(..., true)`, not Number coercion.
 
-Each binary WebSocket message is one 64-byte header followed by its payload.
-All multibyte integers are **unsigned little-endian**. Version 1 defines:
+Each binary message contains a 64-byte header followed by its payload.
+All multibyte integers are **unsigned little-endian**:
 
 | Offset | Type | Meaning |
 |---:|---|---|
@@ -93,57 +91,46 @@ Timestamp flags have the **same meanings for both media kinds**:
 The browser's performance clock has a different epoch. Do not compare its clock
 directly to server monotonic timestamps. Use sequences, relative timestamps and
 durations for gaps/backlog. An audio sample frame contains one sample per channel;
-the payload is interleaved signed16-bit little-endian PCM, with exactly
-sampleFrames×channels samples. Audio block duration is below the 200 ms application
-queue budget, so uint32 nanoseconds fits. Its source-block sequence identifies
-dropped blocks; audio configuration generation distinguishes stream restarts.
+the payload is interleaved signed 16-bit little-endian PCM, with exactly
+sampleFrames×channels samples. Audio block duration is below 200 ms. Its
+source-block sequence identifies dropped blocks; audio configuration generation
+distinguishes stream restarts.
 
-Video payload is the normalized source JPEG unchanged. Crop metadata gives the
+Video payload is the normalized source JPEG. Crop metadata gives the
 visible target area; a full-frame crop represents no border removal. Source
 dimensions describe the JPEG, not the browser canvas or the configured target's
-pixel dimensions. The server does not encode video separately for each viewer.
+pixel dimensions.
 
-Video delivery sequences start at 1 and increase for each message attempted by
-that connection's sole writer. They do not reset when capture stops/reopens or
-settings/recovery generation changes. V4L2's raw source sequence can reset on
-reopen and is not used for connection ordering. Generation changes flush subscriber slots;
-the writer also discards a held frame if its generation no longer matches the
-manager. An already-started socket write cannot be recalled. The browser must
-discard pending image decodes/rendered metadata when a newer generation arrives,
-and reject late image-decode results by generation and delivery sequence.
+Video delivery sequences start at 1 and increase for each attempted video
+message on a connection, including across capture restarts and generation changes.
+Generation changes discard queued frames; an in-progress send may still arrive.
+Clients must discard pending image decodes/rendered metadata when a newer
+generation arrives and reject late decode results by generation and sequence.
 
-Video is paced to the configured `web-fps` limit after each completed write.
-The writer reads a latest-frame slot when ready, so slow readers skip source
-frames. Every configuration/media write has a one-second default application
-deadline. A stalled write closes that connection; it does not grow a per-client
-frame queue or prevent other clients from receiving frames. Queued audio has priority over a waiting video frame. Configuration precedes
-new-generation samples; a JPEG already being written is not interrupted.
+Video is paced to `web-fps` after each completed write; slow readers skip frames.
+Configuration/media writes have a one-second default deadline. A stalled write
+closes that connection without blocking other clients. Queued audio takes
+priority over waiting video. Configuration precedes new-generation samples;
+an in-progress JPEG send is not interrupted.
 
-Audio uses one ALSA subscriber queue per connection, bounded to100ms of sample
-frames. Stale expiry measures age since the LAST sample in a block was captured,
-separately from acquisition duration. The writer dequeues PCM only immediately
-before its send, never across config/JPEG writes, and rejects obsolete video or
-audio generations. After a JPEG send takes at least100ms, it closes the old audio
-subscription and starts an empty one, discarding the backlog. The browser reserves
-50ms for its worklet ring and at most50ms for one acknowledged PCM transfer, with
-no additional pending PCM slot. While that transfer awaits acknowledgement,
-new arrivals are dropped at admission because posted data cannot be recalled.
-Ring overflow and oversized-block trimming discard oldest samples first. The
-application-queued total is at most200ms.
-Capture/kernel, WebSocket/TCP and output latency remain separate, and issue43
-measures the actual end-to-end result. Browser source-age tracking uses timestamp
-differences and local elapsed time, never a direct clock-epoch comparison.
-An available generation-only change at the same rate/channels resets the running
-worklet in MessagePort order. Any old posted PCM still occupies the sole transfer
-slot until its matching generation/sequence acknowledgement; a late old ACK
-cannot admit an extra transfer or clear a newer one. Rate/status changes rebuild
-the graph, preserving the user's audio choice.
+Audio buffering is bounded to 200 ms: 100 ms on the server, 50 ms in the browser
+worklet and 50 ms in one acknowledged PCM transfer. Staleness is measured from
+the last sample's capture time, separately from acquisition duration. Obsolete
+generations are discarded before sending. A JPEG send taking at least 100 ms
+resets the server audio backlog. The browser drops new PCM while its transfer
+awaits acknowledgement; ring overflow and oversized blocks discard oldest samples.
+Capture/kernel, WebSocket/TCP and output latency are additional. Source-age
+tracking uses timestamp differences and local elapsed time.
+
+A generation-only change at the same rate/channels resets the running worklet.
+An outstanding transfer still occupies its slot until its matching generation/
+sequence acknowledgement. Rate/status changes rebuild the audio graph while
+preserving the user's audio choice.
 
 ## Browser input
 
-Send one JSON object per text WebSocket message. The pinned WebSocket library's
-default input-message limit is 32768 bytes. Required fields reject null or
-wrong types. Coordinates and masks must be integer JSON values. Unknown object
+Send one JSON object per text WebSocket message, up to 32768 bytes. Required
+fields reject null or wrong types. Coordinates and masks must be integer JSON values. Unknown object
 fields, unsupported event types, malformed JSON and binary input end the
 connection, which schedules any held-input cleanup. Standard JSON duplicate-key
 semantics apply. Fields belonging to another recognized event type are ignored.
@@ -160,11 +147,10 @@ semantics apply. Fields belonging to another recognized event type are ignored.
 Coordinates range from 0 through 4095 on both axes and go straight to HID reports;
 they are not converted through target-screen pixels. The page maps visible crop
 pixel endpoints exactly to 0 and 4095; a one-pixel axis maps to 0. Buttons use 1=left,
-2=right,4=middle, and any mask 0…7. In relative button mode, a button event sends
+2=right, 4=middle, and any mask 0…7. In relative button mode, a button event sends
 a button-free absolute position plus the relative button mask. Movement carries
-actual held bits in its absolute report in both modes, matching the shared Mouse
-behavior. A mismatched `mousemove.buttons` cannot silently mark a relative button
-released without the corresponding relative release report.
+actual held bits in its absolute report in both modes; `mousemove.buttons`
+does not change held state.
 
 Non-modifier keys stay in press order, at most six. A seventh down is ignored until
 a held key is released and another down can be accepted. Modifier codes use their
@@ -177,14 +163,8 @@ The requested chord and its union with current held keys must fit six
 non-modifiers. A generation reset is reconciled before checking that held union;
 an oversized union sends no partial chord.
 
-On disconnect or server shutdown, only connections with held keys/buttons attempt
-release, through the shared coordinator with an uncancelled one-second cleanup
-context. If an active input action already performed its failure cleanup, that
-connection does not start a second cleanup budget. Failed transport sends are
-reconciled by serial Prepare's reset on reopen; interrupted input is never replayed.
-An in-flight release-only disconnect cleanup is registered with the controller,
-so overlapping daemon shutdown reuses its remaining deadline as well.
-Application budgets govern admission and waits; an executing Linux driver call
-retains ownership until it returns. Server Close cancels every client before Wait
-joins their handlers, so retained input ownership does not hold a server registry
-lock or delay cancellation of other clients.
+On disconnect or server shutdown, connections with held input attempt release
+through the shared coordinator with a one-second application budget. An action's
+failure cleanup is not repeated on disconnect; overlapping shutdown reuses a
+cleanup's remaining deadline. Serial recovery resets held input; interrupted input
+is never replayed. Executing Linux kernel calls can outlast the cleanup budget.

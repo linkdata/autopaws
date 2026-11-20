@@ -1,11 +1,8 @@
 # V4L2 ABI evidence
 
-`sz.c` retains the V4L2 C layout probe, evolved from the
-[original feasibility probe](https://github.com/linkdata/autopaws/blob/7d36615b51e406bf45a8a98f8635decbdbd2e0d6/research/v4l2/c/sz.c).
-It includes `<time.h>` before `<linux/videodev2.h>` for strict C11 builds and
-prints every named field used by the production
-mirrors, their sizes and alignments, and all used ioctl/flag constants. It only
-prints header definitions; it opens no device and executes no ioctl.
+`sz.c` measures the sizes, alignments, fields and ioctl/flag constants used by the
+Go V4L2 declarations against `<linux/videodev2.h>`. It opens no device and
+executes no ioctl.
 
 `abi-linux-amd64.txt` is its complete 83-measurement output, generated on
 2026-11-17 with GCC 15.2.0 on the x86_64 development host. The installed
@@ -25,7 +22,5 @@ fixture entry. Compile-time assertions independently pin every named field's
 offset, struct size and alignment, including during Linux arm64 cross-builds.
 The two supported targets use the LP64 little-endian Linux UAPI representation.
 
-The prototype recorded prior arm64 GCC verification in its comments, but no
-archived arm64 C output was present in its reference files. This fixture is
-amd64 evidence; cross-compilation checks arm64 against those pinned values and
-does not claim a new arm64 C run or any capture-hardware validation.
+The fixture was generated on amd64. Cross-compilation checks arm64 against the
+pinned values; it does not validate hardware or replace an arm64 C probe.

@@ -42,13 +42,12 @@ With `autopaws-kvm -token-file PATH`, each request must include the matching
 secret as an envelope string field, for example `"token":"your-secret"`. It is
 checked before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
 receive `{"id":1,"ok":false,"error":"unauthorized"}` (with the request's ID).
-The token is never logged. Without a configured token, existing requests work
-unchanged; the optional token field is ignored.
+The token is never logged. Without a configured token, the token field is ignored.
 
 The file is read once at daemon startup. Its contents must be nonempty UTF-8;
 surrounding whitespace is trimmed. Restart to load a changed secret. The portable
-Go client uses `apiclient.NewWithToken(address, secret)`; `New(address)` continues
-to omit the field. MCP reads the same secret with its own `-token-file PATH` flag.
+Go client uses `apiclient.NewWithToken(address, secret)`; `New(address)` omits it.
+MCP reads the same secret with its own `-token-file PATH` flag.
 Use loopback addresses and the SSH tunnel in the README: the token does not encrypt
 plain TCP traffic.
 
@@ -63,19 +62,14 @@ action may have produced its result before later input is observed. No second
 request executes.
 
 Every complete text, key, sequence, click or drag action uses one shared HID gate
-across API and browser callers, including its holds, delays and cleanup. V1 supports
-one operator at a time; separate connections do not merge independent held state.
+across API and browser callers, including holds, delays and cleanup. Use one
+operator at a time; separate connections do not merge independent held state.
 
 Cancellation after input may have reached the target attempts release before the
-next action enters. Cleanup uses an uncancelled one-second application context and
-explicit transport preparation. A recovered generation releases all input and
-clears held state; interrupted input is never replayed. Failure is reported in the
-error detail. Linux serial kernel calls already executing can outlast that budget.
-
-Shutdown closes listeners/connections and starts shared controller cleanup before
-waiting for handlers. Keyboard and mouse are released before permanent transport
-close. API-only and web-only/combined service startup share this ownership;
-there is no universal kernel shutdown deadline.
+next action. Cleanup has a one-second application budget; executing Linux kernel
+calls can outlast it. Recovery releases all input and clears held state; interrupted
+input is never replayed. Cleanup failures appear in the error detail. Shutdown
+attempts keyboard and mouse release before closing serial transport.
 
 ## Input methods
 
@@ -132,9 +126,8 @@ one complete drag action.
 | `list_keyboard_layouts` | none | Active `keyboard_layout` and sorted `layouts` catalog, described below |
 | `set_keyboard_layout` | nonempty string `layout` name | `{"keyboard_layout":"se105"}` (selected name) |
 
-The read-only listing reports available names with their effective source. For
-example, a malformed custom file named `my-layout.yaml` produces an entry with
-an error alongside the built-ins:
+The read-only listing reports each available name, its effective source and any
+load error:
 
 ```json
 {
@@ -151,33 +144,27 @@ an error alongside the built-ins:
 }
 ```
 
-The `layouts` array is sorted by name. Each custom `*.yaml` file name is listed
-once; a custom override replaces the built-in entry with the same name. An
-entry's optional `error` means it cannot be loaded. Invalid overrides keep
-`source:"custom"` and their error rather than falling back to a built-in.
-An empty or missing configured layout directory yields built-ins only; other
-directory-read failures return `unavailable`. Listing does not change the active
-selection, touch hardware, or invalidate capture/screenshot state.
+The `layouts` array is sorted by name. Each custom `*.yaml` filename replaces the
+built-in entry with the same name, including when invalid. An optional `error`
+means the map cannot be loaded. An empty or missing configured layout directory
+yields built-ins only; other directory-read failures return `unavailable`.
 
 Select one of `us104`, `uk105`, `de105`, `fr105`, `jp106`, `se105`, or a custom
-filename stem from the daemon's configured `layouts-dir`. The existing custom
-file precedence and validation rules apply. Request-supplied directory paths
-are invalid. Selecting the same name reloads its file.
+filename stem from the daemon's configured `layouts-dir`. Request-supplied
+directory paths are invalid. Selecting the same name reloads its file.
 
 The replacement is loaded and validated before activation. Missing, empty,
 unknown or invalid names and malformed layout files return `invalid params`;
 filesystem read failures return `unavailable`. Failures and cancellation before
 activation leave the previous map and active name unchanged.
 
-This runtime setting belongs to the daemon and supports one active MCP connection
-with sequential control requests. Subsequent text, tags, single-character keys
-and character-based sequences use the selected map. Restarting restores the
-CLI/YAML startup choice; configuration files are not rewritten. The operator
-selects the target OS's matching input source separately.
+The daemon uses the selection for subsequent text, tags, single-character keys
+and character-based sequences. Use sequential control requests from one active
+MCP connection. Restarting restores the CLI/YAML startup choice without rewriting
+configuration. Select the matching input source on the target OS separately.
 
-Selection performs no serial preparation, HID reports or input releases, and
-works without connected hardware. It preserves capture generations, MCP
-screenshot coordinates, physical browser keycodes, named special keys,
+Listing and selection work without hardware and emit no input. They preserve
+capture/screenshot state, physical browser keycodes, named special keys,
 hexadecimal HID usages and mouse behavior.
 
 ## Device information and capture
@@ -216,10 +203,9 @@ timestamp is after its request arrived. Its five-second acquisition deadline
 includes startup and corrupt-frame warmup; an earlier caller cancellation wins.
 No valid fresh frame yields `timeout`; device loss, no selected device or an
 unsupported timestamp clock yields `unavailable`. There is no stale-frame
-fallback. Acquisition can finish while an owned kernel operation is still
-returning; daemon teardown retains ownership and joins it. Capture timing does
-not establish that the target application has processed earlier input or that
-HDMI content has stabilized.
+fallback. Capture timing does not establish that the target application has
+processed earlier input or that HDMI content has stabilized. Executing kernel
+operations can outlast the acquisition deadline.
 
 On macOS, device selectors are `avfoundation:<exact name>` from discovery.
 FFmpeg video uses estimated pipe read-start timestamps on the server monotonic
@@ -227,9 +213,8 @@ clock. The snapshot still waits for a read started after the request, but
 FFmpeg/OS buffering means this does not establish camera capture freshness.
 Duplicate device names are ambiguous; no numeric indices are accepted.
 
-Snapshot bytes are normalized MJPEG with any detected crop applied. Uncropped
-images pass through after full-decode validation; cropped images use one cached
-quality-85 encode. Width/height describe the returned image, which can differ
+Snapshots are validated JPEGs with any detected crop applied. Uncropped images
+are not re-encoded; cropped images use quality-85 encoding. Width/height describe the returned image, which can differ
 from both requested capture size and configured target coordinates. There is no
 quality parameter. Capture starts on demand and stops after ten idle seconds.
 
@@ -242,11 +227,9 @@ generation and resets queued frames and crop detection. Failed attempts do not
 advance it. A device selection is accepted even with no source open, and a
 failed open preserves that selection.
 
-An idle capture device is not unavailable merely because streaming is stopped.
-Resolution changes remain available while idle or after a previous open failed.
-Store the requested size for the next start or reopen for active subscribers; a
-failed reopen is reported while selection/settings remain repairable. No selected
-device means resolution changes return `unavailable`. Missing capture hardware
+Resolution changes store the requested size while idle and reopen an active
+source. Failed opens preserve the selection and settings for repair. Without a
+selected device, resolution changes return `unavailable`. Missing capture hardware
 and discovery failures leave HID input and device selection usable.
 
 Each listed device has this shape; format order is the driver's order:
@@ -279,9 +262,9 @@ this object directly; `get_device_info` places it under `capture`:
 
 `format` is omitted until a negotiated format is known. It describes the actual
 source format independently of requested settings and cropped snapshot size.
-Selected metadata comes from one manager state; `available_devices` is a separate
-discovery refresh and remains an array. A closed/missing/failed source or
-incomplete discovery adds stable `error` and optional diagnostic `detail`, while
+`available_devices` is a separate discovery refresh and remains an array. A
+closed/missing/failed source or incomplete discovery adds stable `error` and
+optional diagnostic `detail`, while
 retaining selected/requested settings. A selected idle device is available while
 `running` is false. `get_device_info` remains an overall success when capture is
 unavailable. A standalone API server without a capture manager retains the

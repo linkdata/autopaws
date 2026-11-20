@@ -69,7 +69,6 @@ A user file replaces the built-in override file, then applies its overrides to
 US104. It does not inherit the selected built-in layout's overrides. To modify
 German, for example, copy [de105.yaml](hid/layouts/de105.yaml) into the user layout
 directory and edit that copy. Other built-in files are in [hid/layouts](hid/layouts).
-Each loaded layout is independent and cannot be changed through a lookup result.
 
 ## Changing the active layout
 
@@ -96,15 +95,15 @@ The result is `{"keyboard_layout":"se105"}`. Subsequent text, key tags,
 single-character `send_key` values and character-based sequences use the selected
 map. `get_device_info.config.keyboard_layout` reports its active name.
 
-Use one active MCP connection with sequential requests. The selection belongs to
-the running daemon; it does not rewrite configuration. Restarting restores the
-CLI/YAML startup layout. Select the matching input source on the target OS
-separately. Physical browser key positions, named special keys and hexadecimal
-HID usages keep their existing behavior.
+Use sequential requests from one active MCP connection. Selection changes the
+running daemon; restarting restores the CLI/YAML startup layout without rewriting
+configuration. Select the matching input source on the target OS separately.
+Physical browser keys, named special keys and hexadecimal HID usages are
+independent of the text layout.
 
 The tool accepts any built-in name listed above or a custom filename stem in the
-daemon's configured `-layouts-dir`. Custom-file precedence is unchanged, and a
-request cannot supply a directory path. Selecting the same name reloads its file.
+daemon's configured `-layouts-dir`; requests cannot supply directory paths.
+Selecting the same name reloads its file.
 The complete replacement is loaded and validated before activation; an invalid,
 unreadable or malformed selection leaves the previous map active. Listing and
 switching perform no hardware input, work with disconnected devices, and
@@ -130,8 +129,7 @@ Run this from the repository root, or copy the file into your own layout
 directory and pass that directory to `-layouts-dir`. This map covers the same
 154 printable characters as `se105`, plus Tab and Enter. Windows emits literal
 `´` and `¨` with their dead key followed by Space; Linux/XKB's compose table uses
-different sequences. The other mappings in these two files agree. The Windows
-map was physically checked through `autopaws-mcp` and `autopaws-kvm`; see the
+different sequences. The other mappings agree. See the
 [Swedish validation record](docs/validation/swedish-keyboard-2026-11-18.json).
 
 Further non-ASCII characters, such as German umlauts, `ß` or French `é` in their

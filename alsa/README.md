@@ -1,38 +1,20 @@
 # Raw ALSA capture
 
-`Open(ctx, path)` configures one capture PCM and starts one fixed worker. Startup
-uses `O_NONBLOCK` to detect a busy substream, then clears it before blocking
-`READI_FRAMES`. No PCM descriptor is registered with Go's runtime poller.
+`Open(ctx, path)` opens one capture PCM exclusively. It prefers 48 kHz stereo
+S16_LE interleaved samples, falling back to supported mono/rate settings. Requested
+periods span 20–100 ms with 4–8 periods per kernel buffer; these are not
+end-to-end latency limits.
 
-The source prefers exactly two channels, then one, with S16_LE interleaved
-samples. It tests 48000 Hz through `HW_REFINE`; a containing range alone does not
-prove support. Otherwise `HW_PARAMS` selects a supported point from the refined
-space. Negotiated singleton values and allocation arithmetic are checked. Periods
-span 20–100 ms and the buffer contains 4–8 periods. This is a requested kernel
-buffer range, not an end-to-end latency guarantee.
+Overrun or suspend recovery advances the source generation, clears subscriber
+queues and restarts sequence numbering. Repeated recovery without valid samples
+ends capture with a terminal error. Reopening a source also gives it a new
+process-unique generation.
 
-`SW_PARAMS` enables `CLOCK_MONOTONIC` timestamps, one-period `avail_min`, start
-threshold 1 and stop threshold equal to the buffer size. The first read starts
-capture; the package never issues START. EPIPE/ESTRPIPE recovery uses PREPARE,
-increments the source generation, clears every subscriber queue, and restarts
-sequence numbering. A reopened source also gets a new process-unique generation.
-
-Recovery permits one PREPARE without an intervening successful, validated PCM
-read. If EPIPE/ESTRPIPE repeats before valid samples arrive, capture ends with a
-terminal error instead of repeatedly preparing and publishing generations.
-EINTR or a cancellable EAGAIN wait does not count as sample progress. This bounds
-the detached-driver case while allowing a later genuine overrun after normal
-PCM has resumed. A terminal source still notifies subscribers before joining
-its owned close; it is not retried in a tight loop.
-
-After physical device return, the web service needs a new activation or accepted
-video-settings change to retry terminal audio. With existing viewers, re-list the
-returned capture nodes and call `set_capture_device` with the correct path; the
-same path is accepted and starts a new video generation. Automatic audio then
-resolves that selected video's full USB ancestor to its current PCM, so renumbered
-card/device paths are not guessed from labels. Closing every viewer and opening
-a new viewer also starts a new audio activation. The raw package caller repairs
-by opening a new source. Existing failed capture objects do not reopen themselves.
+After reconnecting a device, retry terminal audio by re-listing capture nodes
+and calling `set_capture_device` with the current video path. Reselecting the
+same path is accepted. Automatic audio resolves the selected video's USB ancestor
+to its current PCM. Closing every viewer and opening a new one also retries
+audio. Package callers must open a new source after terminal failure.
 
 Each block estimates the first sample's capture time as:
 
@@ -41,44 +23,20 @@ status.tstamp - floor((status.delay + returned_sample_frames) * 1e9 / rate)
 ```
 
 The timestamp's unit is nanoseconds in the server's `CLOCK_MONOTONIC` domain.
-ALSA's capture delay includes unread captured frames and the driver's additional
-delay. DMA position granularity and delay reporting limit the estimate's accuracy;
-it is not a guarantee about analog acquisition time. No timestamp is substituted
-from read completion. See the kernel's [timestamp documentation](https://www.kernel.org/doc/html/latest/sound/designs/timestamping.html)
-and [capture status implementation](https://github.com/torvalds/linux/blob/v7.0/sound/core/pcm_native.c#L953-L1030).
+ALSA's capture delay includes unread frames and driver delay. DMA granularity and
+delay reporting limit accuracy; this is not an analog acquisition guarantee.
+See the kernel's [timestamp documentation](https://www.kernel.org/doc/html/latest/sound/designs/timestamping.html).
 
 Each subscription holds at most 100 ms by sample-frame count, drops oldest blocks
 on overflow and discards blocks whose end-of-capture time is older than 100 ms
 before returning them. End-of-capture is the first-sample timestamp plus the
-block's sample-frame duration; the subtraction avoids counting acquisition of
-that block as application queue residence. A newly completed 100 ms block is
-therefore usable. Each receiver owns its bytes. This leaves 100 ms of the planned
-200 ms application-queue ceiling for the browser worklet. A writer must fetch
-immediately before transmission and discard any block it held across a stall.
-The queue ceiling excludes kernel buffers, TCP/WebSocket buffering and output
-device latency. There is no PulseAudio/PipeWire fallback.
+block duration. Each receiver owns its bytes. Fetch blocks immediately before
+transmission and discard any held across a stall. Queue limits exclude kernel
+buffers, TCP/WebSocket buffering and output device latency.
 
-Close marks stop before DROP, wakes subscription waiters, and joins the worker
-that closes the descriptor. DROP never waits on a mutex held by blocking READI.
-An already-known terminal read failure wakes existing and new subscribers before
-driver close finishes; `Close` still joins that close and preserves its error.
-PREPARE, STATUS and final close are serialized with DROP so a descriptor is not
-closed or reused during an executing ioctl. Kernel calls can outlast a context;
-the package retains ownership and does not abandon a blocked worker. Hardware
-validation of DROP wakeup, busy-open timing, actual timestamps and recovery is
-separate from fake-kernel tests.
-
-Dedicated hardware tests are opt-in and never auto-select a microphone or card:
-
-```sh
-AUTOPAWS_ALSA_TEST_DEVICE=/dev/snd/pcmC1D0c go test -v ./alsa -run '^TestHardware'
-```
-
-Choose the intended exclusive capture substream. The tests capture sample blocks,
-measure a second busy open and shutdown, and deliberately stall one read beyond
-the kernel buffer duration to exercise real overrun recovery. They do not save
-PCM bytes. Without the explicit device variable they skip, including on CI.
-
+`Close` wakes subscribers and joins the capture worker. Terminal failures notify
+subscribers before driver close finishes. Kernel calls can outlast a context;
+the package retains ownership until they return.
 
 ## Exclusive access with WirePlumber 0.5
 
@@ -100,11 +58,10 @@ monitor.alsa.rules = [
 Replace the example name with the complete observed name, then run
 `systemctl --user restart wireplumber`. The selected card disappears from desktop
 audio; its raw ALSA PCM remains available to autopaws. Restore desktop access by
-removing this fragment and restarting WirePlumber again. The host used for the
-recorded hardware tests needed no policy change because the PCM was idle.
+removing this fragment and restarting WirePlumber again.
 
 This is the WirePlumber 0.5 configuration format; see the official
 [ALSA rules and device properties](https://pipewire.pages.freedesktop.org/wireplumber/daemon/configuration/alsa.html)
 and [configuration fragments](https://pipewire.pages.freedesktop.org/wireplumber/daemon/configuration/modifying_configuration.html).
-Older WirePlumber releases use different configuration. There is no automatic
+Use the format for your installed WirePlumber version. There is no
 PulseAudio/PipeWire fallback.

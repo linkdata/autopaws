@@ -1,21 +1,17 @@
 # Linux device and service setup
 
-These are Debian/Ubuntu-style examples. Check your distribution's actual device
-ownership and group names before applying them. They do not require a privileged
-KVM daemon.
-
-The example files are in the repository. For the optional udev/service setup,
-use a checkout of the same revision as the installed binary. With authenticated
-private-repository access:
+These Debian/Ubuntu examples run the daemon without root privileges. Check your
+distribution's device ownership and group names. Use example files from the same
+revision as your installed binary:
 
 ```sh
 gh repo clone linkdata/autopaws autopaws
 cd autopaws
 ```
 
-For a released binary, run `git checkout YOUR_INSTALLED_TAG` before using its
-examples. A source build can use the examples from its existing checkout. The
-foreground quick start in the README needs no service or udev installation.
+For a release, run `git checkout YOUR_INSTALLED_TAG`. Source builds can use their
+existing checkout. The README's foreground quick start needs neither service
+installation nor custom udev rules.
 
 ## Device access
 
@@ -48,11 +44,7 @@ explicit path. An explicit video path can likewise use a stable V4L symlink.
 
 ALSA capture opens the selected PCM exclusively. If it is busy, follow the
 canonical [WirePlumber 0.5 per-card setup](../alsa/README.md#exclusive-access-with-wireplumber-05).
-That recipe uses the exact `device.name`, includes restart/rollback instructions
-and avoids changing unrelated host audio policy. Use the instructions for your
-installed WirePlumber version. Record the release setup's actual negotiation and
-quirks in the [hardware validation record](hardware-validation.md); this setup
-guide does not claim those checks have passed. There is no
+Use the instructions for your installed WirePlumber version. There is no
 PipeWire/PulseAudio fallback.
 
 ## Optional system service
@@ -99,9 +91,6 @@ journalctl -u autopaws-kvm.service -f
 hot reload. The unit lets retained kernel calls finish during stop, so shutdown
 may outlast the application's cleanup deadline. Do not run another KVM daemon
 against the same serial or capture devices while the service owns them.
-
-The unit and rule are examples until validated on the final #43 setup. They do
-not assert distribution-wide installation or runtime support.
 
 References: [udev rules](https://www.freedesktop.org/software/systemd/man/latest/udev.html),
 [systemd services](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html).
