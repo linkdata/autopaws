@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-11-20",
-  "status": "PARTIAL PHYSICAL VALIDATION: baseline input, video, PCM transport and serial reconnect passed; automatic media recovery passed automated and real-card forced-stall checks; physical USB reconnect retest and HDMI signal content remain untested",
+  "status": "PASS for recorded macOS host input, video, HDMI speaker content, serial reconnect and automatic media reconnect checks; browser/acoustic audio playback and latency remain unvalidated",
   "source": {
     "base_commit": "bd8bdc3",
     "binary": {
@@ -36,9 +36,9 @@
       "serial_selection": "automatic; no -serial-device argument"
     },
     "physical_binary_fix": "macOS serial discovery adds ioreg -l so device properties are included in the XML inventory",
-    "physical_test_revision": "bd8bdc3 plus the ioreg -l discovery fix; before the automatic media recovery/startup follow-up",
+    "physical_test_revision": "baseline: bd8bdc3 plus the ioreg -l discovery fix; before the automatic media recovery/startup follow-up",
     "followup_changes": {
-      "status": "implemented, covered by automated tests and checked with a real-card FFmpeg stall; physical USB reconnect retest PENDING",
+      "status": "implemented; passed automated tests, a real-card FFmpeg stall and physical USB reconnect",
       "changes": [
         "FFmpeg output reads time out after five seconds without read progress, then stop and join the owned process",
         "native macOS capture retries failed opens or reads after one second while snapshot or viewer demand remains",
@@ -48,6 +48,13 @@
       ],
       "healthy_capture_idle_timeout_seconds": 10,
       "real_card_stall_binary_sha256": "dc16484f4e2d32ac72c103d7ca5230b9518a8a5aef421f79664272e671b5b724"
+    },
+    "physical_retest": {
+      "commit": "880b669749636e0d90a76f42843f393b5b4e3177",
+      "binary_path": "/private/tmp/autopaws-kvm-retest",
+      "binary_sha256": "c78eb52c4fa643b139004e0f400d7fd36c3460ad7a002c091ccbb5530244e906",
+      "build_command": "CGO_ENABLED=0 go build -trimpath -o /private/tmp/autopaws-kvm-retest ./cmd/autopaws-kvm",
+      "configuration": "same arguments as source.binary.argv, with the retest executable"
     }
   },
   "host": {
@@ -261,11 +268,7 @@
           "limit": "large gaps include the deliberate physical disconnect and manual repair; this is not an uninterrupted latency run"
         }
       ],
-      "audio_content": "all observed PCM was silent; HDMI signal content not yet verified"
-    },
-    "hdmi_tone_content": {
-      "status": "NOT RUN",
-      "limit": "all observed PCM was silent; no HDMI signal-content or acoustic playback pass is claimed"
+      "audio_content": "the baseline runs above contained silent PCM; later native Ubuntu speaker tests verified left/right HDMI content separately"
     },
     "mcp_physical": {
       "status": "PASS for the recorded stdio, capture and center-click checks",
@@ -330,7 +333,7 @@
     "media_failure_and_repair": {
       "status": "PASS for explicit same-selector video and PCM-transport repair in the physical baseline",
       "software_revision": "before the automatic media recovery follow-up",
-      "automatic_resume": "FAILED in the recorded baseline trial; the follow-up passed automated tests and a real-card FFmpeg stall check, while physical USB reconnect retest remains pending",
+      "automatic_resume": "FAILED in the recorded baseline; the follow-up passed automatic recovery in the physical USB trial recorded under media_automatic_recovery.physical_usb_reconnect",
       "detail": "see capture_audio_physical_reconnect for retained-process state, both timeouts, the first black frame and later target-content verification"
     },
     "shutdown_and_release": {
@@ -605,12 +608,12 @@
           "device_pixel_ratio": 1.5
         }
       },
-      "audio_recovery": "PASS for available generation 2 at 48000 Hz stereo and resumed PCM transport after manual reselection; all observed PCM remained silent, so HDMI signal content is untested",
-      "limit": "explicit same-device repair was observed; no physical USB automatic-reconnect pass is claimed for the baseline or the follow-up code",
+      "audio_recovery": "PASS for available generation 2 at 48000 Hz stereo and resumed PCM transport after manual reselection; this baseline PCM was silent, with later HDMI speaker-content checks recorded separately",
+      "limit": "explicit same-device repair was observed in this baseline; the later automatic-recovery trial is recorded separately",
       "software_revision": "physical baseline before the automatic media recovery follow-up"
     },
     "media_automatic_recovery": {
-      "status": "PASS for automated tests and real-card forced FFmpeg stall; PHYSICAL USB RECONNECT RETEST PENDING",
+      "status": "PASS for automated tests, real-card forced FFmpeg stall and physical USB automatic recovery",
       "ffmpeg_read_inactivity_timeout_seconds": 5,
       "native_macos_retry_delay_seconds": 1,
       "retry_requires_demand": true,
@@ -623,7 +626,7 @@
         "retry stops on lost demand, settings changes or shutdown; healthy ten-second idle remains",
         "audio backoff, repaired viewer stream, old-owner joining and retry cancellation"
       ],
-      "limit": "pausing the owned FFmpeg processes exercises real media stall recovery, not USB device removal or a physical reconnect retest",
+      "limit": "one card and host were exercised; the deliberate physical unplug gap is not a recovery-latency measurement",
       "real_card_forced_stall": {
         "status": "PASS",
         "binary_sha256": "dc16484f4e2d32ac72c103d7ca5230b9518a8a5aef421f79664272e671b5b724",
@@ -688,7 +691,115 @@
         "initial_snapshot_elapsed_ms": 982.104,
         "nonzero_audio_samples": 0,
         "audio_peak": 0,
-        "limit": "the approximately 6.6-second gaps include detection, retry and source startup; no automatic USB reconnect or HDMI tone-content pass is claimed"
+        "limit": "this earlier forced-stall run had approximately 6.6-second gaps including detection, retry and startup; physical USB recovery and HDMI speaker content were tested separately later"
+      },
+      "expired_observer_trial": {
+        "status": "INCONCLUSIVE for automatic same-viewer recovery",
+        "started_utc": "2026-11-20T08:56:28.765Z",
+        "observer_ended_utc": "2026-11-20T09:06:28.774Z",
+        "observation_seconds": 600,
+        "reason": "the timed observer ended while the card was still absent; the owner reconnected after capture demand had ended",
+        "fresh_demand_reopened_without_daemon_restart_or_host_reselection": true,
+        "first_cold_snapshot": {
+          "elapsed_ms": 1584.617,
+          "jpeg_bytes": 16521,
+          "appearance": "black HDMI warmup frame"
+        },
+        "later_current_target_snapshot": {
+          "elapsed_ms": 59.626,
+          "jpeg_bytes": 88360
+        },
+        "limit": "fresh-demand reopening does not establish automatic recovery of an existing viewer; the expired window was not classified as a software failure"
+      },
+      "physical_usb_reconnect": {
+        "status": "PASS for automatic video/audio recovery on the existing WebSocket",
+        "physical_action": "owner unplugged and reconnected only the UGREEN host USB connection",
+        "continuous_observer": {
+          "pid": 43309,
+          "tcp_local_port": 62545,
+          "same_connection_retained": true,
+          "no_observation_timeout": true
+        },
+        "daemon_pid_unchanged": 41468,
+        "daemon_restart_or_host_capture_reselection_or_settings_repair": false,
+        "while_absent": {
+          "recorded_utc": "2026-11-20T09:43:27.871625+00:00",
+          "UGREEN_available": false,
+          "capture_running": false,
+          "video_generation": 1,
+          "capture_result": "unavailable",
+          "capture_elapsed_ms": 777.01,
+          "jpeg_returned": false,
+          "ping_elapsed_ms": 2.695,
+          "old_ffmpeg_pids": [
+            43312,
+            43313
+          ],
+          "old_ffmpeg_remaining": [],
+          "owned_ffmpeg_capture_children": [],
+          "serial_tty_present": true
+        },
+        "after_reconnect": {
+          "recorded_utc": "2026-11-20T09:56:29.350634+00:00",
+          "capture_running": true,
+          "video_generation": 2,
+          "new_ffmpeg_pids": {
+            "video": 44681,
+            "audio": 44683
+          },
+          "snapshot_elapsed_ms": 62.022,
+          "jpeg_bytes": 88282,
+          "jpeg_pixels": [
+            1920,
+            1080
+          ],
+          "current_target_content_visually_confirmed": true
+        },
+        "stream": {
+          "started_utc": "2026-11-20T09:35:47.661Z",
+          "finished_utc": "2026-11-20T09:58:49.407Z",
+          "observation_seconds": 1381.746,
+          "video_messages": 11735,
+          "audio_messages": 49888,
+          "audio_sample_frames": 23946240,
+          "nonzero_audio_samples": 101662,
+          "audio_peak": 1044,
+          "header_generation_or_sequence_errors": 0,
+          "audio_config_generations": [
+            "0",
+            "2",
+            "0",
+            "3",
+            "0",
+            "4"
+          ],
+          "timestamp_flags": {
+            "1": 5,
+            "2": 5
+          },
+          "max_observed_video_gap_ms": 784354.27725,
+          "max_observed_audio_gap_ms": 784043.369292
+        },
+        "target_audio_routing": "Ubuntu fell back to internal Speaker after USB removal; HDMI output was selected again in native Sound settings before post-replug speaker tests",
+        "limit": "the approximately 784-second gaps include deliberate unplugging and waiting for the owner; they are not recovery latency. The 62 ms snapshot was a warm call after recovery, not a recovery-time bound"
+      },
+      "physical_healthy_idle": {
+        "status": "PASS for retained ten-second video idle behavior",
+        "last_observer_stopped_utc": "2026-11-20T09:58:49.406214+00:00",
+        "child_exit_after_stop_ms": {
+          "audio": 20.621,
+          "video": 10129.086
+        },
+        "remaining_children": {},
+        "limit": "process presence was polled every 100 ms; these observations are not exact driver-call deadlines"
+      },
+      "test_daemon_cleanup": {
+        "signal": "SIGINT after the idle check",
+        "held_input": false,
+        "test_ports_closed": [
+          19329,
+          19330
+        ]
       }
     },
     "macos_ffmpeg_startup_requirement": {
@@ -696,17 +807,93 @@
       "serve": "requires ffmpeg on PATH even for API-only or serial-only use; missing executable fails before hardware owners/listeners",
       "help_and_version": "work without FFmpeg",
       "list_devices": "requires FFmpeg for AVFoundation inventory; it does not use the serve startup path"
+    },
+    "hdmi_speaker_test_content": {
+      "status": "PASS before and after physical USB reconnect",
+      "source": "Ubuntu GNOME Sound settings built-in left/right speaker samples over HDMI; no custom tone or target script",
+      "target_output_selection": "initial output was internal Speaker; native HDMI/DisplayPort output selected before tests and again after unplug fallback",
+      "audio_rate_hz": 48000,
+      "audio_channels": 2,
+      "observation_seconds_each": 20,
+      "timestamp_flags_both_media": 5,
+      "runs": [
+        {
+          "phase": "before reconnect",
+          "speaker": "left",
+          "started_utc": "2026-11-20T08:54:21.155Z",
+          "finished_utc": "2026-11-20T08:54:41.175Z",
+          "audio_generation": "1",
+          "nonzero_samples_per_channel": [
+            46557,
+            0
+          ],
+          "peak_per_channel": [
+            1044,
+            0
+          ],
+          "header_generation_or_sequence_errors": 0
+        },
+        {
+          "phase": "before reconnect",
+          "speaker": "right",
+          "started_utc": "2026-11-20T08:54:51.896Z",
+          "finished_utc": "2026-11-20T08:55:11.916Z",
+          "audio_generation": "1",
+          "nonzero_samples_per_channel": [
+            0,
+            57645
+          ],
+          "peak_per_channel": [
+            0,
+            1049
+          ],
+          "header_generation_or_sequence_errors": 0
+        },
+        {
+          "phase": "after reconnect",
+          "speaker": "left",
+          "started_utc": "2026-11-20T09:57:12.556Z",
+          "finished_utc": "2026-11-20T09:57:32.575Z",
+          "audio_generation": "4",
+          "nonzero_samples_per_channel": [
+            44976,
+            0
+          ],
+          "peak_per_channel": [
+            1044,
+            0
+          ],
+          "header_generation_or_sequence_errors": 0
+        },
+        {
+          "phase": "after reconnect",
+          "speaker": "right",
+          "started_utc": "2026-11-20T09:57:52.505Z",
+          "finished_utc": "2026-11-20T09:58:12.525Z",
+          "audio_generation": "4",
+          "nonzero_samples_per_channel": [
+            0,
+            56686
+          ],
+          "peak_per_channel": [
+            0,
+            1028
+          ],
+          "header_generation_or_sequence_errors": 0
+        }
+      ],
+      "limit": "isolated nonzero captured PCM on the requested channel establishes HDMI signal content and channel mapping; acoustic/browser playback, calibrated-tone accuracy and latency were not measured"
     }
   },
   "limits": [
-    "This record separates physical baseline results, automated tests and a real-card process-stall check of the recovery follow-up.",
+    "This record separates the failed physical baseline, automated/forced-stall checks, an inconclusive expired-observer trial and the passing continuous-observer physical USB retest.",
     "macOS timestamps estimate FFmpeg pipe receipt on CLOCK_MONOTONIC; FFmpeg/OS buffering is unmeasured.",
-    "Silent PCM establishes transport availability, not HDMI tone content or acoustic playback.",
+    "Earlier baseline PCM was silent; later native left/right speaker samples verified captured HDMI content without establishing acoustic or browser playback.",
     "No acoustic latency, browser playback latency, alternate card, Intel Mac hardware or physical scroll claim is made.",
     "The existing ten-second healthy idle timeout is unchanged, as confirmed by the owner.",
     "Existing Linux host validation is separate and Linux backends remain supported.",
     "Physical UGREEN reconnection did not automatically restore baseline capture; same-selector selection repaired it, and running=true alone did not establish availability.",
-    "Automatic recovery passed automated tests and an owned-process SIGSTOP test with the real card; physical USB reconnect retest of the follow-up remains pending."
+    "Automatic recovery passed an owned-process SIGSTOP test and physical USB reconnect with continuous viewer demand; the deliberate unplug gap is not a recovery-latency result."
   ],
   "setup_retries": [
     {

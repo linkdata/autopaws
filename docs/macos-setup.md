@@ -87,15 +87,22 @@ The worker continuously drains output into a latest-video slot; the daemon
 kills and joins its FFmpeg processes on stream shutdown.
 
 Physical testing on an Apple silicon Mac and Ubuntu target verified requested
-Swedish characters, API/MCP pointer coordinates, video, PCM transport, serial
-unplug/replug recovery and clean shutdown. In the baseline capture reconnect
+Swedish characters, API/MCP pointer coordinates, video, HDMI speaker content,
+serial unplug/replug recovery and clean shutdown. In the baseline capture reconnect
 trial, reconnection alone left FFmpeg stalled; same-device selection restored
-video and PCM transport. The updated recovery passed automated tests and a
-real-card stall test: pausing only its FFmpeg children resumed the existing
-WebSocket automatically, without reselection. Its physical USB reconnect retest
-remains pending. The [2026-11-20 record](validation/macos-host-2026-11-20.json)
-retains the baseline failure/manual repair, initial capture timeout and setup
-retries. All observed PCM was silent; actual HDMI tone content remains untested.
+video and PCM transport. The updated code passed an FFmpeg process stall test
+and physical USB reconnect: video/audio resumed on the existing WebSocket
+without a daemon restart or host capture reselection. The healthy video stream
+closed about ten seconds after the last viewer left.
+
+Ubuntu's native left/right speaker tests produced captured HDMI signal only on
+the requested channel before and after reconnect. Ubuntu fell back to internal
+speakers during unplugging, so its HDMI output was selected again for the later
+speaker tests. Acoustic/browser audio playback and latency remain unmeasured.
+The [2026-11-20 record](validation/macos-host-2026-11-20.json) retains the baseline
+failure/manual repair, initial timeout, setup retries and an inconclusive trial
+whose observer expired before replugging. Deliberate unplug gaps are not
+recovery-latency measurements.
 
 Automated checks cover the shared daemon/API/viewer, macOS pseudo-terminal
 serial I/O, fixture discovery, media parsing, process cancellation and bounded

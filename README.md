@@ -671,10 +671,12 @@ limits are recorded separately from the required Linux results.
 
 The [macOS host record](docs/validation/macos-host-2026-11-20.json) covers an Apple
 silicon Mac controlling an Ubuntu target: requested Swedish text, API/MCP pointer
-coordinates, video, PCM transport, serial reconnect and clean shutdown passed.
-Baseline capture reconnect needed explicit same-device repair. Updated automatic
-recovery passes automated tests and an owned-FFmpeg stall test with the real
-card; physical USB reconnect retest and HDMI audio content remain untested.
+coordinates, video, HDMI left/right speaker content, serial reconnect and clean
+shutdown passed. Baseline capture reconnect needed explicit same-device repair;
+the updated code resumed video/audio automatically on the existing WebSocket
+after a physical USB reconnect. Ubuntu's HDMI output needed selecting again
+after its fallback to internal speakers. Acoustic/browser audio playback and
+latency remain unvalidated.
 See [macOS setup](docs/macos-setup.md).
 
 ## Development
