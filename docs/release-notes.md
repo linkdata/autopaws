@@ -1,14 +1,10 @@
-# v0.1.1
+# v0.2.0
 
-Swedish text entry supports 154 printable characters, Tab and Enter, including
-`£€§½¤µ`, literal accents and composed accented letters.
+- macOS KVM hosts with FFmpeg video/audio capture and automatic media reconnect.
+- API/MCP keyboard-layout discovery and selection without restarting.
+- ZIP bundles containing both commands for Linux amd64/arm64 and macOS arm64.
+- Shorter setup, usage and protocol documentation.
 
-The built-in `se105` map follows Linux/XKB. For Swedish Windows targets, use
-`se105-windows.yaml` with `-target-layout se105-windows` and `-layouts-dir`
-pointing to its directory. Literal `´` and `¨` use different sequences on Linux
-and Windows. See the
-[layout instructions](https://github.com/linkdata/autopaws/blob/v0.1.1/CREATING_LAYOUTS.md#target-os-differences).
-
-The complete Windows map passed physical MCP/HID testing. Linux mappings were
-checked against libxkbcommon and its compose table. See the
-[Swedish keyboard record](https://github.com/linkdata/autopaws/blob/v0.1.1/docs/validation/swedish-keyboard-2026-11-18.json).
+macOS requires FFmpeg and explicit audio selection. Physical validation covers
+Linux amd64 and Apple silicon macOS; other supported hosts are cross-built.
+See [setup and validation](https://github.com/linkdata/autopaws/blob/v0.2.0/README.md).

@@ -9,6 +9,7 @@ if [[ -e "$output" ]]; then
   exit 1
 fi
 mkdir -p "$output"
+output=$(cd "$output" && pwd)
 
 for platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
   os=${platform%/*}
@@ -28,11 +29,25 @@ for platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 
   done
 done
 
+staging=$(mktemp -d)
+trap 'rm -rf "$staging"' EXIT
+for platform in linux/amd64 linux/arm64 darwin/arm64; do
+  os=${platform%/*}
+  arch=${platform#*/}
+  for command in autopaws-kvm autopaws-mcp; do
+    cp "$output/${command}_${version}_${os}_${arch}" "$staging/$command"
+  done
+  (
+    cd "$staging"
+    zip -q -X "$output/autopaws_${version}_${os}_${arch}.zip" autopaws-kvm autopaws-mcp
+  )
+done
+
 (
   cd "$output"
   if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum autopaws-* > SHA256SUMS
+    sha256sum autopaws* > SHA256SUMS
   else
-    shasum -a 256 autopaws-* > SHA256SUMS
+    shasum -a 256 autopaws* > SHA256SUMS
   fi
 )

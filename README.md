@@ -56,6 +56,9 @@ autopaws-kvm --version
 
 Assets are named `COMMAND_TAG_OS_ARCH`, with `.exe` on Windows. Install the MCP
 asset as `autopaws-mcp` or `autopaws-mcp.exe`. Use its absolute path in GUI clients.
+ZIP bundles named `autopaws_TAG_OS_ARCH.zip` contain both `autopaws-kvm` and
+`autopaws-mcp` for `linux_amd64`, `linux_arm64` and `darwin_arm64`.
+`SHA256SUMS` covers standalone binaries and ZIPs.
 On macOS, verify with `shasum -a 256 --check -`; on Windows, compare `SHA256SUMS`
 with `Get-FileHash -Algorithm SHA256 PATH`.
 
@@ -316,7 +319,7 @@ pairs and do not establish hardware coverage.
 ## Development
 
 Use Go 1.27.4+, Node.js 26.13.1, the golangci-lint version pinned in
-[CI](.github/workflows/ci.yml), actionlint, ShellCheck and a C compiler for race tests.
+[CI](.github/workflows/ci.yml), actionlint, ShellCheck, zip/unzip and a C compiler for race tests.
 Run the complete local gate after final edits and before pushing or starting CI:
 
 ```sh
@@ -347,9 +350,15 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
 CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
 CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+autopaws_assets=$(mktemp -d)
+bash .github/scripts/build-release.sh ci "$autopaws_assets/dist"
+(cd "$autopaws_assets/dist" && sha256sum --check SHA256SUMS)
+for archive in "$autopaws_assets"/dist/*.zip; do unzip -tq "$archive"; done
+rm -r "$autopaws_assets"
 ```
 
-On macOS, install FFmpeg and also run the native media fixtures:
+On macOS, replace `sha256sum --check` with `shasum -a 256 --check`, install FFmpeg
+and run the native media fixtures:
 
 ```sh
 AUTOPAWS_FFMPEG_TEST=1 CGO_ENABLED=1 go test -race ./avfoundation
