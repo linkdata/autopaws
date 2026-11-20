@@ -28,7 +28,7 @@ type USBDevice struct {
 }
 
 // Detect selects the only supported serial device, or returns ErrNotFound or
-// ErrAmbiguous. It uses the same sysRoot convention as Discover.
+// ErrAmbiguous. On Linux, an empty sysRoot means /sys; macOS ignores sysRoot.
 func Detect(sysRoot string) (string, error) {
 	return detect(context.Background(), sysRoot)
 }

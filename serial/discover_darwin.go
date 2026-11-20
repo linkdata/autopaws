@@ -34,13 +34,7 @@ func DiscoverDevices(ctx context.Context) ([]DiscoveredDevice, error) {
 	return parseRegistry(data)
 }
 
-// Discover returns supported CH340/CH341 callout ports in lexical order.
-// sysRoot is used only on Linux and is ignored on macOS.
-func Discover(sysRoot string) ([]string, error) {
-	return discover(context.Background(), sysRoot)
-}
-
-func discover(ctx context.Context, sysRoot string) ([]string, error) {
+func discover(ctx context.Context, _ string) ([]string, error) {
 	devices, err := DiscoverDevices(ctx)
 	if err != nil {
 		return nil, err
