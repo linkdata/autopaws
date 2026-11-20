@@ -5,10 +5,26 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
 )
+
+const mediaReadTimeout = 5 * time.Second
+
+// AVFoundation can retain a dead device without closing FFmpeg's output pipe.
+type mediaReader struct {
+	file    *os.File
+	timeout time.Duration
+}
+
+func (reader mediaReader) Read(data []byte) (int, error) {
+	if err := reader.file.SetReadDeadline(time.Now().Add(reader.timeout)); err != nil {
+		return 0, err
+	}
+	return reader.file.Read(data)
+}
 
 // process retains ownership of the child and its reader until the stream
 // worker exits and Wait has reaped the child. Startup cancellation never
@@ -42,12 +58,17 @@ func startProcess(ctx context.Context, kind string, command func(context.Context
 		cancel()
 		return nil, errors.Join(err, pipe.Close())
 	}
+	file, ok := pipe.(*os.File)
+	if !ok {
+		cancel()
+		return nil, errors.Join(errors.New("avfoundation: FFmpeg output is not a pollable pipe"), pipe.Close(), cmd.Wait())
+	}
 	owner := &process{cancel: cancel, done: make(chan struct{})}
 	ready := make(chan error, 1)
 	var once sync.Once
 	go func() {
 		defer close(owner.done)
-		err := read(pipe, func() { once.Do(func() { ready <- nil }) })
+		err := read(mediaReader{file: file, timeout: mediaReadTimeout}, func() { once.Do(func() { ready <- nil }) })
 		// Stop before Wait even for malformed output; otherwise the child may
 		// remain blocked writing to a pipe that no worker will drain.
 		cancel()

@@ -72,7 +72,7 @@ go build -trimpath -o dist/ ./cmd/...
 ```
 
 Linux and macOS builds produce both commands. Windows builds produce only
-`autopaws-mcp`. macOS capture requires a separate FFmpeg installation; see
+`autopaws-mcp`. The macOS daemon requires FFmpeg on `PATH`; see
 [macOS setup](docs/macos-setup.md). Source builds without release
 linker flags report version `devel`. On a Linux or macOS KVM host, install both commands:
 
@@ -358,7 +358,9 @@ Actual capture observations are recorded in [hardware validation](docs/hardware-
 
 On macOS, [the AVFoundation backend](docs/macos-setup.md) uses FFmpeg and
 estimated pipe receipt timing, with weaker snapshot freshness guarantees than
-Linux device timestamps.
+Linux device timestamps. Stalled FFmpeg reads time out after five seconds;
+native macOS video and explicit audio retry after one second while demand remains.
+The healthy ten-second idle timeout is unchanged.
 
 The `capture` package shares one producer between subscriptions and snapshots.
 Capture starts on demand and stops after ten seconds with neither subscribers
@@ -381,9 +383,11 @@ and cropped encodes are shared across requests for that frame.
 
 Selecting a device or resolution starts a new settings generation, clears old
 queued frames/crop information and returns `capture changed` to pending old
-snapshots. Idle or failed-open settings remain repairable without restarting the
-daemon. Missing capture hardware leaves keyboard and mouse usable. Initial valid
-black/noisy HDMI acquisition pictures are possible on the tested card; another
+snapshots. Successful automatic macOS video recovery also advances the generation
+and clears old frame/crop state; healthy idle opens retain it. Idle or failed-open
+settings remain repairable without restarting the daemon. Missing capture hardware
+leaves keyboard and mouse usable. Initial valid black/noisy HDMI acquisition
+pictures are possible on the tested card; another
 capture can observe the established picture without restarting the warm source.
 
 ## Browser viewer
@@ -441,11 +445,14 @@ The context requests the negotiated capture rate and verifies it before playing
 interleaved S16_LE PCM. The browser has no resampler; the macOS backend uses
 FFmpeg to convert input to 48 kHz stereo. Audio shares each viewer's
 WebSocket and takes priority over a waiting video frame. Every accepted video
-settings generation reopens the selected audio source and flushes old samples.
-On Linux, automatic selection follows the new video's USB path; an explicit
-PCM path stays fixed. macOS requires explicit audio selection. Changed configuration is sent before new-generation samples. An audio
+generation, including successful macOS recovery, reopens the selected audio
+source and flushes old samples. On Linux, automatic selection follows the new
+video's USB path; an explicit PCM path stays fixed. macOS requires explicit audio
+selection. Changed configuration is sent before new-generation samples. An audio
 failure reports unavailable without stopping video/input; changing capture
-settings or closing and reopening the last viewer retries acquisition.
+settings or closing and reopening the last viewer retries acquisition. Native
+macOS audio with an explicit device also retries after one second while viewers
+remain.
 
 The server retains at most 100 ms of PCM per viewer. The browser retains a 50 ms
 worklet ring plus at most one acknowledged 50 ms transfer, keeping application
@@ -656,13 +663,19 @@ A separate [limited read-only Windows laptop smoke](docs/validation/windows-read
 passed capture and safe keyboard/pointer checks. Only test actions and outcomes
 are recorded; no screen content or images are retained. No scripts were placed on the target,
 and the agent changed no target files or settings. This does not establish text-layout,
-drag or audio coverage. Broader Windows/macOS target tests, physical ARM64
+drag or audio coverage. Broader Windows/macOS target tests, additional ARM64
 hardware, Safari and browser checks on other operating systems remain optional
 extended coverage. Supported-platform cross-builds remain required; they do not
 establish runtime or hardware validation. Extended card/OCR coverage and known
-limits are recorded separately from the required Linux results. macOS host
-support has automated and synthetic coverage; physical KVM validation has not
-been run. See [macOS setup](docs/macos-setup.md).
+limits are recorded separately from the required Linux results.
+
+The [macOS host record](docs/validation/macos-host-2026-11-20.json) covers an Apple
+silicon Mac controlling an Ubuntu target: requested Swedish text, API/MCP pointer
+coordinates, video, PCM transport, serial reconnect and clean shutdown passed.
+Baseline capture reconnect needed explicit same-device repair. Updated automatic
+recovery passes automated tests and an owned-FFmpeg stall test with the real
+card; physical USB reconnect retest and HDMI audio content remain untested.
+See [macOS setup](docs/macos-setup.md).
 
 ## Development
 

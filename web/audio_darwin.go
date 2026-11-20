@@ -5,6 +5,7 @@ package web
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/linkdata/autopaws/avfoundation"
 )
@@ -15,6 +16,9 @@ func (source avfoundationSource) Subscribe() AudioSubscription { return source.A
 
 func audioDefaults(options AudioOptions) AudioOptions {
 	if options.OpenSource == nil {
+		if options.Device != "" && options.Device != "off" {
+			options.retryInterval = time.Second
+		}
 		options.OpenSource = func(ctx context.Context, path string) (AudioSource, error) {
 			source, err := avfoundation.OpenAudio(ctx, path)
 			if err != nil {

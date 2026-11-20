@@ -26,7 +26,8 @@ type DiscoveredDevice struct {
 func DiscoverDevices(ctx context.Context) ([]DiscoveredDevice, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	data, err := exec.CommandContext(ctx, "/usr/sbin/ioreg", "-a", "-r", "-c", "IOUSBHostDevice").Output()
+	// -l includes child serial properties; -c alone lists only USB properties.
+	data, err := exec.CommandContext(ctx, "/usr/sbin/ioreg", "-a", "-l", "-r", "-c", "IOUSBHostDevice").Output()
 	if err != nil {
 		return nil, fmt.Errorf("serial: read IORegistry: %w", errors.Join(ctx.Err(), err))
 	}

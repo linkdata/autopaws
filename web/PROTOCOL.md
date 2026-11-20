@@ -44,10 +44,12 @@ includes the negotiated `sampleRate` and `channels`; for example,
 Audio is captured lazily while web clients are connected. On Linux, auto
 selection follows the current selected video USB device; an explicit PCM path
 stays fixed. macOS requires an explicit AVFoundation audio selector. Each
-accepted video generation reopens audio, including resolution changes, so all
-queued media starts fresh. Selection/open/read failures make audio unavailable
-without ending video or input. Every audio-generation change is sent as configuration before any
-samples belonging to that generation. JSON uint64 generations are decimal strings
+video generation reopens audio, including resolution changes and successful
+macOS capture recovery, so all queued media starts fresh. Selection/open/read failures make audio unavailable
+without ending video or input. Native macOS audio retries an explicit selector
+after one second while viewers remain connected. Every audio-generation change
+is sent as configuration before any samples belonging to that generation.
+JSON uint64 generations are decimal strings
 to preserve precision in JavaScript. Binary uint64 values are exact: clients use
 `DataView.getBigUint64(..., true)`, not Number coercion.
 
@@ -60,7 +62,7 @@ All multibyte integers are **unsigned little-endian**. Version 1 defines:
 |1|uint8|Protocol version: `1` |
 |2|uint16|Header length: `64` |
 |4|uint32|Common timestamp flags, below |
-|8|uint64|Video settings generation, or audio configuration generation |
+|8|uint64|Video settings/recovery generation, or audio configuration generation |
 |16|uint64|Video connection delivery sequence, or audio source-block sequence |
 |24|uint64|Capture timestamp in nanoseconds on the server's `CLOCK_MONOTONIC`, or zero if unavailable |
 |32|uint32|Video source JPEG width; zero for audio |
@@ -103,8 +105,8 @@ pixel dimensions. The server does not encode video separately for each viewer.
 
 Video delivery sequences start at 1 and increase for each message attempted by
 that connection's sole writer. They do not reset when capture stops/reopens or
-settings generation changes. V4L2's raw source sequence can reset on reopen and
-is not used for connection ordering. Settings changes flush subscriber slots;
+settings/recovery generation changes. V4L2's raw source sequence can reset on
+reopen and is not used for connection ordering. Generation changes flush subscriber slots;
 the writer also discards a held frame if its generation no longer matches the
 manager. An already-started socket write cannot be recalled. The browser must
 discard pending image decodes/rendered metadata when a newer generation arrives,

@@ -58,6 +58,27 @@ func TestDarwinRegistryInterfacesRetainDeviceIdentity(t *testing.T) {
 	}
 }
 
+// This is the connected CH340's class structure, with device paths/IDs sanitized.
+// Without ioreg -l, child nodes keep their class/ID but lose serial properties.
+func TestDarwinRegistryDriverKitSerialProperties(t *testing.T) {
+	serial := `<dict><key>IOObjectClass</key><string>IOSerialBSDClient</string><key>IORegistryEntryID</key><integer>104</integer>%s</dict>`
+	driver := `<dict><key>IOObjectClass</key><string>IOUserSerial</string><key>IORegistryEntryName</key><string>AppleUSBCHCOM</string><key>IORegistryEntryChildren</key><array>` + serial + `</array></dict>`
+	iface := `<dict><key>IOObjectClass</key><string>IOUSBHostInterface</string><key>bInterfaceNumber</key><integer>0</integer><key>IORegistryEntryChildren</key><array>` + driver + `</array></dict>`
+	for _, fullProperties := range []bool{false, true} {
+		properties := ""
+		var want []DiscoveredDevice
+		if fullProperties {
+			properties = `<key>IOCalloutDevice</key><string>/dev/cu.usbserial-test</string><key>IODialinDevice</key><string>/dev/tty.usbserial-test</string>`
+			want = []DiscoveredDevice{{Path: "/dev/cu.usbserial-test", USB: USBDevice{VID: "1a86", PID: "7523", BusPath: "ioreg:64"}}}
+		}
+		data := registryFixture(usbFixture(0x1a86, 0x7523, 100, fmt.Sprintf(iface, properties)))
+		got, err := parseRegistry(data)
+		if err != nil || len(got) != len(want) || len(want) > 0 && !reflect.DeepEqual(got, want) {
+			t.Fatalf("fullProperties=%t: got %+v, %v; want %+v", fullProperties, got, err, want)
+		}
+	}
+}
+
 func TestDarwinRegistryEmptyAndMalformed(t *testing.T) {
 	for _, fixture := range [][]byte{nil, registryFixture("")} {
 		if got, err := parseRegistry(fixture); err != nil || len(got) != 0 {

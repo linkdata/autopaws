@@ -1,0 +1,724 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-20",
+  "status": "PARTIAL PHYSICAL VALIDATION: baseline input, video, PCM transport and serial reconnect passed; automatic media recovery passed automated and real-card forced-stall checks; physical USB reconnect retest and HDMI signal content remain untested",
+  "source": {
+    "base_commit": "bd8bdc3",
+    "binary": {
+      "path": "/private/tmp/autopaws-kvm-hardware-fixed",
+      "sha256": "ce660aa8555456e91943f7597a9a7f5533fb2d04242925414db9610b36437c87",
+      "version": "devel",
+      "build_command": "CGO_ENABLED=0 go build -trimpath -o /private/tmp/autopaws-kvm-hardware-fixed ./cmd/autopaws-kvm",
+      "argv": [
+        "/private/tmp/autopaws-kvm-hardware-fixed",
+        "-api",
+        "127.0.0.1:19329",
+        "-web",
+        "127.0.0.1:19330",
+        "-capture-device",
+        "avfoundation:UGREEN 15389",
+        "-audio-device",
+        "avfoundation:UGREEN 15389",
+        "-screen-width",
+        "1280",
+        "-screen-height",
+        "720",
+        "-target-layout",
+        "se105",
+        "-capture-width",
+        "1920",
+        "-capture-height",
+        "1080",
+        "-autocrop=false",
+        "-log-level",
+        "debug"
+      ],
+      "serial_selection": "automatic; no -serial-device argument"
+    },
+    "physical_binary_fix": "macOS serial discovery adds ioreg -l so device properties are included in the XML inventory",
+    "physical_test_revision": "bd8bdc3 plus the ioreg -l discovery fix; before the automatic media recovery/startup follow-up",
+    "followup_changes": {
+      "status": "implemented, covered by automated tests and checked with a real-card FFmpeg stall; physical USB reconnect retest PENDING",
+      "changes": [
+        "FFmpeg output reads time out after five seconds without read progress, then stop and join the owned process",
+        "native macOS capture retries failed opens or reads after one second while snapshot or viewer demand remains",
+        "successful automatic video recovery advances the generation and flushes old frame/crop state",
+        "explicit native macOS audio selection retries after one second while viewers remain",
+        "macOS daemon startup requires ffmpeg on PATH before creating hardware owners or listeners"
+      ],
+      "healthy_capture_idle_timeout_seconds": 10,
+      "real_card_stall_binary_sha256": "dc16484f4e2d32ac72c103d7ca5230b9518a8a5aef421f79664272e671b5b724"
+    }
+  },
+  "host": {
+    "os": "macOS",
+    "version": "27.2.1",
+    "architecture": "arm64",
+    "go_version": "1.27.4",
+    "ffmpeg_homebrew_version": "9.0.2_1",
+    "build": "26B131",
+    "ffmpeg_version": "9.0.2",
+    "ffmpeg_compiler": "Apple clang 21.0.0"
+  },
+  "target": {
+    "os": "Ubuntu",
+    "version": "26.04.1",
+    "architecture": "x86_64",
+    "desktop": "GNOME",
+    "session": "Wayland",
+    "system_keyboard_layout": "se105",
+    "access": "HID and a local test page; target SSH port 22 and target-to-Mac HTTP timed out",
+    "credentials_file_on_mac_present": false
+  },
+  "devices": {
+    "serial": {
+      "usb_vid": "1a86",
+      "usb_pid": "7523",
+      "path": "/dev/cu.usbserial-10",
+      "baud": 9600
+    },
+    "capture": {
+      "name": "UGREEN 15389",
+      "usb_vid": "2b89",
+      "usb_pid": "5389",
+      "video_backend": "FFmpeg AVFoundation",
+      "audio_backend": "FFmpeg AVFoundation",
+      "audio_selection": "explicit"
+    }
+  },
+  "target_display": {
+    "initial": {
+      "configuration": "extended",
+      "eDP_pixels": [
+        2560,
+        1600
+      ],
+      "DP_pixels": [
+        3840,
+        2160
+      ]
+    },
+    "owner_requested_change": "mirror both target displays",
+    "observed_after_change": {
+      "tool": "gdctl",
+      "logical_monitor_count": 1,
+      "physical_monitor_count": 2,
+      "physical_pixels_each": [
+        1920,
+        1080
+      ],
+      "scale": 1.5,
+      "logical_pixels": [
+        1280,
+        720
+      ],
+      "eDP_hz": 59.934,
+      "DP_hz": 60,
+      "logical_position": [
+        0,
+        0
+      ],
+      "transform": "normal",
+      "primary": true
+    },
+    "input_test_browser": {
+      "application": "Firefox",
+      "mode": "kiosk with isolated temporary profile",
+      "viewport_css_pixels": [
+        1280,
+        720
+      ],
+      "device_pixel_ratio": 1.5
+    }
+  },
+  "checks": {
+    "serial_discovery": {
+      "status": "PASS after fix",
+      "initial_issue": "IORegistry listing omitted the USB/serial properties needed by discovery",
+      "fix": "add -l to ioreg -a -r -c IOUSBHostDevice",
+      "observed_after_fix": "supported CH340 discovered at /dev/cu.usbserial-10"
+    },
+    "keyboard_smoke": {
+      "status": "PASS for recorded actions",
+      "actions": [
+        "Ctrl+Alt+T",
+        "localectl",
+        "punctuation-heavy native commands"
+      ],
+      "verification": "visually confirmed on captured Linux target output"
+    },
+    "target_mirroring": {
+      "status": "PASS",
+      "verification": "captured gdctl output showed one logical monitor containing both physical monitors"
+    },
+    "capture_startup": {
+      "status": "PASS on subsequent opens; initial timeout retained",
+      "first_request": {
+        "result": "timeout",
+        "acquisition_budget_seconds": 5,
+        "cause": "not established; an initial permission delay was not proven"
+      },
+      "subsequent_cold_request_ms_approx": [
+        1484,
+        1503
+      ]
+    },
+    "warm_capture": {
+      "status": "PASS",
+      "samples": 8,
+      "elapsed_ms": [
+        55.8,
+        71.85,
+        67.9,
+        72.91,
+        92.69,
+        73.77,
+        97.43,
+        97.03
+      ],
+      "median_ms": 73.34,
+      "api_elapsed_ms_range": [
+        50.25,
+        91.16
+      ],
+      "local_save_ms_range": [
+        3.52,
+        6.46
+      ],
+      "limit": "sample call timings, not a target response or capture freshness guarantee"
+    },
+    "websocket_media": {
+      "status": "PASS for transport and header checks",
+      "audio_rate_hz": 48000,
+      "audio_channels": 2,
+      "timestamp_flags_both_media": 5,
+      "runs": [
+        {
+          "observation_seconds": 25,
+          "video_messages": 462,
+          "audio_messages": 2067,
+          "audio_sample_frames": 992160,
+          "header_or_generation_order_errors": 0,
+          "max_observed_video_gap_ms": 56.7085,
+          "max_observed_audio_gap_ms": 22.9493
+        },
+        {
+          "observation_seconds": 30,
+          "activity": "while typing a long target setup command",
+          "video_messages": 560,
+          "audio_messages": 2533,
+          "audio_sample_frames": 1215840,
+          "header_generation_or_sequence_errors": 0
+        },
+        {
+          "software_revision": "physical baseline before the automatic media recovery/startup follow-up",
+          "observation_seconds": 600,
+          "started_utc": "2026-11-20T07:41:50.660Z",
+          "finished_utc": "2026-11-20T07:51:50.700Z",
+          "activity": "includes physical UGREEN unplug/replug and explicit same-device repair",
+          "video_messages": 9108,
+          "audio_messages": 40503,
+          "audio_sample_frames": 19441440,
+          "header_generation_or_sequence_errors": 0,
+          "audio_configs": [
+            {
+              "type": "config",
+              "audio": {
+                "status": "unavailable",
+                "generation": "0"
+              }
+            },
+            {
+              "type": "config",
+              "audio": {
+                "status": "available",
+                "generation": "1",
+                "sampleRate": 48000,
+                "channels": 2
+              }
+            },
+            {
+              "type": "config",
+              "audio": {
+                "status": "unavailable",
+                "generation": "0"
+              }
+            },
+            {
+              "type": "config",
+              "audio": {
+                "status": "available",
+                "generation": "2",
+                "sampleRate": 48000,
+                "channels": 2
+              }
+            }
+          ],
+          "max_observed_video_gap_ms": 139171.625458,
+          "max_observed_audio_gap_ms": 138936.206041,
+          "nonzero_audio_samples": 0,
+          "audio_peak": 0,
+          "limit": "large gaps include the deliberate physical disconnect and manual repair; this is not an uninterrupted latency run"
+        }
+      ],
+      "audio_content": "all observed PCM was silent; HDMI signal content not yet verified"
+    },
+    "hdmi_tone_content": {
+      "status": "NOT RUN",
+      "limit": "all observed PCM was silent; no HDMI signal-content or acoustic playback pass is claimed"
+    },
+    "mcp_physical": {
+      "status": "PASS for the recorded stdio, capture and center-click checks",
+      "transport": "actual autopaws-mcp process stdin/stdout",
+      "non_ocr_tools": 14,
+      "absolute_move_before_capture": {
+        "rejected_as_tool_error": true,
+        "input_sent": false
+      },
+      "capture": {
+        "jpeg_pixels": [
+          1920,
+          1080
+        ],
+        "full_jpeg_decode": "PASS"
+      },
+      "get_device_info": {
+        "auto_detect": true,
+        "screen_width": 1280,
+        "screen_height": 720,
+        "keyboard_layout": "se105",
+        "mouse_button_mode": "relative"
+      },
+      "list_capture_devices": "PASS",
+      "list_keyboard_layouts": "PASS",
+      "center_click": {
+        "screenshot_position": [
+          960,
+          540
+        ],
+        "observed_target_position": [
+          640,
+          360
+        ],
+        "observed_events": [
+          {
+            "type": "mousemove",
+            "x": 640,
+            "y": 360,
+            "buttons": 0
+          },
+          {
+            "type": "mousedown",
+            "x": 640,
+            "y": 360,
+            "buttons": 1
+          },
+          {
+            "type": "mouseup",
+            "x": 640,
+            "y": 360,
+            "buttons": 0
+          }
+        ]
+      },
+      "stdin_eof_exit": 0,
+      "local_summary_files": [
+        "autopaws-mcp-read.json",
+        "autopaws-mcp-pointer.json"
+      ]
+    },
+    "media_failure_and_repair": {
+      "status": "PASS for explicit same-selector video and PCM-transport repair in the physical baseline",
+      "software_revision": "before the automatic media recovery follow-up",
+      "automatic_resume": "FAILED in the recorded baseline trial; the follow-up passed automated tests and a real-card FFmpeg stall check, while physical USB reconnect retest remains pending",
+      "detail": "see capture_audio_physical_reconnect for retained-process state, both timeouts, the first black frame and later target-content verification"
+    },
+    "shutdown_and_release": {
+      "status": "PASS for clean baseline shutdown with no held input",
+      "software_revision": "physical baseline before the automatic media recovery/startup follow-up",
+      "elapsed_ms": 48.26,
+      "daemon_exit_code": 0,
+      "held_input_at_shutdown": false,
+      "remaining_owned_ffmpeg_processes": 0,
+      "held_input_release": "not exercised by this shutdown: no input was held"
+    },
+    "swedish_raw_text": {
+      "status": "PASS for the requested sample",
+      "target_layout": "se105",
+      "raw": true,
+      "character_delay_ms": 20,
+      "serial_selection": "automatic",
+      "input": "åäö ÅÄÖ [] {} \\ ~ abcXYZ",
+      "observed_exact_match": true,
+      "observed_codepoints_hex": [
+        "0xe5",
+        "0xe4",
+        "0xf6",
+        "0x20",
+        "0xc5",
+        "0xc4",
+        "0xd6",
+        "0x20",
+        "0x5b",
+        "0x5d",
+        "0x20",
+        "0x7b",
+        "0x7d",
+        "0x20",
+        "0x5c",
+        "0x20",
+        "0x7e",
+        "0x20",
+        "0x61",
+        "0x62",
+        "0x63",
+        "0x58",
+        "0x59",
+        "0x5a"
+      ],
+      "verification": "target Python input(), repr() and character ordinals visually confirmed in the HDMI capture",
+      "limit": "controlled requested characters and setup commands, not an exhaustive physical keyboard-layout survey"
+    },
+    "pointer_coordinates_click_drag": {
+      "status": "PASS in the initialized kiosk fixture",
+      "api_center_click": {
+        "target_position": [
+          640,
+          360
+        ],
+        "observed_exact_match": true
+      },
+      "api_drag": {
+        "start": [
+          240,
+          260
+        ],
+        "end": [
+          1040,
+          560
+        ],
+        "observed_events": [
+          {
+            "type": "mousemove",
+            "x": 240,
+            "y": 260,
+            "buttons": 0
+          },
+          {
+            "type": "mousedown",
+            "x": 240,
+            "y": 260,
+            "buttons": 1
+          },
+          {
+            "type": "mousemove",
+            "x": 1040,
+            "y": 560,
+            "buttons": 1
+          },
+          {
+            "type": "mouseup",
+            "x": 1040,
+            "y": 560,
+            "buttons": 0
+          }
+        ]
+      },
+      "api_corner_moves": {
+        "observed_positions": [
+          [
+            0,
+            0
+          ],
+          [
+            1279,
+            0
+          ],
+          [
+            1279,
+            719
+          ],
+          [
+            0,
+            719
+          ]
+        ],
+        "observed_exact_match": true
+      },
+      "verification": "captured target event recorder showed the exact coordinates and button states",
+      "setup_limit": "initial normal-F11-window trials included an 85-CSS-pixel hover-toolbar offset; the isolated kiosk retest passed"
+    },
+    "scroll": {
+      "status": "NOT RUN"
+    },
+    "serial_physical_reconnect": {
+      "status": "PASS",
+      "physical_action": "owner unplugged and reconnected the CH340 host USB while the CH9329 target HID connection remained attached",
+      "held_before_unplug": {
+        "x": 240,
+        "y": 260,
+        "buttons": 1
+      },
+      "while_absent": {
+        "serial_inventory": "none",
+        "mouse_move": {
+          "x": 900,
+          "y": 550,
+          "result": "unavailable",
+          "elapsed_ms": 21.147,
+          "detail": "device not configured; cleanup discovery found no CH340"
+        },
+        "capture": {
+          "result": "PASS",
+          "elapsed_ms": 82.442
+        }
+      },
+      "after_reconnect": {
+        "auto_discovery": "PASS",
+        "serial_path": "/dev/cu.usbserial-10",
+        "registry_id_changed": true,
+        "first_fresh_mouse_move": {
+          "x": 500,
+          "y": 350,
+          "result": "PASS",
+          "elapsed_ms": 86.363
+        },
+        "capture": {
+          "result": "PASS",
+          "elapsed_ms": 73.552
+        }
+      },
+      "observed_target_events": [
+        {
+          "type": "mousedown",
+          "x": 240,
+          "y": 260,
+          "buttons": 1
+        },
+        {
+          "type": "mouseup",
+          "x": 240,
+          "y": 260,
+          "buttons": 0
+        },
+        {
+          "type": "mousemove",
+          "x": 500,
+          "y": 350,
+          "buttons": 0
+        }
+      ],
+      "failed_position_replayed": false,
+      "verification": "fresh target capture showed release of the old held button before the new move and no failed-position replay",
+      "limit": "observed action timings and target ordering, not a universal driver-call or physical latency bound"
+    },
+    "capture_audio_physical_reconnect": {
+      "status": "PASS for explicit same-selector video and PCM-transport repair; baseline automatic resume FAILED",
+      "physical_action": "owner unplugged and reconnected the UGREEN USB connection only",
+      "while_absent": {
+        "inventory": {
+          "UGREEN_video": "absent",
+          "UGREEN_audio": "absent",
+          "CH340_serial": "present"
+        },
+        "capture_frame": {
+          "result": "timeout",
+          "elapsed_ms": 5003.896,
+          "jpeg_returned": false
+        },
+        "ping": {
+          "result": "PASS",
+          "elapsed_ms": 1.985
+        },
+        "owned_ffmpeg_processes": "old video and audio processes remained alive waiting",
+        "capture_status": {
+          "running": true,
+          "available_devices_includes_UGREEN": false,
+          "meaning": "running described retained process state, not usable device availability"
+        }
+      },
+      "after_replug_before_repair": {
+        "inventory": "UGREEN video and audio restored",
+        "capture_frame": {
+          "result": "timeout",
+          "elapsed_ms": 5003.812,
+          "jpeg_returned": false
+        },
+        "automatic_resume": "FAILED in this observed trial; reconnection alone did not restore frames"
+      },
+      "explicit_repair": {
+        "method": "set_capture_device",
+        "device": "avfoundation:UGREEN 15389",
+        "elapsed_ms": 1849.823,
+        "video_generation_before": 1,
+        "video_generation_after": 2,
+        "old_ffmpeg_video_and_audio_processes_gone": true,
+        "replacement_owned_video_and_audio_processes_observed": true,
+        "first_post_repair_frame": {
+          "valid_jpeg": true,
+          "jpeg_bytes": 16521,
+          "appearance": "black",
+          "interpretation": "cold HDMI settling; this frame was not counted as a target-content pass"
+        }
+      },
+      "subsequent_content_verification": {
+        "fresh_capture": {
+          "result": "PASS",
+          "elapsed_ms": 72.179,
+          "observed": "current target fixture"
+        },
+        "new_click": {
+          "x": 520,
+          "y": 330,
+          "result": "PASS",
+          "api_elapsed_ms": 68.505
+        },
+        "later_capture": {
+          "result": "PASS",
+          "elapsed_ms": 73.383
+        },
+        "observed_target_events": [
+          {
+            "type": "mousemove",
+            "x": 520,
+            "y": 330,
+            "buttons": 0
+          },
+          {
+            "type": "mousedown",
+            "x": 520,
+            "y": 330,
+            "buttons": 1
+          },
+          {
+            "type": "mouseup",
+            "x": 520,
+            "y": 330,
+            "buttons": 0
+          }
+        ],
+        "retained_target_geometry": {
+          "viewport_css_pixels": [
+            1280,
+            720
+          ],
+          "device_pixel_ratio": 1.5
+        }
+      },
+      "audio_recovery": "PASS for available generation 2 at 48000 Hz stereo and resumed PCM transport after manual reselection; all observed PCM remained silent, so HDMI signal content is untested",
+      "limit": "explicit same-device repair was observed; no physical USB automatic-reconnect pass is claimed for the baseline or the follow-up code",
+      "software_revision": "physical baseline before the automatic media recovery follow-up"
+    },
+    "media_automatic_recovery": {
+      "status": "PASS for automated tests and real-card forced FFmpeg stall; PHYSICAL USB RECONNECT RETEST PENDING",
+      "ffmpeg_read_inactivity_timeout_seconds": 5,
+      "native_macos_retry_delay_seconds": 1,
+      "retry_requires_demand": true,
+      "previous_owner_joined_before_reopen": true,
+      "successful_video_recovery_advances_generation": true,
+      "healthy_idle_timeout_seconds": 10,
+      "automated_coverage": [
+        "pipe read deadline and cancellation",
+        "capture backoff, recovery generation, snapshot/subscriber delivery and old-owner joining",
+        "retry stops on lost demand, settings changes or shutdown; healthy ten-second idle remains",
+        "audio backoff, repaired viewer stream, old-owner joining and retry cancellation"
+      ],
+      "limit": "pausing the owned FFmpeg processes exercises real media stall recovery, not USB device removal or a physical reconnect retest",
+      "real_card_forced_stall": {
+        "status": "PASS",
+        "binary_sha256": "dc16484f4e2d32ac72c103d7ca5230b9518a8a5aef421f79664272e671b5b724",
+        "started_utc": "2026-11-20T08:32:19.134Z",
+        "finished_utc": "2026-11-20T08:32:59.159Z",
+        "observation_seconds": 40,
+        "fault": {
+          "action": "SIGSTOP only the owned FFmpeg video and audio child processes",
+          "utc": "2026-11-20T08:32:40.112Z",
+          "usb_disconnected": false
+        },
+        "automatic_resume": true,
+        "api_reselection_or_settings_change": false,
+        "input_sent": false,
+        "existing_websocket_resumed": true,
+        "video_messages": 617,
+        "audio_messages": 2697,
+        "audio_sample_frames": 1294560,
+        "header_generation_or_sequence_errors": 0,
+        "jpeg_pixels": [
+          1920,
+          1080
+        ],
+        "timestamp_flags_both_media": 5,
+        "max_observed_video_gap_ms": 6663.715916,
+        "max_observed_audio_gap_ms": 6646.925083,
+        "audio_config_transitions": [
+          {
+            "status": "unavailable",
+            "generation": "0"
+          },
+          {
+            "status": "available",
+            "generation": "1"
+          },
+          {
+            "status": "unavailable",
+            "generation": "0"
+          },
+          {
+            "status": "available",
+            "generation": "2"
+          },
+          {
+            "status": "unavailable",
+            "generation": "0"
+          },
+          {
+            "status": "available",
+            "generation": "3"
+          }
+        ],
+        "after_recovery": {
+          "capture_running": true,
+          "video_generation": 2,
+          "snapshot_elapsed_ms": 88.752,
+          "jpeg_pixels": [
+            1920,
+            1080
+          ]
+        },
+        "initial_snapshot_elapsed_ms": 982.104,
+        "nonzero_audio_samples": 0,
+        "audio_peak": 0,
+        "limit": "the approximately 6.6-second gaps include detection, retry and source startup; no automatic USB reconnect or HDMI tone-content pass is claimed"
+      }
+    },
+    "macos_ffmpeg_startup_requirement": {
+      "status": "IMPLEMENTED AND COVERED BY AUTOMATED TESTS",
+      "serve": "requires ffmpeg on PATH even for API-only or serial-only use; missing executable fails before hardware owners/listeners",
+      "help_and_version": "work without FFmpeg",
+      "list_devices": "requires FFmpeg for AVFoundation inventory; it does not use the serve startup path"
+    }
+  },
+  "limits": [
+    "This record separates physical baseline results, automated tests and a real-card process-stall check of the recovery follow-up.",
+    "macOS timestamps estimate FFmpeg pipe receipt on CLOCK_MONOTONIC; FFmpeg/OS buffering is unmeasured.",
+    "Silent PCM establishes transport availability, not HDMI tone content or acoustic playback.",
+    "No acoustic latency, browser playback latency, alternate card, Intel Mac hardware or physical scroll claim is made.",
+    "The existing ten-second healthy idle timeout is unchanged, as confirmed by the owner.",
+    "Existing Linux host validation is separate and Linux backends remain supported.",
+    "Physical UGREEN reconnection did not automatically restore baseline capture; same-selector selection repaired it, and running=true alone did not establish availability.",
+    "Automatic recovery passed automated tests and an owned-process SIGSTOP test with the real card; physical USB reconnect retest of the follow-up remains pending."
+  ],
+  "setup_retries": [
+    {
+      "attempt": "commands immediately after opening a new GNOME terminal",
+      "observed_issue": "missing initial command characters before terminal readiness",
+      "resolution": "repeat in a visually confirmed stable terminal; punctuation-heavy command and requested Swedish sample then matched exactly",
+      "classification": "setup/focus-readiness retries; no persistent layout-mapping defect reproduced"
+    },
+    {
+      "attempt": "first local test-page creation and ordinary F11 pointer trials",
+      "observed_issue": "the page-file creation did not succeed on the early terminal attempt; ordinary Firefox hover chrome offset the viewport",
+      "resolution": "stable-terminal retry and isolated Firefox kiosk provided a confirmed 1280x720 CSS viewport before the passing pointer/MCP runs"
+    }
+  ]
+}

@@ -236,8 +236,11 @@ quality parameter. Capture starts on demand and stops after ten idle seconds.
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending
 old-generation snapshots fail with `capture changed`; callers retry explicitly.
-Idle/retry opens of unchanged settings retain that generation. A device selection
-is accepted even with no source open, and a failed open preserves that selection.
+Idle opens retain that generation. On macOS, a stalled source is closed and
+retried while demand remains; a successful automatic recovery advances the
+generation and resets queued frames and crop detection. Failed attempts do not
+advance it. A device selection is accepted even with no source open, and a
+failed open preserves that selection.
 
 An idle capture device is not unavailable merely because streaming is stopped.
 Resolution changes remain available while idle or after a previous open failed.

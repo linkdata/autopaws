@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/linkdata/autopaws/alsa"
 	"github.com/linkdata/autopaws/capture"
@@ -38,6 +39,7 @@ type AudioOptions struct {
 	Device, SysRoot string
 	OpenSource      func(context.Context, string) (AudioSource, error)
 	ResolveAudio    func(context.Context, string) (string, error)
+	retryInterval   time.Duration
 }
 
 type audioKey struct{ video, activation uint64 }
@@ -126,6 +128,10 @@ func (manager *audioManager) control() {
 		if run != nil {
 			ended = run.done
 		}
+		var retry <-chan time.Time
+		if run == nil && want && key == attempted && manager.options.retryInterval > 0 {
+			retry = time.After(manager.options.retryInterval)
+		}
 		stop := manager.ctx.Done()
 		if run != nil && manager.ctx.Err() != nil {
 			stop = nil // Retain ownership without spinning on cancellation.
@@ -134,6 +140,8 @@ func (manager *audioManager) control() {
 		case <-stop:
 		case <-videoChanged:
 		case <-changed:
+		case <-retry:
+			attempted = audioKey{}
 		case <-ended:
 			manager.mu.Lock()
 			manager.run = nil

@@ -32,7 +32,8 @@ type Source interface {
 }
 
 // Options contains selected settings and narrow source/clock seams. Nil hooks
-// use the platform capture backend and CLOCK_MONOTONIC. Zero IdleTimeout uses ten seconds.
+// use the platform capture backend and CLOCK_MONOTONIC. The native macOS source
+// retries failures while demand remains. Zero IdleTimeout uses ten seconds.
 type Options struct {
 	Device        string
 	Width, Height uint32
@@ -49,7 +50,7 @@ type Info struct {
 	Device        string
 	Width, Height uint32
 	Autocrop      bool
-	Generation    uint64 // Accepted settings generation; unchanged by idle/retry opens.
+	Generation    uint64 // Settings or successful automatic recovery generation; unchanged by idle opens.
 	Running       bool
 	Format        v4l2.Format
 	Err           error
@@ -65,6 +66,7 @@ type Manager struct {
 	format        v4l2.Format
 	lastErr       error
 	cleanupErr    error
+	recoveryDelay time.Duration
 	run           *stream
 	subscribers   map[*Subscription]struct{}
 	pending       map[*snapshotWaiter]struct{}
@@ -104,8 +106,12 @@ func New(options Options) (*Manager, error) {
 	if options.Width == 0 || options.Height == 0 || options.IdleTimeout < 0 || numericPath(options.Device) {
 		return nil, ErrOptions
 	}
+	var recoveryDelay time.Duration
 	if options.OpenSource == nil {
 		options.OpenSource = openSource
+		if recoverDefaultSource {
+			recoveryDelay = time.Second
+		}
 	}
 	if options.MonotonicNow == nil {
 		options.MonotonicNow = monotime.Now
@@ -113,7 +119,7 @@ func New(options Options) (*Manager, error) {
 	if options.IdleTimeout == 0 {
 		options.IdleTimeout = 10 * time.Second
 	}
-	return &Manager{options: options, generation: 1, subscribers: make(map[*Subscription]struct{}), pending: make(map[*snapshotWaiter]struct{}), changed: make(chan struct{})}, nil
+	return &Manager{options: options, recoveryDelay: recoveryDelay, generation: 1, subscribers: make(map[*Subscription]struct{}), pending: make(map[*snapshotWaiter]struct{}), changed: make(chan struct{})}, nil
 }
 
 func numericPath(path string) bool {
@@ -143,7 +149,7 @@ func (manager *Manager) Snapshot(ctx context.Context) (Snapshot, error) {
 		manager.mu.Unlock()
 		return Snapshot{}, err
 	}
-	if manager.run != nil && manager.run.failed {
+	if manager.run != nil && manager.run.failed && manager.recoveryDelay == 0 {
 		err := manager.lastErr
 		manager.mu.Unlock()
 		return Snapshot{}, err
@@ -378,7 +384,14 @@ func (manager *Manager) startLocked() {
 }
 
 func (manager *Manager) idleLocked() {
-	if manager.closed || manager.run == nil || manager.interestsLocked() || manager.idle != nil {
+	if manager.closed || manager.run == nil || manager.interestsLocked() {
+		return
+	}
+	if manager.run.failed && manager.recoveryDelay > 0 {
+		manager.run.cancel()
+		return
+	}
+	if manager.idle != nil {
 		return
 	}
 	run := manager.run
@@ -404,51 +417,80 @@ func (manager *Manager) failPendingLocked(err error) {
 }
 
 func (manager *Manager) produce(run *stream) {
-	source, err := run.settings.OpenSource(run.ctx, run.settings.Device, v4l2.Options{Width: run.settings.Width, Height: run.settings.Height})
-	var format v4l2.Format
-	if err == nil {
-		format = source.Format()
-	}
-	manager.mu.Lock()
-	if manager.generation == run.generation && run.ctx.Err() == nil {
-		manager.openResultGen = run.generation
-		manager.openErr = unavailableError(err)
-		manager.lastErr = manager.openErr
+	recovered := false
+attempts:
+	for {
+		source, err := run.settings.OpenSource(run.ctx, run.settings.Device, v4l2.Options{Width: run.settings.Width, Height: run.settings.Height})
+		var format v4l2.Format
 		if err == nil {
-			run.opened = true
-			manager.format = format
+			format = source.Format()
 		}
-		manager.notifyLocked()
-	}
-	manager.mu.Unlock()
-	if err == nil {
-		err = manager.read(run, source)
-	}
-	manager.mu.Lock()
-	manager.reportFailureLocked(run, err)
-	manager.mu.Unlock()
-	var closeErr error
-	if source != nil {
-		closeErr = source.Close()
+		manager.mu.Lock()
+		if manager.generation == run.generation && run.ctx.Err() == nil {
+			if err == nil && recovered {
+				manager.generation++
+				run.generation = manager.generation
+				for waiter := range manager.pending {
+					waiter.generation = manager.generation
+				}
+				for subscription := range manager.subscribers {
+					select {
+					case <-subscription.frames:
+					default:
+					}
+				}
+			}
+			manager.openResultGen = run.generation
+			manager.openErr = unavailableError(err)
+			manager.lastErr = manager.openErr
+			if err == nil {
+				run.opened, run.failed = true, false
+				manager.format = format
+			}
+			manager.notifyLocked()
+		}
+		manager.mu.Unlock()
+		if err == nil {
+			err = manager.read(run, source)
+		}
+		manager.mu.Lock()
+		manager.reportFailureLocked(run, err)
+		manager.mu.Unlock()
+		var closeErr error
+		if source != nil {
+			closeErr = source.Close()
+		}
+		manager.mu.Lock()
+		manager.cleanupErr = errors.Join(manager.cleanupErr, closeErr)
+		if manager.generation == run.generation && !manager.closed && closeErr != nil {
+			manager.lastErr = unavailableError(closeErr)
+			manager.failPendingLocked(manager.lastErr)
+			manager.publishLocked(Event{Err: manager.lastErr})
+		}
+		retry := manager.recoveryDelay > 0 && err != nil && run.ctx.Err() == nil &&
+			manager.generation == run.generation && !manager.closed && manager.interestsLocked()
+		manager.mu.Unlock()
+		if !retry {
+			break
+		}
+		recovered = true
+		timer := time.NewTimer(manager.recoveryDelay)
+		select {
+		case <-run.ctx.Done():
+			timer.Stop()
+			break attempts
+		case <-timer.C:
+		}
 	}
 	restart := run.ctx.Err() != nil
 	run.cancel()
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
-	manager.cleanupErr = errors.Join(manager.cleanupErr, closeErr)
 	manager.run = nil
-	if manager.generation == run.generation && !manager.closed {
-		if closeErr != nil {
-			manager.lastErr = unavailableError(closeErr)
-			manager.failPendingLocked(manager.lastErr)
-			manager.publishLocked(Event{Err: manager.lastErr})
-		}
-	}
 	manager.notifyLocked()
 	close(run.done)
-	// Cancellation caused by idle/shutdown/settings is different from a failed
-	// source: new demand may restart it, but failures never spin in a retry loop.
-	if manager.generation != run.generation || restart {
+	// Demand may have arrived while a failed native source was retiring.
+	if manager.generation != run.generation || restart || manager.recoveryDelay > 0 {
 		manager.startLocked()
 	}
 }

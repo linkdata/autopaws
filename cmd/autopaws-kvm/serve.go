@@ -10,6 +10,8 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os/exec"
+	"runtime"
 
 	"github.com/linkdata/autopaws/api"
 	"github.com/linkdata/autopaws/capture"
@@ -30,6 +32,11 @@ type runtimeFactories struct {
 }
 
 func serveRuntime(ctx context.Context, cfg config.Config, output io.Writer) error {
+	if runtime.GOOS == "darwin" {
+		if _, err := exec.LookPath("ffmpeg"); err != nil {
+			return fmt.Errorf("macOS capture requires FFmpeg on PATH; install it with 'brew install ffmpeg': %w", err)
+		}
+	}
 	return serveWith(ctx, cfg, output, runtimeFactories{
 		newTransport: func(options serial.Options) (hid.Transport, error) { return serial.New(options) },
 		listen:       (&net.ListenConfig{}).Listen,

@@ -16,7 +16,10 @@ Discovery uses the system `ioreg` command for CH340/CH341 USB serial devices and
 FFmpeg for cameras/capture cards and microphones/audio inputs. Host display
 capture entries are excluded. Listing does not start capture streams. It can
 still be subject to macOS privacy restrictions. Missing FFmpeg or failed discovery
-returns an actionable error; `--version` and serial input do not require FFmpeg.
+returns an error. Daemon startup requires FFmpeg on `PATH`, including API-only
+or serial-only use, and reports `brew install ffmpeg` before opening devices or
+listeners when it is missing. `--help` and `--version` work without FFmpeg;
+`--list-devices` needs it for AVFoundation discovery.
 
 Connect the capture card's USB and the CH340/CH341 side of the HID board to the
 Mac. Connect target HDMI to the card, and target USB to the CH9329 HID side.
@@ -66,9 +69,14 @@ selection reports unavailable on macOS because this backend cannot reliably
 pair video and audio by USB ancestry. Use `-audio-device off` to disable it.
 The output is 48 kHz stereo S16_LE, converted by FFmpeg, with a maximum 100 ms
 per-subscriber application queue and expiry. Video and audio use separate
-processes and have no hardware synchronization guarantee. Source failures do
-not spin in a retry loop: reselect the video device (even the same selector) to
-repair/reopen media after reconnecting or granting permissions.
+processes and have no hardware synchronization guarantee.
+
+Native macOS media retries failed opens or reads after one second while demand
+remains. A five-second FFmpeg read-inactivity deadline retires a stalled process;
+the old owner is joined before reopening. Successful automatic video recovery
+advances the generation and clears old frame/crop state. Healthy capture still
+stops after ten seconds without viewers or pending snapshots. Explicitly
+reselecting the video device also repairs/reopens media.
 
 Video and audio timestamps are **estimated FFmpeg pipe receipt times** on the
 server monotonic clock. The browser protocol marks them estimated. A snapshot
@@ -78,11 +86,19 @@ freshness guarantee or establish that preceding input has reached the target.
 The worker continuously drains output into a latest-video slot; the daemon
 kills and joins its FFmpeg processes on stream shutdown.
 
-Physical macOS KVM validation has not been run: the hardware was disconnected
-during implementation. Automated checks cover the shared daemon/API/viewer,
-macOS pseudo-terminal serial I/O, fixture discovery, media parsing, process
-cancellation and bounded queues. Synthetic FFmpeg checks exercise media pipes
-without opening a camera or microphone. Before relying on a particular card,
-check serial control, video/audio permissions, supported size, reconnect and
-shutdown on that setup. Existing Linux hardware results remain in
+Physical testing on an Apple silicon Mac and Ubuntu target verified requested
+Swedish characters, API/MCP pointer coordinates, video, PCM transport, serial
+unplug/replug recovery and clean shutdown. In the baseline capture reconnect
+trial, reconnection alone left FFmpeg stalled; same-device selection restored
+video and PCM transport. The updated recovery passed automated tests and a
+real-card stall test: pausing only its FFmpeg children resumed the existing
+WebSocket automatically, without reselection. Its physical USB reconnect retest
+remains pending. The [2026-11-20 record](validation/macos-host-2026-11-20.json)
+retains the baseline failure/manual repair, initial capture timeout and setup
+retries. All observed PCM was silent; actual HDMI tone content remains untested.
+
+Automated checks cover the shared daemon/API/viewer, macOS pseudo-terminal
+serial I/O, fixture discovery, media parsing, process cancellation and bounded
+queues. Synthetic FFmpeg checks exercise media pipes without opening devices.
+The existing Linux host observations remain in
 [hardware validation](hardware-validation.md).
