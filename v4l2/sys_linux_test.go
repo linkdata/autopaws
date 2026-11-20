@@ -377,7 +377,7 @@ func sysTestOpenPipe(t *testing.T) (*Device, *sysTestPipeBackend) {
 				descriptor := (*buffer)(argument)
 				descriptor.BytesUsed = uint32(len(backend.mapped))
 				descriptor.Timestamp = syscall.Timeval{Sec: 1, Usec: 2}
-				descriptor.Flags = bufFlagTimestampMonotonic
+				descriptor.Flags = TimestampMonotonic
 				descriptor.Sequence = 9
 				backend.mu.Lock()
 				after := backend.afterDQ

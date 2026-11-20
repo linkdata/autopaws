@@ -1,4 +1,4 @@
-//go:build linux && (amd64 || arm64)
+//go:build (linux || darwin) && (amd64 || arm64)
 
 package web
 
@@ -37,6 +37,16 @@ func TestMediaHeaderFieldsAndClockDomain(t *testing.T) {
 		if got := binary.LittleEndian.Uint32(header[offset:]); got != want {
 			t.Errorf("header offset%d=%d; want%d", offset, got, want)
 		}
+	}
+	metadata.TimestampFlags = v4l2.TimestampMonotonic | v4l2.TimestampEstimated
+	header = videoHeader(metadata, sequence)
+	if binary.LittleEndian.Uint32(header[4:]) != 5 || binary.LittleEndian.Uint64(header[24:]) != uint64(metadata.TimestampNS) {
+		t.Fatal("estimated receipt timing lost its wire flag or clock")
+	}
+	metadata.TimestampFlags = v4l2.TimestampEstimated
+	header = videoHeader(metadata, sequence)
+	if binary.LittleEndian.Uint32(header[4:]) != 0 || binary.LittleEndian.Uint64(header[24:]) != 0 {
+		t.Fatal("estimate advertised without a monotonic clock")
 	}
 	metadata.Crop = image.Rectangle{}
 	metadata.TimestampFlags = v4l2.TimestampCopy

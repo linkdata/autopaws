@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 	"unsafe"
+
+	"github.com/linkdata/autopaws/internal/monotime"
 )
 
 func TestSystemKernelWithoutOpeningPCM(t *testing.T) {
@@ -20,7 +22,7 @@ func TestSystemKernelWithoutOpeningPCM(t *testing.T) {
 	if _, err := Open(context.Background(), "/dev/null"); !errors.Is(err, syscall.ENOTTY) {
 		t.Fatalf("/dev/null HW_REFINE=%v", err)
 	}
-	before, err := monotonicNow()
+	before, err := monotime.Now()
 	if err != nil || before <= 0 {
 		t.Fatalf("monotonic clock=%d,%v", before, err)
 	}

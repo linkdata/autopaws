@@ -1,8 +1,5 @@
 //go:build linux && (amd64 || arm64)
 
-// Package alsa captures S16_LE interleaved PCM using the raw Linux ALSA UAPI.
-// One fixed worker owns blocking reads. Close issues DROP, joins that worker,
-// and retains descriptor ownership through every executing kernel operation.
 package alsa
 
 import (
@@ -17,43 +14,6 @@ import (
 	"time"
 	"unsafe"
 )
-
-var (
-	ErrClosed       = errors.New("alsa: capture closed")
-	ErrBusy         = errors.New("alsa: capture busy; PipeWire or WirePlumber may own the PCM")
-	ErrDisconnected = errors.New("alsa: capture device disconnected")
-	ErrSettings     = errors.New("alsa: unsupported or invalid PCM settings")
-	ErrSamples      = errors.New("alsa: invalid PCM frame count")
-	ErrTimestamp    = errors.New("alsa: invalid monotonic capture timestamp")
-)
-
-// ServerQueueBudget leaves the other 100 ms of the 200 ms application-queue
-// ceiling for the browser worklet. This excludes kernel/network/output latency.
-const ServerQueueBudget = 100 * time.Millisecond
-
-// Config is immutable for a generation. Samples are always signed 16-bit,
-// little-endian, interleaved. Reopen and recovery allocate new generations.
-type Config struct {
-	Rate, Channels             uint32
-	PeriodFrames, BufferFrames uint32
-	Generation                 uint64
-}
-
-// Block contains only Frames valid sample frames. Data belongs to its receiver
-// and survives future reads, other subscriptions and capture Close.
-// TimestampNS estimates the first sample's CLOCK_MONOTONIC capture time from
-// ALSA's timestamp/delay snapshot; it is not a dequeue or calendar timestamp.
-// DMA granularity and hardware/driver delay reporting limit its accuracy.
-type Block struct {
-	Data        []byte
-	Sequence    uint64
-	TimestampNS int64
-	Frames      uint32
-	Config      Config
-}
-
-// Stats counts observed overrun and suspend recovery events.
-type Stats struct{ Overruns, Suspends uint64 }
 
 var generations atomic.Uint64
 

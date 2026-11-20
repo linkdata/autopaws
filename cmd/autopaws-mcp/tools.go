@@ -69,7 +69,7 @@ type scrollInput struct {
 }
 
 type captureDeviceInput struct {
-	Device string `json:"device" jsonschema:"Capture device path such as /dev/video0. Numeric indexes are not supported."`
+	Device string `json:"device" jsonschema:"Capture device path such as /dev/video0, or macOS avfoundation:NAME from list_capture_devices. Numeric indexes are not supported."`
 }
 
 type captureResolutionInput struct {

@@ -67,12 +67,41 @@ jobs:
         run: |
           go build ./...
           go build -o /dev/null ./cmd/autopaws-kvm
-      - name: Cross-build portable MCP binary
+      - name: Cross-build macOS daemon and portable MCP binary
         run: |
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build ./...
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build ./...
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
           CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+
+  macos:
+    name: macOS native checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+      - name: Build daemon and MCP without cgo
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          go build ./...
+          go build -o /dev/null ./cmd/autopaws-kvm
+      - name: Install macOS capture dependency
+        run: brew install ffmpeg
+      - name: Race tests without hardware
+        env:
+          CGO_ENABLED: "1"
+          AUTOPAWS_FFMPEG_TEST: "1"
+        run: go test -race ./...
 
   coverage:
     needs: check

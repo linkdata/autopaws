@@ -211,7 +211,7 @@ Capture methods share the daemon's frame pipeline:
 | `set_capture_device` | nonempty string `device` path, not a signed/unsigned numeric index | Capture-status object after selecting a device |
 | `set_capture_resolution` | integer `width`, `height`, each 1…4294967295 | Capture-status object after updating the requested size |
 
-A snapshot requires a successfully decoded frame whose `CLOCK_MONOTONIC` capture
+On Linux, a snapshot requires a successfully decoded frame whose `CLOCK_MONOTONIC` capture
 timestamp is after its request arrived. Its five-second acquisition deadline
 includes startup and corrupt-frame warmup; an earlier caller cancellation wins.
 No valid fresh frame yields `timeout`; device loss, no selected device or an
@@ -220,6 +220,12 @@ fallback. Acquisition can finish while an owned kernel operation is still
 returning; daemon teardown retains ownership and joins it. Capture timing does
 not establish that the target application has processed earlier input or that
 HDMI content has stabilized.
+
+On macOS, device selectors are `avfoundation:<exact name>` from discovery.
+FFmpeg video uses estimated pipe read-start timestamps on the server monotonic
+clock. The snapshot still waits for a read started after the request, but
+FFmpeg/OS buffering means this does not establish camera capture freshness.
+Duplicate device names are ambiguous; no numeric indices are accepted.
 
 Snapshot bytes are normalized MJPEG with any detected crop applied. Uncropped
 images pass through after full-decode validation; cropped images use one cached
@@ -230,8 +236,11 @@ quality parameter. Capture starts on demand and stops after ten idle seconds.
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending
 old-generation snapshots fail with `capture changed`; callers retry explicitly.
-Idle/retry opens of unchanged settings retain that generation. A device selection
-is accepted even with no source open, and a failed open preserves that selection.
+Idle opens retain that generation. On macOS, a stalled source is closed and
+retried while demand remains; a successful automatic recovery advances the
+generation and resets queued frames and crop detection. Failed attempts do not
+advance it. A device selection is accepted even with no source open, and a
+failed open preserves that selection.
 
 An idle capture device is not unavailable merely because streaming is stopped.
 Resolution changes remain available while idle or after a previous open failed.

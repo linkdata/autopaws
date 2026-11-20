@@ -171,15 +171,4 @@ const (
 	capVideoCapture     = 0x00000001
 	capStreaming        = 0x04000000
 	capDeviceCaps       = 0x80000000
-
-	bufFlagTimestampMask       = 0x0000e000
-	bufFlagTimestampUnknown    = 0x00000000
-	bufFlagTimestampMonotonic  = 0x00002000
-	bufFlagTimestampCopy       = 0x00004000
-	bufFlagTimestampSourceMask = 0x00070000
-	bufFlagTimestampSourceEOF  = 0x00000000
-	bufFlagTimestampSourceSOE  = 0x00010000
-
-	// PixFmtMJPEG is V4L2_PIX_FMT_MJPEG, the only supported capture encoding.
-	PixFmtMJPEG = 'M' | 'J'<<8 | 'P'<<16 | 'G'<<24
 )

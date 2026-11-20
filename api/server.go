@@ -1,4 +1,4 @@
-//go:build linux && (amd64 || arm64)
+//go:build (linux || darwin) && (amd64 || arm64)
 
 // Package api serves the KVM JSON Lines TCP API using shared HID instances.
 package api

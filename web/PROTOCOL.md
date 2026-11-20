@@ -41,12 +41,15 @@ The first server application message is JSON text:
 Audio status is `off`, `unavailable`, or `available`. An available configuration
 includes the negotiated `sampleRate` and `channels`; for example,
 `{"type":"config","audio":{"status":"available","generation":"7","sampleRate":48000,"channels":2}}`.
-Audio is captured lazily while web clients are connected. Auto selection follows
-the current selected video USB device; an explicit PCM path stays fixed. Each
-accepted video generation reopens audio, including resolution changes, so all
-queued media starts fresh. Selection/open/read failures make audio unavailable
-without ending video or input. Every audio-generation change is sent as configuration before any
-samples belonging to that generation. JSON uint64 generations are decimal strings
+Audio is captured lazily while web clients are connected. On Linux, auto
+selection follows the current selected video USB device; an explicit PCM path
+stays fixed. macOS requires an explicit AVFoundation audio selector. Each
+video generation reopens audio, including resolution changes and successful
+macOS capture recovery, so all queued media starts fresh. Selection/open/read failures make audio unavailable
+without ending video or input. Native macOS audio retries an explicit selector
+after one second while viewers remain connected. Every audio-generation change
+is sent as configuration before any samples belonging to that generation.
+JSON uint64 generations are decimal strings
 to preserve precision in JavaScript. Binary uint64 values are exact: clients use
 `DataView.getBigUint64(..., true)`, not Number coercion.
 
@@ -59,7 +62,7 @@ All multibyte integers are **unsigned little-endian**. Version 1 defines:
 |1|uint8|Protocol version: `1` |
 |2|uint16|Header length: `64` |
 |4|uint32|Common timestamp flags, below |
-|8|uint64|Video settings generation, or audio configuration generation |
+|8|uint64|Video settings/recovery generation, or audio configuration generation |
 |16|uint64|Video connection delivery sequence, or audio source-block sequence |
 |24|uint64|Capture timestamp in nanoseconds on the server's `CLOCK_MONOTONIC`, or zero if unavailable |
 |32|uint32|Video source JPEG width; zero for audio |
@@ -75,12 +78,16 @@ Timestamp flags have the **same meanings for both media kinds**:
 
 * Bit 0 (`1`): the timestamp is available and belongs to server CLOCK_MONOTONIC.
   Without it, offset 24 is zero and must not be used for timing.
-* Bit 1 (`2`): video timestamp denotes start of exposure. With bit 1 clear, a valid
+* Bit 1 (`2`): video timestamp denotes start of exposure. With bits 1 and 2 clear, a valid
   video timestamp denotes end of frame. Audio leaves this bit clear and its
   timestamp denotes the first sample frame of the block.
 * Bit 2 (`4`): the monotonic timestamp is an estimate rather than a device timestamp.
-  Video leaves this bit clear. Audio sets it because its first sample time is
+  Linux video leaves this bit clear. Linux audio sets it because its first sample time is
   estimated from an ALSA monotonic timestamp/delay observation and block frame count.
+  macOS video and audio both set this bit: their timestamps estimate FFmpeg pipe
+  receipt on the server monotonic clock, not device capture time. FFmpeg/OS
+  buffering is unmeasured; video uses read-start time and audio estimates its first
+  sample from read completion minus the block duration.
 * Bits 3–31 are reserved and zero. Estimated timestamps require bit 0 as well.
 
 The browser's performance clock has a different epoch. Do not compare its clock
@@ -98,8 +105,8 @@ pixel dimensions. The server does not encode video separately for each viewer.
 
 Video delivery sequences start at 1 and increase for each message attempted by
 that connection's sole writer. They do not reset when capture stops/reopens or
-settings generation changes. V4L2's raw source sequence can reset on reopen and
-is not used for connection ordering. Settings changes flush subscriber slots;
+settings/recovery generation changes. V4L2's raw source sequence can reset on
+reopen and is not used for connection ordering. Generation changes flush subscriber slots;
 the writer also discards a held frame if its generation no longer matches the
 manager. An already-started socket write cannot be recalled. The browser must
 discard pending image decodes/rendered metadata when a newer generation arrives,
