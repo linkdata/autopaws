@@ -222,6 +222,11 @@ autopaws-mcp -api 127.0.0.1:9329
 | `-capture-log DIR` | off | Save screenshot JPEGs; no retention limit |
 | `-token-file PATH` | off | Read the API secret at startup |
 | `-tesseract PATH` | automatic | Optional OCR engine; an invalid explicit path disables OCR |
+| `-vision-api URL` | off | OpenAI-compatible base URL or full `chat/completions` endpoint for `wait_for` |
+| `-vision-model NAME` | off | Model used to evaluate visual conditions; configure with `-vision-api` |
+| `-vision-token-file PATH` | off | UTF-8 bearer-token file for the vision endpoint; separate from the KVM token |
+| `-vision-max-width N` | `960` | Maximum width sent to vision, 64–4096; returned screenshots keep their original size |
+| `-vision-request-json JSON` | off | Extra provider options; may override sampling/output settings, but not `model`, `messages` or `stream` |
 
 | Tools | Purpose |
 |---|---|
@@ -250,6 +255,72 @@ Restart MCP after installing it. OCR calls time out after 15 seconds and do not
 set screenshot coordinates. `execute_and_read` types a raw command plus Enter,
 waits `wait_seconds` (default 1, range 0–60), then captures OCR output; the wait
 does not establish command completion. Capture logs contain complete screenshots.
+
+See the [implemented flow and cycle measurements](docs/cycle-time-implementation.md)
+and [initial research](docs/cycle-time.md) for KVM/MCP latency benchmarks and
+local UI-analysis experiments.
+
+### Input with a visual condition
+
+Configure an OpenAI-compatible vision service to enable `wait_for`. For a local
+LM Studio server (use its actual port and installed model name):
+
+```sh
+autopaws-mcp -api 127.0.0.1:9329 \
+  -vision-api http://127.0.0.1:11434/v1 \
+  -vision-model qwen3-vl-2b-instruct \
+  -vision-request-json '{"reasoning_effort":"none"}'
+```
+
+For an authenticated service, add `-vision-token-file /path/to/vision.token`.
+The client sends `Authorization: Bearer TOKEN`. Provider options are a JSON
+object; for example, a service without JSON-schema support can override
+`response_format` while MCP still validates the returned boolean object.
+
+The seven keyboard/mouse tools accept optional `wait_for` and
+`wait_timeout_ms` arguments:
+
+```json
+{
+  "key": "enter",
+  "wait_for": "A separate floating confirmation dialog with Continue and Cancel is visible over a dimmed page",
+  "wait_timeout_ms": 5000
+}
+```
+
+MCP validates the wait configuration before sending input. After successful
+input it captures and checks candidate frames, returning JSON metadata and the
+original JPEG whose resized copy the model evaluated. That image establishes
+the session's mouse coordinates. The metadata includes the original input
+result, observation status, model result/timing, a unique observation ID,
+original-image SHA-256 and image age measured from host receipt. It never
+attaches a model decision to a newer unchecked screenshot.
+
+The observation budget includes capture and inference, starts after successful
+input, defaults to 5000 ms and accepts 1–60000 ms. `wait_timeout_ms` requires a
+nonblank `wait_for` prompt of at most 2048 bytes. The first fresh frame is always
+checked; later candidates use a small pixel-change gate and recheck unchanged
+content once 500 ms have elapsed since the previous completed inference. Capture and
+inference stay sequential, with no queued screenshots.
+
+`condition_met` reports the model's decision, not guaranteed task completion.
+On `timeout`, `capture_error`, `analysis_error` or `invalid_output`,
+`input.sent: true` preserves the successful input outcome: do not replay it
+automatically. The last successfully checked image and its boolean result are
+returned when available, even if a later check times out. No checked image
+means `predicate.satisfied` is null and no image is returned. Capture-setting
+changes invalidate the pending image and report `capture_changed`. Cancellation
+stops the request without committing new screenshot coordinates.
+
+Input and observation calls serialize within one MCP session. Other sessions,
+the browser and direct API calls still require one operator. Screenshots and
+conditions go to the configured vision service; `-capture-log` also logs wait
+candidate screenshots. With no `wait_for`, existing action results are unchanged
+and no capture or vision request is made.
+
+Checks sample individual frames, so a short-lived state between checks can be
+missed. Prefer conditions that remain visible until the next action, and verify
+the returned image before continuing.
 
 ### Client configuration
 

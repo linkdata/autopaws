@@ -150,7 +150,7 @@ func sdkJPEG(t *testing.T, width, height int) []byte {
 func sdkDefaultReply(request apiwire.Request, capture sdkCapture) sdkReply {
 	switch request.Method {
 	case "capture_frame":
-		return sdkReply{result: map[string]any{"jpeg_b64": capture.jpeg, "width": capture.width, "height": capture.height}}
+		return sdkReply{result: map[string]any{"jpeg_b64": capture.jpeg, "width": capture.width, "height": capture.height, "target_width": capture.targetWidth, "target_height": capture.targetHigh}}
 	case "get_device_info":
 		return sdkReply{result: map[string]any{"config": map[string]int{
 			"screen_width": capture.targetWidth, "screen_height": capture.targetHigh,
@@ -349,8 +349,8 @@ func TestSDKAllToolsCallTheAPI(t *testing.T) {
 	session := sdkConnect(t, newServer(t.Context(), mcpOptions{}, apiclient.New(fake.listener.Addr().String())))
 	sdkCheckCapture(t, sdkTool(t, session, "capture_screen", map[string]any{}, false), capture)
 	requests := fake.snapshot()
-	if len(requests) != 2 || !slices.ContainsFunc(requests, func(request apiwire.Request) bool { return request.Method == "capture_frame" }) || !slices.ContainsFunc(requests, func(request apiwire.Request) bool { return request.Method == "get_device_info" }) {
-		t.Fatalf("capture reads = %+v, want frame and target config", requests)
+	if len(requests) != 1 || requests[0].Method != "capture_frame" {
+		t.Fatalf("capture reads = %+v, want one snapshot with target dimensions", requests)
 	}
 	for _, tc := range []struct {
 		name string
@@ -570,7 +570,7 @@ func TestSDKCaptureChangeInvalidatesOverlappingSnapshot(t *testing.T) {
 								return sdkReply{code: apiwire.ErrUnavailable, detail: "reopen failed"}
 							}
 						}
-						if request.Method == "get_device_info" && pending {
+						if request.Method == "capture_frame" && pending {
 							close(captureStarted)
 							<-finishCapture
 						}
@@ -605,7 +605,7 @@ func TestSDKCaptureChangeInvalidatesOverlappingSnapshot(t *testing.T) {
 						select {
 						case <-captureStarted:
 						case <-ctx.Done():
-							t.Fatal("overlapping capture did not reach device info")
+							t.Fatal("overlapping capture did not reach frame acquisition")
 						}
 					} else if result := <-captured; result.err != nil || result.result.IsError {
 						t.Fatalf("capture during change = %+v, %v", result.result, result.err)

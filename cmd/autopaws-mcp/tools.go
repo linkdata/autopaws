@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -13,20 +16,24 @@ type apiCaller interface {
 }
 
 type toolServer struct {
-	lifetime context.Context
-	options  mcpOptions
-	caller   apiCaller
-	mu       sync.Mutex
-	sessions map[*mcp.ServerSession]*screenState
+	lifetime     context.Context
+	options      mcpOptions
+	caller       apiCaller
+	mu           sync.Mutex
+	sessions     map[*mcp.ServerSession]*screenState
+	instance     string
+	observations atomic.Uint64
 }
 
 type textInput struct {
+	waitInput
 	Text        string `json:"text" jsonschema:"Text to type. Characters unavailable in the target layout are rejected before typing."`
 	Raw         bool   `json:"raw,omitempty" jsonschema:"Type braces literally instead of interpreting key tags. Default false."`
 	CharDelayMS *int64 `json:"char_delay_ms,omitempty" jsonschema:"Delay after each character or tag, including the last, in milliseconds, 0 through 60000. Default 20."`
 }
 
 type keyInput struct {
+	waitInput
 	Key       string   `json:"key" jsonschema:"Named key such as enter, escape, f1, a, or a 0x-prefixed HID keycode."`
 	Modifiers []string `json:"modifiers,omitempty" jsonschema:"Modifiers such as ctrl, shift, alt, or super."`
 }
@@ -38,17 +45,20 @@ type keyStepInput struct {
 }
 
 type sequenceInput struct {
+	waitInput
 	Steps          []keyStepInput `json:"steps" jsonschema:"Complete sequence, at most 4096 steps. Every step is validated before typing."`
 	DefaultDelayMS *int64         `json:"default_delay_ms,omitempty" jsonschema:"Default delay after each key in milliseconds, 0 through 60000. Default 100."`
 }
 
 type moveInput struct {
+	waitInput
 	X        int  `json:"x" jsonschema:"Screenshot x pixel, or signed horizontal delta when relative is true."`
 	Y        int  `json:"y" jsonschema:"Screenshot y pixel, or signed vertical delta when relative is true."`
 	Relative bool `json:"relative,omitempty" jsonschema:"Use unscaled relative deltas, each -127 through 127. Default false."`
 }
 
 type clickInput struct {
+	waitInput
 	Button     string `json:"button,omitempty" jsonschema:"left, right, or middle. Default left."`
 	X          *int   `json:"x,omitempty" jsonschema:"Optional screenshot x pixel. Supply both x and y."`
 	Y          *int   `json:"y,omitempty" jsonschema:"Optional screenshot y pixel. Supply both x and y."`
@@ -56,6 +66,7 @@ type clickInput struct {
 }
 
 type dragInput struct {
+	waitInput
 	StartX     int    `json:"start_x" jsonschema:"Start x pixel in the latest screenshot."`
 	StartY     int    `json:"start_y" jsonschema:"Start y pixel in the latest screenshot."`
 	EndX       int    `json:"end_x" jsonschema:"End x pixel in the latest screenshot."`
@@ -65,6 +76,7 @@ type dragInput struct {
 }
 
 type scrollInput struct {
+	waitInput
 	Amount int `json:"amount" jsonschema:"Signed wheel amount, clamped by the daemon to -127 through 127."`
 }
 
@@ -82,7 +94,7 @@ type keyboardLayoutInput struct {
 }
 
 func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *mcp.Server {
-	owner := &toolServer{lifetime: lifetime, options: options, caller: caller, sessions: make(map[*mcp.ServerSession]*screenState)}
+	owner := &toolServer{lifetime: lifetime, options: options, caller: caller, sessions: make(map[*mcp.ServerSession]*screenState), instance: rand.Text()}
 	server := mcp.NewServer(&mcp.Implementation{Name: "autopaws-mcp", Version: options.Version}, &mcp.ServerOptions{Logger: options.Logger})
 	addTool(server, owner, "type_text", "Type text on the target keyboard. The entire text is validated against the active target layout before input. By default {enter} and {ctrl+c} are key tags; raw types braces literally. Character delay defaults to 20 ms.", false, owner.typeText)
 	addTool(server, owner, "send_key", "Press and release one named key or 0x-prefixed HID keycode, with optional ctrl, shift, alt or super modifiers.", false, owner.sendKey)
@@ -121,7 +133,27 @@ func addTool[In any](server *mcp.Server, owner *toolServer, name, description st
 		if err := ctx.Err(); err != nil {
 			return nil, nil, err
 		}
+		var wait waitInput
+		waitParams, inputTool := any(&input).(interface{ takeWait() waitInput })
+		if inputTool {
+			wait = waitParams.takeWait()
+			if err := owner.validateWait(wait); err != nil {
+				return nil, nil, err
+			}
+		}
+		if inputTool || name == "execute_and_read" {
+			state := owner.state(request.Session)
+			unlock, err := state.lockAction(ctx)
+			if err != nil {
+				return nil, nil, err
+			}
+			defer unlock()
+		}
+		started := time.Now()
 		result, err := handle(ctx, request, input)
+		if err == nil && wait.WaitFor != nil {
+			return owner.observe(ctx, request, wait, result, time.Since(started))
+		}
 		return result, nil, err
 	})
 }

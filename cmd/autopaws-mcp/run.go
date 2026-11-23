@@ -25,6 +25,7 @@ type mcpOptions struct {
 	Version       string
 	Logger        *slog.Logger
 	TesseractPath string
+	Vision        *visionClient
 }
 
 func run(ctx context.Context, args []string, transport mcp.Transport, stdout, stderr io.Writer) int {
@@ -37,6 +38,13 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	flags.StringVar(&tokenFile, "token-file", "", "Shared-secret UTF-8 file for the KVM API; empty disables authentication")
 	var requestedTesseract string
 	flags.StringVar(&requestedTesseract, "tesseract", "", "Tesseract executable; empty searches PATH and Windows install directories")
+	var vision visionConfig
+	var visionTokenFile string
+	flags.StringVar(&vision.API, "vision-api", "", "OpenAI-compatible base URL or chat/completions endpoint for wait_for; empty disables vision")
+	flags.StringVar(&vision.Model, "vision-model", "", "Vision model name for wait_for")
+	flags.StringVar(&visionTokenFile, "vision-token-file", "", "Bearer-token UTF-8 file for the vision endpoint; empty sends no Authorization header")
+	flags.IntVar(&vision.MaxWidth, "vision-max-width", 960, "Maximum screenshot width sent to the vision model, 64..4096; returned screenshots keep their original size")
+	flags.StringVar(&vision.RequestJSON, "vision-request-json", "", "Extra OpenAI request JSON options, e.g. {\"reasoning_effort\":\"none\"}; model, messages and stream cannot be overridden")
 	usage := func(output io.Writer) {
 		fmt.Fprintln(output, "Usage: autopaws-mcp [flags]")
 		flags.SetOutput(output)
@@ -72,6 +80,16 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	options.TesseractPath, err = resolveTesseract(requestedTesseract)
 	if err != nil {
 		options.Logger.Warn("OCR tools disabled: Tesseract unavailable", "error", err)
+	}
+	vision.Token, err = token.ReadFile(visionTokenFile)
+	if err != nil {
+		fmt.Fprintln(stderr, "vision token:", err)
+		return 1
+	}
+	options.Vision, err = newVisionClient(vision)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
 	}
 	server := newServer(ctx, options, apiclient.NewWithToken(options.APIAddress, secret))
 	if err := server.Run(ctx, transport); err != nil {
