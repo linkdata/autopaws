@@ -1,6 +1,6 @@
-//go:build darwin && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
-package avfoundation
+package ffmpegmedia
 
 import (
 	"bufio"
@@ -111,34 +111,36 @@ func TestVideoFFmpegLifecycle(t *testing.T) {
 	ffmpegRequired(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	source, err := openVideoCommand(ctx, []string{
-		"-nostdin", "-hide_banner", "-loglevel", "error", "-re",
-		"-f", "lavfi", "-i", "testsrc=size=128x96:rate=30", "-c:v", "mjpeg", "-threads", "1", "-f", "mpjpeg", "-boundary_tag", videoBoundary, "pipe:1",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = source.Close() })
-	format := source.Format()
-	if format.Width != 128 || format.Height != 96 || format.FourCC != v4l2.PixFmtMJPEG {
-		t.Fatalf("format = %+v", format)
-	}
-	frame, err := source.ReadFrame(ctx)
-	if err != nil || frame.Sequence == 0 || len(frame.Data) == 0 || frame.Flags != v4l2.TimestampMonotonic|v4l2.TimestampEstimated {
-		t.Fatalf("frame = %+v, %v", frame, err)
-	}
-	if _, err := jpeg.Decode(bytes.NewReader(frame.Data)); err != nil {
-		t.Fatal(err)
-	}
-	closed := make(chan error, 1)
-	go func() { closed <- source.Close() }()
-	select {
-	case err := <-closed:
+	for range 2 {
+		source, err := openVideoCommand(ctx, []string{
+			"-hide_banner", "-loglevel", "error", "-re",
+			"-f", "lavfi", "-i", "testsrc=size=128x96:rate=30", "-c:v", "mjpeg", "-threads", "1", "-f", "mpjpeg", "-boundary_tag", videoBoundary, "pipe:1",
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
-	case <-ctx.Done():
-		t.Fatal("Close did not join FFmpeg")
+		t.Cleanup(func() { _ = source.Close() })
+		format := source.Format()
+		if format.Width != 128 || format.Height != 96 || format.FourCC != v4l2.PixFmtMJPEG {
+			t.Fatalf("format = %+v", format)
+		}
+		frame, err := source.ReadFrame(ctx)
+		if err != nil || frame.Sequence == 0 || len(frame.Data) == 0 || frame.Flags != v4l2.TimestampMonotonic|v4l2.TimestampEstimated {
+			t.Fatalf("frame = %+v, %v", frame, err)
+		}
+		if _, err := jpeg.Decode(bytes.NewReader(frame.Data)); err != nil {
+			t.Fatal(err)
+		}
+		closed := make(chan error, 1)
+		go func() { closed <- source.Close() }()
+		select {
+		case err := <-closed:
+			if err != nil {
+				t.Fatal(err)
+			}
+		case <-ctx.Done():
+			t.Fatal("Close did not join FFmpeg")
+		}
 	}
 }
 
@@ -147,7 +149,7 @@ func TestVideoFFmpegStartupCancellation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	source, err := openVideoCommand(ctx, []string{
-		"-nostdin", "-hide_banner", "-loglevel", "error", "-re",
+		"-hide_banner", "-loglevel", "error", "-re",
 		"-f", "lavfi", "-i", "testsrc=size=128x96:rate=30", "-vf", "select=0", "-c:v", "mjpeg", "-threads", "1", "-f", "mpjpeg", "-boundary_tag", videoBoundary, "pipe:1",
 	})
 	if source != nil || !errors.Is(err, context.DeadlineExceeded) {

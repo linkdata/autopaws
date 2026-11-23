@@ -83,6 +83,66 @@ The [macOS record](validation/macos-host-2026-11-20.json) separates each tested
 build and probe. Browser/acoustic playback and latency were not measured on
 macOS. Timestamps estimate FFmpeg pipe receipt; upstream buffering is unmeasured.
 
+## Windows host
+
+Windows 11 Pro build 26300 on amd64 used a CH340/CH9329 (`1a86:7523`) and UGREEN
+15389 capture card (`2b89:5389`) against the connected Linux target. The recorded
+development binary acquired decodable 1920×1080 JPEGs and simultaneous WebSocket
+video/audio, with 48 kHz stereo PCM in 10 ms blocks. Three idle/reopen cycles,
+serial contention, live resolution changes, canonical device selection and
+explicit missing-device behavior passed their transport/media metadata checks.
+
+Physical USB disconnect/reconnect checks restored serial writes and video/audio
+on an existing WebSocket without daemon restart or video reselection. One capture
+cycle first reported Windows' Configuration Descriptor Request Failed. A complete
+power cycle did not resolve it; moving USB connections restored enumeration and
+media. The cause remains unknown. The serial adapter changed from COM3 to COM4,
+and later checks used automatic serial selection after restarting the daemon.
+
+The in-app Chromium viewer displayed live video at approximately 19–20 fps.
+Positioned clicks operated target controls, and held-button dragging visibly
+selected text. An absolute move followed by a relative move placed the target
+cursor at the expected location within display scaling. Read-only target
+configuration confirmed the Swedish X11 layout;
+with daemon layout `se105`, mixed-case ASCII, digits, punctuation and Swedish
+letters matched visually. A browser keyboard shortcut opened a target terminal.
+Closing a slow API typing request after 200 ms canceled it and emitted a release
+report. Closing a WebSocket with a held modifier also emitted an all-zero release
+before fresh input. Subsequent lowercase input matched visually without replaying
+the interrupted text.
+
+Native left/right sound samples reached both HDMI capture channels, with observed
+PCM peaks of 1045 and 1049. The user confirmed hearing both through the viewer.
+The mute control returned to the unmuted state, and the original target audio
+route was restored afterward. No acoustic latency measurement was made.
+
+Ctrl+C with a held modifier and mouse button emitted zero keyboard and mouse
+reports, closed both WebSocket clients and left no daemon or FFmpeg processes.
+COM4 reopened exclusively afterward. The outer PowerShell PTY returned 1 on
+Ctrl+C; no daemon cleanup error was emitted, and daemon exit code 0 was not
+established. An earlier shutdown with explicitly selected COM3 absent reported a
+release-cleanup error.
+
+Restarting the same binary with default autocrop enabled restored the live viewer
+automatically and produced a fresh 1920×1080 JPEG. Simultaneous video/audio
+continued without invalid headers. The physical full-frame signal was not falsely
+cropped; deliberately imposed letterboxing was not tested physically and is
+covered by common synthetic crop tests.
+
+Native MCP stdio initialization and tools passed. Absolute input required a fresh
+capture, and each resolution change invalidated old screenshot coordinates.
+Fresh JPEGs decoded at the requested 1920×1080 or 1280×720 dimensions, and each
+screenshot center mapped to target coordinates (640, 360) in the API response.
+MCP exited 0 on stdin EOF.
+
+The [Windows record](validation/windows-host-2026-11-23.json) reports passing
+results for the recorded checklist with the stated limits. No screenshots, OCR
+or audio recordings were retained.
+
+Windows CI uses mocks/generated media and does not establish physical coverage.
+Windows ARM64 is cross-built; ARM64 hardware has not been tested. See
+[Windows setup](windows-setup.md).
+
 ## Windows target checks
 
 The limited read-only laptop smoke passed keyboard shortcuts, focus navigation,

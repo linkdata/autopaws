@@ -1,6 +1,6 @@
-//go:build darwin && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
-package avfoundation
+package ffmpegmedia
 
 import (
 	"context"
@@ -93,7 +93,8 @@ func TestAudioFinishAndSubscriptionClose(t *testing.T) {
 func audioHelper(mode string, recorded **exec.Cmd) func(context.Context) *exec.Cmd {
 	return func(ctx context.Context) *exec.Cmd {
 		cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestAudioHelperProcess$")
-		cmd.Env = append(os.Environ(), "AUTOPAWS_AUDIO_HELPER="+mode)
+		// Race instrumentation's exit sleep must not consume the stop deadline.
+		cmd.Env = append(os.Environ(), "AUTOPAWS_AUDIO_HELPER="+mode, "GORACE="+os.Getenv("GORACE")+" atexit_sleep_ms=0")
 		*recorded = cmd
 		return cmd
 	}
@@ -108,10 +109,17 @@ func TestAudioHelperProcess(t *testing.T) {
 		_, _ = os.Stderr.WriteString("fixture microphone failure")
 		os.Exit(2)
 	}
-	if mode == "first" {
+	if mode == "first" || mode == "graceful" {
 		if _, err := os.Stdout.Write(make([]byte, audioBytes)); err != nil {
 			os.Exit(3)
 		}
+	}
+	if mode == "graceful" {
+		var command [2]byte
+		if _, err := io.ReadFull(os.Stdin, command[:]); err != nil || string(command[:]) != "q\n" {
+			os.Exit(4)
+		}
+		os.Exit(0)
 	}
 	for {
 		time.Sleep(time.Second)
@@ -138,14 +146,24 @@ func TestAudioProcessLifetime(t *testing.T) {
 		t.Fatal("stream ended with startup context")
 	}
 	subscription := source.Subscribe()
-	if err := source.Close(); err != nil {
-		t.Fatal(err)
+	closed := make(chan error, 1)
+	go func() { closed <- source.Close() }()
+	select {
+	case err := <-closed:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Close did not kill and join a child that ignores stdin")
 	}
 	if err := source.Close(); err != nil {
 		t.Fatal(err)
 	}
 	if cmd.ProcessState == nil {
 		t.Fatal("Close returned without reaping the process")
+	}
+	if cmd.ProcessState.Success() {
+		t.Fatal("fixture ignoring stdin exited without the forced-stop fallback")
 	}
 	if _, _, err := subscription.TryNext(); !errors.Is(err, ErrClosed) {
 		t.Fatalf("source Close did not end subscription: %v", err)
@@ -176,10 +194,12 @@ func TestAudioFFmpegPCMFixture(t *testing.T) {
 	ffmpegRequired(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	var cmd *exec.Cmd
 	source, err := openAudioCommand(ctx, func(ctx context.Context) *exec.Cmd {
-		return exec.CommandContext(ctx, "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error",
+		cmd = exec.CommandContext(ctx, "ffmpeg", "-hide_banner", "-loglevel", "error",
 			"-re", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000", "-ac", "2", "-ar", "48000",
 			"-c:a", "pcm_s16le", "-f", "s16le", "-flush_packets", "1", "pipe:1")
+		return cmd
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -199,6 +219,12 @@ func TestAudioFFmpegPCMFixture(t *testing.T) {
 			}
 			for _, value := range block.Data {
 				if value != 0 {
+					if err := source.Close(); err != nil {
+						t.Fatal(err)
+					}
+					if cmd.ProcessState == nil || !cmd.ProcessState.Success() {
+						t.Fatalf("FFmpeg did not stop gracefully: %v", cmd.ProcessState)
+					}
 					return
 				}
 			}

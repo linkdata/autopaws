@@ -1,9 +1,9 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 // Package serial provides CH340/CH341 discovery and a raw CH9329 transport.
 // Writes wait for the host output queue and a conservative baud-derived delay.
 // This is pacing, not proof of UART completion, a CH9329 acknowledgement, or
-// target processing. Kernel open, termios and close calls can outlast a context.
+// target processing. Kernel open, configuration and close calls can outlast a context.
 package serial
 
 import (
@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	// ErrBaud indicates a rate outside the supported standard termios rates.
+	// ErrBaud indicates a rate outside the supported standard serial rates.
 	ErrBaud = errors.New("serial: unsupported baud rate")
 	// ErrBusy means another cooperating process has locked the port.
 	ErrBusy = errors.New("serial: port busy")
@@ -38,7 +38,7 @@ var (
 
 // Options configures a Port. An empty Path auto-detects one CH340/CH341 each
 // time recovery requires opening a port. Baud defaults to 9600. SysRoot selects
-// Linux sysfs (default /sys) and is ignored on macOS. Logger, when non-nil, receives successful frames at debug level.
+// Linux sysfs (default /sys) and is ignored on macOS/Windows. Logger, when non-nil, receives successful frames at debug level.
 type Options struct {
 	Path    string
 	Baud    int
@@ -160,7 +160,7 @@ func (p *Port) WriteFrame(ctx context.Context, frame []byte) error {
 }
 
 // Close permanently rejects new operations and cancels application waits before
-// closing the owned file. It waits for any executing kernel operation/close to
+// closing the owned device. It waits for any executing kernel operation/close to
 // finish normally; the OS does not provide a context deadline for those calls.
 // The caller must finish any uncancelled release-only preparation before Close,
 // because a permanently closed Port cannot reopen to release held input.

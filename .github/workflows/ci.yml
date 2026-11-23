@@ -39,9 +39,14 @@ jobs:
         run: |
           go build ./...
           go build -o /dev/null ./cmd/autopaws-kvm
+      - name: Install generated media fixture dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ffmpeg
       - name: Race tests with coverage
         env:
           CGO_ENABLED: "1"
+          AUTOPAWS_FFMPEG_TEST: "1"
         run: go test -race -coverprofile=coverage.out ./...
       - name: Calculate code coverage
         id: coverage
@@ -67,7 +72,7 @@ jobs:
         run: |
           go build ./...
           go build -o /dev/null ./cmd/autopaws-kvm
-      - name: Cross-build macOS daemon and portable MCP binary
+      - name: Cross-build macOS and Windows
         run: |
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build ./...
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
@@ -75,7 +80,11 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build ./...
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build ./...
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
           CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build ./...
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
           CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
       - name: Build and verify release assets
         run: |
@@ -91,6 +100,43 @@ jobs:
           path: dist/*
           if-no-files-found: error
           retention-days: 7
+
+  windows:
+    name: Windows native checks
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          path-type: inherit
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-ffmpeg
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+        env:
+          CGO_ENABLED: "0"
+      - name: Build daemon and MCP without cgo
+        shell: msys2 {0}
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+          go build ./...
+          go build -o "$RUNNER_TEMP/autopaws-kvm.exe" ./cmd/autopaws-kvm
+          go build -o "$RUNNER_TEMP/autopaws-mcp.exe" ./cmd/autopaws-mcp
+      - name: Race tests and generated media fixtures without hardware
+        shell: msys2 {0}
+        env:
+          CGO_ENABLED: "1"
+          AUTOPAWS_FFMPEG_TEST: "1"
+        run: go test -race ./...
 
   macos:
     name: macOS native checks

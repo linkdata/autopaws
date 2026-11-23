@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package main
 
@@ -32,8 +32,11 @@ type runtimeFactories struct {
 }
 
 func serveRuntime(ctx context.Context, cfg config.Config, output io.Writer) error {
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		if _, err := exec.LookPath("ffmpeg"); err != nil {
+			if runtime.GOOS == "windows" {
+				return fmt.Errorf("capture on Windows requires FFmpeg on PATH; see docs/windows-setup.md: %w", err)
+			}
 			return fmt.Errorf("macOS capture requires FFmpeg on PATH; install it with 'brew install ffmpeg': %w", err)
 		}
 	}

@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package web
 
@@ -34,7 +34,8 @@ type AudioSubscription interface {
 // AudioOptions enables audio explicitly. A nil Options.Audio never probes or
 // opens audio. Device is empty for selected-video USB matching, "off", or a
 // fixed PCM path/selector. Defaults use the platform backend. On macOS audio
-// requires an explicit avfoundation:NAME because USB pairing is unavailable.
+// requires an explicit avfoundation:NAME; Windows requires an explicit dshow:
+// selector because USB pairing is unavailable for these media backends.
 type AudioOptions struct {
 	Device, SysRoot string
 	OpenSource      func(context.Context, string) (AudioSource, error)

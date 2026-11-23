@@ -1,6 +1,6 @@
-//go:build darwin && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
-package avfoundation
+package ffmpegmedia
 
 import (
 	"context"
@@ -12,29 +12,37 @@ import (
 	"time"
 )
 
-func TestMediaReaderRefreshesDeadlineAndReportsStall(t *testing.T) {
+func TestMediaReaderAllowsProgressAndReportsStall(t *testing.T) {
 	input, output, err := os.Pipe()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer input.Close()
 	defer output.Close()
-	reader := mediaReader{file: input, timeout: 50 * time.Millisecond}
+	reader := mediaReader{input: input, timeout: 50 * time.Millisecond, interrupt: func() { _ = output.Close() }}
 	for _, want := range []byte{'a', 'b'} {
-		if err := input.SetReadDeadline(time.Unix(1, 0)); err != nil {
-			t.Fatal(err)
-		}
 		if _, err := output.Write([]byte{want}); err != nil {
 			t.Fatal(err)
 		}
 		var data [1]byte
 		if n, err := reader.Read(data[:]); err != nil || n != 1 || data[0] != want {
-			t.Fatalf("read after expired deadline: %d %q %v", n, data, err)
+			t.Fatalf("read after progress: %d %q %v", n, data, err)
 		}
 	}
 	var data [1]byte
 	if _, err := reader.Read(data[:]); !errors.Is(err, os.ErrDeadlineExceeded) {
 		t.Fatalf("stalled pipe did not report its deadline: %v", err)
+	}
+}
+
+func TestDiagnosticsBounded(t *testing.T) {
+	var output Diagnostics
+	data := make([]byte, 100<<10)
+	for index := range data {
+		data[index] = 'x'
+	}
+	if n, err := output.Write(data); err != nil || n != len(data) || len(output.String()) != 64<<10 || !output.Truncated() {
+		t.Fatalf("bounded diagnostics: n=%d, error=%v, length=%d, truncated=%t", n, err, len(output.String()), output.Truncated())
 	}
 }
 
@@ -63,6 +71,38 @@ func TestProcessReapsStalledChild(t *testing.T) {
 	}
 	if err := <-finished; !errors.Is(err, os.ErrDeadlineExceeded) || cmd.ProcessState == nil {
 		t.Fatalf("stalled process result = %v, state = %v", err, cmd.ProcessState)
+	}
+}
+
+func TestProcessGracefulStopAndReopen(t *testing.T) {
+	for range 2 {
+		var cmd *exec.Cmd
+		owner, err := startProcess(t.Context(), "fixture", audioHelper("graceful", &cmd), func(pipe io.Reader, ready func()) error {
+			var first [1]byte
+			if _, err := io.ReadFull(pipe, first[:]); err != nil {
+				return err
+			}
+			ready()
+			_, err := io.Copy(io.Discard, pipe)
+			return err
+		}, func(error) {})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(owner.close)
+		closed := make(chan struct{})
+		go func() {
+			owner.close()
+			close(closed)
+		}()
+		select {
+		case <-closed:
+		case <-time.After(5 * time.Second):
+			t.Fatal("graceful close did not join the child")
+		}
+		if cmd.ProcessState == nil || !cmd.ProcessState.Success() {
+			t.Fatalf("graceful fixture did not receive q before stopping: %v", cmd.ProcessState)
+		}
 	}
 }
 
