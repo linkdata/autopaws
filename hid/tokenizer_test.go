@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPythonTokenizerGoldens(t *testing.T) {
+func TestTokenizerGoldens(t *testing.T) {
 	var golden struct {
 		Tokenizer []struct {
 			Name   string   `json:"name"`
@@ -19,9 +19,9 @@ func TestPythonTokenizerGoldens(t *testing.T) {
 			Valid bool   `json:"valid"`
 		} `json:"valid_tags"`
 	}
-	readJSON(t, "python_tokenizer.json", &golden)
+	readJSON(t, "tokenizer.json", &golden)
 	if len(golden.Tokenizer) != 34 || len(golden.ValidTags) != 15 {
-		t.Fatalf("incomplete Python fixture: %d tokenizer, %d tag cases", len(golden.Tokenizer), len(golden.ValidTags))
+		t.Fatalf("incomplete tokenizer fixture: %d tokenizer, %d tag cases", len(golden.Tokenizer), len(golden.ValidTags))
 	}
 	for _, vector := range golden.Tokenizer {
 		t.Run(vector.Name, func(t *testing.T) {
@@ -30,8 +30,8 @@ func TestPythonTokenizerGoldens(t *testing.T) {
 				t.Fatalf("tokens = %v; want %q", got, vector.Tokens)
 			}
 			for i, want := range vector.Tokens {
-				// Python marks tags with U+0001. A literal marker is a
-				// one-rune token, and must stay literal in the Go port.
+				// The fixture marks tags with U+0001. A literal marker is a
+				// one-rune token and must stay literal.
 				tag := strings.HasPrefix(want, "\x01") && len(want) > 1
 				if tag {
 					want = want[1:]

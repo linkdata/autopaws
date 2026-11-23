@@ -27,7 +27,7 @@ func mouseFixture(t *testing.T, options MouseOptions) (*Controller, *Mouse, *rec
 	return controller, mouse, transport
 }
 
-func TestMousePythonGoldens(t *testing.T) {
+func TestMouseActionGoldens(t *testing.T) {
 	var fixture struct {
 		Cases []struct {
 			Name    string `json:"name"`
@@ -36,11 +36,11 @@ func TestMousePythonGoldens(t *testing.T) {
 			Mode    string `json:"default_button_mode"`
 			Buttons byte   `json:"held_buttons_after"`
 			Steps   []struct {
-				Method string            `json:"method"`
-				Args   []json.RawMessage `json:"args"`
-				Kwargs struct {
+				Method  string            `json:"method"`
+				Args    []json.RawMessage `json:"args"`
+				Options struct {
 					Mode string `json:"button_mode"`
-				} `json:"kwargs"`
+				} `json:"options"`
 				Events []struct {
 					Kind  string  `json:"kind"`
 					Hex   string  `json:"hex"`
@@ -55,7 +55,7 @@ func TestMousePythonGoldens(t *testing.T) {
 	}
 	readJSON(t, "mouse_actions.json", &fixture)
 	if len(fixture.Cases) != 44 {
-		t.Fatalf("Python mouse cases=%d; want 44", len(fixture.Cases))
+		t.Fatalf("mouse action cases=%d; want 44", len(fixture.Cases))
 	}
 	for _, vector := range fixture.Cases {
 		t.Run(vector.Name, func(t *testing.T) {
@@ -65,13 +65,13 @@ func TestMousePythonGoldens(t *testing.T) {
 				var want []frameEvent
 				prepares := 0
 				for _, step := range vector.Steps {
-					err := applyMouseStep(t, mouse, step.Method, step.Args, step.Kwargs.Mode)
+					err := applyMouseStep(t, mouse, step.Method, step.Args, step.Options.Mode)
 					if step.Error == nil {
 						if err != nil {
 							t.Fatal(err)
 						}
 						prepares++
-					} else if step.Error.Type != "ValueError" || !errors.Is(err, ErrButtonMode) {
+					} else if step.Error.Type != "invalid_button_mode" || !errors.Is(err, ErrButtonMode) {
 						t.Fatalf("expected invalid button mode, got %v", err)
 					}
 					for _, event := range step.Events {
@@ -147,8 +147,8 @@ func TestMouseCoordinates(t *testing.T) {
 			Height int    `json:"screen_height"`
 			X      int    `json:"x"`
 			Y      int    `json:"y"`
-			HID    [2]int `json:"go_hid"`
-			Reject bool   `json:"go_rejects"`
+			HID    [2]int `json:"hid"`
+			Reject bool   `json:"rejects"`
 		} `json:"cases"`
 	}
 	readJSON(t, "mouse_coordinates.json", &fixture)

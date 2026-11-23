@@ -277,10 +277,10 @@ func TestNoEnvironmentOrAutomaticFiles(t *testing.T) {
 	directory := t.TempDir()
 	t.Chdir(directory)
 	t.Setenv("XDG_CONFIG_HOME", directory)
-	t.Setenv("SHKVM_CONFIG", filepath.Join(directory, "missing.yaml"))
-	t.Setenv("SHKVM_API", "1")
-	t.Setenv("SHKVM_SERIAL_BAUD", "1")
-	if err := os.WriteFile("serial-hid-kvm.yaml", []byte("api: ':1'\nserial-baud: 1"), 0o600); err != nil {
+	t.Setenv("AUTOPAWS_CONFIG", filepath.Join(directory, "missing.yaml"))
+	t.Setenv("AUTOPAWS_API", "1")
+	t.Setenv("AUTOPAWS_SERIAL_BAUD", "1")
+	if err := os.WriteFile("autopaws.yaml", []byte("api: ':1'\nserial-baud: 1"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, _, err := Parse([]string{"-web", ":9330"})

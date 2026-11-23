@@ -84,14 +84,14 @@ func duration(value time.Duration) *time.Duration { return &value }
 func TestKeyboardActionGoldens(t *testing.T) {
 	var golden struct {
 		Cases []struct {
-			Name   string            `json:"name"`
-			Method string            `json:"method"`
-			Args   []json.RawMessage `json:"args"`
-			Kwargs struct {
+			Name    string            `json:"name"`
+			Method  string            `json:"method"`
+			Args    []json.RawMessage `json:"args"`
+			Options struct {
 				Raw          bool     `json:"raw"`
 				CharDelay    *float64 `json:"char_delay"`
 				DefaultDelay *int     `json:"default_delay_ms"`
-			} `json:"kwargs"`
+			} `json:"options"`
 			Events []struct {
 				FrameHex string `json:"frame_hex"`
 				DelayMS  int    `json:"delay_ms"`
@@ -100,7 +100,7 @@ func TestKeyboardActionGoldens(t *testing.T) {
 	}
 	readJSON(t, "keyboard_actions.json", &golden)
 	if len(golden.Cases) != 10 {
-		t.Fatalf("Python action cases = %d; want 10", len(golden.Cases))
+		t.Fatalf("keyboard action cases = %d; want 10", len(golden.Cases))
 	}
 	for _, vector := range golden.Cases {
 		t.Run(vector.Name, func(t *testing.T) {
@@ -111,9 +111,9 @@ func TestKeyboardActionGoldens(t *testing.T) {
 				case "type_text":
 					var text string
 					decodeArgument(t, vector.Args[0], &text)
-					options := TypeOptions{Raw: vector.Kwargs.Raw}
-					if vector.Kwargs.CharDelay != nil {
-						options.CharDelay = duration(time.Duration(*vector.Kwargs.CharDelay * float64(time.Second)))
+					options := TypeOptions{Raw: vector.Options.Raw}
+					if vector.Options.CharDelay != nil {
+						options.CharDelay = duration(time.Duration(*vector.Options.CharDelay * float64(time.Second)))
 					}
 					err = keyboard.TypeText(context.Background(), text, options)
 				case "send_key":
@@ -139,8 +139,8 @@ func TestKeyboardActionGoldens(t *testing.T) {
 						}
 					}
 					var defaultDelay *time.Duration
-					if vector.Kwargs.DefaultDelay != nil {
-						defaultDelay = duration(time.Duration(*vector.Kwargs.DefaultDelay) * time.Millisecond)
+					if vector.Options.DefaultDelay != nil {
+						defaultDelay = duration(time.Duration(*vector.Options.DefaultDelay) * time.Millisecond)
 					}
 					err = keyboard.SendKeySequence(context.Background(), plan, defaultDelay)
 				default:

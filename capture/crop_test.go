@@ -21,7 +21,7 @@ func lumaImage(bounds, active image.Rectangle, brightness uint8) *image.YCbCr {
 	return img
 }
 
-func TestDetectCropReferenceThresholds(t *testing.T) {
+func TestDetectCropThresholds(t *testing.T) {
 	bounds := image.Rect(0, 0, 160, 120)
 	for _, tc := range []struct {
 		name         string

@@ -1,7 +1,5 @@
 {
-  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
-  "source": "src/serial_hid_kvm/hid_keyboard.py",
-  "note": "Calls were executed against an I/O-free recording device; all application sleeps were recorded rather than waited. Each fake send_keyboard expands the documented Python send_keyboard behavior using the real encoder: press, 10ms hold, release.",
+  "note": "Events list frames and delays in emission order.",
   "cases": [
     {
       "name": "plain_ascii",
@@ -9,7 +7,7 @@
       "args": [
         "aA1!"
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab000208000004000000000010"
@@ -67,7 +65,7 @@
       "args": [
         "A{ctrl+c}{shift+0x87}{enter}"
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab000208020004000000000012"
@@ -125,7 +123,7 @@
       "args": [
         "{{enter}}"
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab00020802002f00000000003d"
@@ -219,7 +217,7 @@
       "args": [
         "awk '{print $1}'{enter}"
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab000208000004000000000010"
@@ -433,7 +431,7 @@
       "args": [
         "a\r\nb\rc\n"
       ],
-      "kwargs": {
+      "options": {
         "raw": true
       },
       "events": [
@@ -517,7 +515,7 @@
       "args": [
         "echo hello\\necho world\\n"
       ],
-      "kwargs": {
+      "options": {
         "raw": true
       },
       "events": [
@@ -817,7 +815,7 @@
       "args": [
         "ab{tab}"
       ],
-      "kwargs": {
+      "options": {
         "char_delay": 0
       },
       "events": [
@@ -859,7 +857,7 @@
           "ctrl"
         ]
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab000208030004000000000013"
@@ -878,7 +876,7 @@
       "args": [
         "0x00"
       ],
-      "kwargs": {},
+      "options": {},
       "events": [
         {
           "frame_hex": "57ab00020800000000000000000c"
@@ -912,7 +910,7 @@
           }
         ]
       ],
-      "kwargs": {
+      "options": {
         "default_delay_ms": 100
       },
       "events": [

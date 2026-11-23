@@ -1,12 +1,8 @@
 {
-  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
-  "source": "src/serial_hid_kvm/hid_keyboard.py",
-  "source_tests": "tests/test_hid_keyboard.py",
-  "tests_executed": 22,
-  "token_note": "Python uses U+0001 prefix to mark tags. Port may use a typed token instead; literal U+0001 must remain a character and then fail layout validation, rather than become a tag.",
+  "token_note": "Tag tokens carry a U+0001 prefix. A literal U+0001 in the input must stay a character and then fail layout validation, rather than become a tag.",
   "tokenizer": [
     {
-      "name": "TestTokenize/test_plain_text",
+      "name": "plain_text",
       "input": "hello",
       "tokens": [
         "h",
@@ -17,21 +13,21 @@
       ]
     },
     {
-      "name": "TestTokenize/test_single_tag",
+      "name": "single_tag",
       "input": "{enter}",
       "tokens": [
         "\u0001enter"
       ]
     },
     {
-      "name": "TestTokenize/test_tag_with_modifiers",
+      "name": "tag_with_modifiers",
       "input": "{ctrl+c}",
       "tokens": [
         "\u0001ctrl+c"
       ]
     },
     {
-      "name": "TestTokenize/test_text_with_tag",
+      "name": "text_with_tag",
       "input": "ls -la{enter}",
       "tokens": [
         "l",
@@ -44,21 +40,21 @@
       ]
     },
     {
-      "name": "TestTokenize/test_escaped_open_brace",
+      "name": "escaped_open_brace",
       "input": "{{",
       "tokens": [
         "{"
       ]
     },
     {
-      "name": "TestTokenize/test_escaped_close_brace",
+      "name": "escaped_close_brace",
       "input": "}}",
       "tokens": [
         "}"
       ]
     },
     {
-      "name": "TestTokenize/test_escaped_braces_in_text",
+      "name": "escaped_braces_in_text",
       "input": "hello{{world}}",
       "tokens": [
         "h",
@@ -76,21 +72,21 @@
       ]
     },
     {
-      "name": "TestTokenize/test_hex_keycode_tag",
+      "name": "hex_keycode_tag",
       "input": "{0x87}",
       "tokens": [
         "\u00010x87"
       ]
     },
     {
-      "name": "TestTokenize/test_modifier_hex_tag",
+      "name": "modifier_hex_tag",
       "input": "{shift+0x87}",
       "tokens": [
         "\u0001shift+0x87"
       ]
     },
     {
-      "name": "TestTokenize/test_multiple_tags",
+      "name": "multiple_tags",
       "input": "{ctrl+a}{ctrl+c}",
       "tokens": [
         "\u0001ctrl+a",
@@ -98,7 +94,7 @@
       ]
     },
     {
-      "name": "TestTokenize/test_unclosed_brace",
+      "name": "unclosed_brace",
       "input": "{unclosed",
       "tokens": [
         "{",
@@ -113,12 +109,12 @@
       ]
     },
     {
-      "name": "TestTokenize/test_empty_string",
+      "name": "empty_string",
       "input": "",
       "tokens": []
     },
     {
-      "name": "TestTokenize/test_complex_mixed",
+      "name": "complex_mixed",
       "input": "path{0x87}file{enter}",
       "tokens": [
         "p",
@@ -134,7 +130,7 @@
       ]
     },
     {
-      "name": "TestTokenize/test_unknown_tag_passes_through",
+      "name": "unknown_tag_passes_through",
       "input": "{print $1}",
       "tokens": [
         "{",
@@ -150,7 +146,7 @@
       ]
     },
     {
-      "name": "TestTokenize/test_awk_command",
+      "name": "awk_command",
       "input": "awk '{print $1}' file.txt{enter}",
       "tokens": [
         "a",
@@ -182,7 +178,7 @@
       ]
     },
     {
-      "name": "TestTokenize/test_python_dict_literal",
+      "name": "dict_literal",
       "input": "{\"key\": \"value\"}",
       "tokens": [
         "{",
@@ -204,7 +200,7 @@
       ]
     },
     {
-      "name": "TestTokenize/test_escaped_recognized_tag",
+      "name": "escaped_recognized_tag",
       "input": "{{enter}}",
       "tokens": [
         "{",
@@ -217,7 +213,7 @@
       ]
     },
     {
-      "name": "doc_hex_path",
+      "name": "hex_tag_in_word",
       "input": "path{0x87}file",
       "tokens": [
         "p",
@@ -232,7 +228,7 @@
       ]
     },
     {
-      "name": "doc_awk",
+      "name": "awk_then_enter",
       "input": "awk '{print $1}'{enter}",
       "tokens": [
         "a",
@@ -255,7 +251,7 @@
       ]
     },
     {
-      "name": "doc_raw_text_for_separate_raw_test",
+      "name": "literal_backslash_n",
       "input": "echo hello\\necho world\\n",
       "tokens": [
         "e",
@@ -433,77 +429,77 @@
   ],
   "valid_tags": [
     {
-      "name": "TestIsValidTag/test_recognized_special_keys",
+      "name": "recognized_special_keys",
       "input": "enter",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_recognized_special_keys",
+      "name": "recognized_special_keys",
       "input": "tab",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_recognized_special_keys",
+      "name": "recognized_special_keys",
       "input": "escape",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_recognized_special_keys",
+      "name": "recognized_special_keys",
       "input": "f1",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_recognized_special_keys",
+      "name": "recognized_special_keys",
       "input": "backspace",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_hex_keycodes",
+      "name": "hex_keycodes",
       "input": "0x87",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_hex_keycodes",
+      "name": "hex_keycodes",
       "input": "0x2C",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_modifier_combos",
+      "name": "modifier_combos",
       "input": "ctrl+c",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_modifier_combos",
+      "name": "modifier_combos",
       "input": "shift+0x87",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_modifier_combos",
+      "name": "modifier_combos",
       "input": "ctrl+alt+delete",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_unknown_content",
+      "name": "unknown_content",
       "input": "print $1",
       "valid": false
     },
     {
-      "name": "TestIsValidTag/test_unknown_content",
+      "name": "unknown_content",
       "input": "unknown",
       "valid": false
     },
     {
-      "name": "TestIsValidTag/test_unknown_content",
+      "name": "unknown_content",
       "input": "key: value",
       "valid": false
     },
     {
-      "name": "TestIsValidTag/test_single_char_key",
+      "name": "single_char_key",
       "input": "a",
       "valid": true
     },
     {
-      "name": "TestIsValidTag/test_single_char_key",
+      "name": "single_char_key",
       "input": "ctrl+a",
       "valid": true
     }

@@ -11,9 +11,10 @@ const (
 	cropMinContent = 64
 )
 
-// DetectCrop applies the reference detector's thresholds to JPEG luminance.
-// The returned rectangle uses the image's coordinates. Empty/insignificant
-// borders and fewer than 64 active rows or columns do not produce a crop.
+// DetectCrop finds the rows and columns whose peak JPEG luminance exceeds
+// cropThreshold. The returned rectangle uses the image's coordinates.
+// Empty/insignificant borders and fewer than 64 active rows or columns do not
+// produce a crop.
 func DetectCrop(img image.Image) (image.Rectangle, bool) {
 	bounds := img.Bounds()
 	rowMax := make([]uint8, bounds.Dy())

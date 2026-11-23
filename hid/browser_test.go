@@ -36,7 +36,7 @@ func TestBrowserPhysicalCodeGoldens(t *testing.T) {
 	}
 	readJSON(t, "browser_codes.json", &fixture)
 	if len(fixture.Keys) != 104 || len(fixture.Modifiers) != 8 || !reflect.DeepEqual(browserKeys, fixture.Keys) || !reflect.DeepEqual(browserModifiers, fixture.Modifiers) {
-		t.Fatal("physical-code tables differ from complete Python reference")
+		t.Fatal("physical-code tables differ from browser_codes.json")
 	}
 	for code, key := range fixture.Keys {
 		browser, transport := browserFixture(t, "absolute")
@@ -113,8 +113,8 @@ func TestBrowserMouseWireModesAndNormalizedCoordinates(t *testing.T) {
 			if mode == "absolute" {
 				want = [][]byte{ch9329.MouseAbsolute(1, 2048, 1024, 0), ch9329.MouseAbsolute(1, 1, 4095, 0), ch9329.MouseRelative(1, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0)}
 			} else {
-				// Relative moves intentionally carry held ABS bits, correcting
-				// Python's button-free move to match the verified shared Mouse.
+				// Relative moves intentionally carry held ABS bits to match the
+				// verified shared Mouse.
 				want = [][]byte{ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseAbsolute(1, 1, 4095, 0), ch9329.MouseRelative(1, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(0, 0, 0, 0)}
 			}
 			if got := browserFrames(transport); !reflect.DeepEqual(got, want) {

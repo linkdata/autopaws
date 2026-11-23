@@ -2,29 +2,29 @@
   {
     "name": "linux-console",
     "jpeg": "linux-console.jpg",
-    "python_pgm": "linux-console.python.pgm",
+    "baseline_pgm": "linux-console.baseline.pgm",
     "expected": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
-    "original_python_text": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080"
+    "baseline_text": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080"
   },
   {
     "name": "dark-terminal",
     "jpeg": "dark-terminal.jpg",
-    "python_pgm": "dark-terminal.python.pgm",
+    "baseline_pgm": "dark-terminal.baseline.pgm",
     "expected": "agent@linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
-    "original_python_text": "agent@Linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go"
+    "baseline_text": "agent@Linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go"
   },
   {
     "name": "light-terminal",
     "jpeg": "light-terminal.jpg",
-    "python_pgm": "light-terminal.python.pgm",
+    "baseline_pgm": "light-terminal.baseline.pgm",
     "expected": "user@host:~$ uname\nLinux\nCapture stream ready",
-    "original_python_text": "user@host:~$ uname\nLinux\nCapture stream ready"
+    "baseline_text": "user@host:~$ uname\nLinux\nCapture stream ready"
   },
   {
     "name": "powershell-style",
     "jpeg": "powershell-style.jpg",
-    "python_pgm": "powershell-style.python.pgm",
+    "baseline_pgm": "powershell-style.baseline.pgm",
     "expected": "PS C:\\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready",
-    "original_python_text": "PS C:\\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready"
+    "baseline_text": "PS C:\\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready"
   }
 ]

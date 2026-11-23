@@ -1,330 +1,224 @@
 {
-  "formula_python": "int(pixel * 4096 / screen_dimension), then encoder clamps to 0..4095",
-  "formula_go": "round(pixel * 4095 / (screen_dimension - 1)); dimension1 maps0; reject outside0..dimension-1",
+  "formula": "round(pixel * 4095 / (screen_dimension - 1)); a dimension of 1 maps to 0; reject outside 0..dimension-1",
   "cases": [
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 0,
       "y": 0,
-      "python_unclamped_hid": [
+      "hid": [
         0,
         0
       ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": [
-        0,
-        0
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 1,
       "y": 1,
-      "python_unclamped_hid": [
-        2,
-        3
-      ],
-      "python_wire_frame_hex": "57ab0004070200020003000014",
-      "go_hid": [
+      "hid": [
         2,
         4
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 10,
       "y": 20,
-      "python_unclamped_hid": [
-        21,
-        75
-      ],
-      "python_wire_frame_hex": "57ab000407020015004b00006f",
-      "go_hid": [
+      "hid": [
         21,
         76
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 959,
       "y": 539,
-      "python_unclamped_hid": [
-        2045,
-        2044
-      ],
-      "python_wire_frame_hex": "57ab0004070200fd07fc070016",
-      "go_hid": [
+      "hid": [
         2046,
         2046
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 960,
       "y": 540,
-      "python_unclamped_hid": [
-        2048,
-        2048
-      ],
-      "python_wire_frame_hex": "57ab000407020000080008001f",
-      "go_hid": [
+      "hid": [
         2049,
         2049
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 1918,
       "y": 1078,
-      "python_unclamped_hid": [
-        4091,
-        4088
-      ],
-      "python_wire_frame_hex": "57ab0004070200fb0ff80f0020",
-      "go_hid": [
+      "hid": [
         4093,
         4091
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 1919,
       "y": 1079,
-      "python_unclamped_hid": [
-        4093,
-        4092
-      ],
-      "python_wire_frame_hex": "57ab0004070200fd0ffc0f0026",
-      "go_hid": [
+      "hid": [
         4095,
         4095
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": 1920,
       "y": 1080,
-      "python_unclamped_hid": [
-        4096,
-        4096
-      ],
-      "python_wire_frame_hex": "57ab0004070200ff0fff0f002b",
-      "go_hid": null,
-      "go_rejects": true
+      "hid": null,
+      "rejects": true
     },
     {
       "screen_width": 1920,
       "screen_height": 1080,
       "x": -1,
       "y": -1,
-      "python_unclamped_hid": [
-        -2,
-        -3
-      ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": null,
-      "go_rejects": true
+      "hid": null,
+      "rejects": true
     },
     {
       "screen_width": 4096,
       "screen_height": 4096,
       "x": 0,
       "y": 0,
-      "python_unclamped_hid": [
+      "hid": [
         0,
         0
       ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": [
-        0,
-        0
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 4096,
       "screen_height": 4096,
       "x": 10,
       "y": 20,
-      "python_unclamped_hid": [
+      "hid": [
         10,
         20
       ],
-      "python_wire_frame_hex": "57ab00040702000a001400002d",
-      "go_hid": [
-        10,
-        20
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 4096,
       "screen_height": 4096,
       "x": 4095,
       "y": 4095,
-      "python_unclamped_hid": [
+      "hid": [
         4095,
         4095
       ],
-      "python_wire_frame_hex": "57ab0004070200ff0fff0f002b",
-      "go_hid": [
-        4095,
-        4095
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 4096,
       "screen_height": 4096,
       "x": 4096,
       "y": 4096,
-      "python_unclamped_hid": [
-        4096,
-        4096
-      ],
-      "python_wire_frame_hex": "57ab0004070200ff0fff0f002b",
-      "go_hid": null,
-      "go_rejects": true
+      "hid": null,
+      "rejects": true
     },
     {
       "screen_width": 1,
       "screen_height": 1,
       "x": 0,
       "y": 0,
-      "python_unclamped_hid": [
+      "hid": [
         0,
         0
       ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": [
-        0,
-        0
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 1,
       "screen_height": 1,
       "x": 1,
       "y": 0,
-      "python_unclamped_hid": [
-        4096,
-        0
-      ],
-      "python_wire_frame_hex": "57ab0004070200ff0f0000001d",
-      "go_hid": null,
-      "go_rejects": true
+      "hid": null,
+      "rejects": true
     },
     {
       "screen_width": 1,
       "screen_height": 1080,
       "x": 0,
       "y": 1079,
-      "python_unclamped_hid": [
-        0,
-        4092
-      ],
-      "python_wire_frame_hex": "57ab00040702000000fc0f001a",
-      "go_hid": [
+      "hid": [
         0,
         4095
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 2,
       "screen_height": 2,
       "x": 0,
       "y": 0,
-      "python_unclamped_hid": [
+      "hid": [
         0,
         0
       ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": [
-        0,
-        0
-      ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 2,
       "screen_height": 2,
       "x": 1,
       "y": 1,
-      "python_unclamped_hid": [
-        2048,
-        2048
-      ],
-      "python_wire_frame_hex": "57ab000407020000080008001f",
-      "go_hid": [
+      "hid": [
         4095,
         4095
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 3,
       "screen_height": 3,
       "x": 1,
       "y": 1,
-      "python_unclamped_hid": [
-        1365,
-        1365
-      ],
-      "python_wire_frame_hex": "57ab00040702005505550500c3",
-      "go_hid": [
+      "hid": [
         2048,
         2048
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 3,
       "screen_height": 3,
       "x": 2,
       "y": 2,
-      "python_unclamped_hid": [
-        2730,
-        2730
-      ],
-      "python_wire_frame_hex": "57ab0004070200aa0aaa0a0077",
-      "go_hid": [
+      "hid": [
         4095,
         4095
       ],
-      "go_rejects": false
+      "rejects": false
     },
     {
       "screen_width": 8191,
       "screen_height": 8191,
       "x": 1,
       "y": 1,
-      "python_unclamped_hid": [
-        0,
-        0
-      ],
-      "python_wire_frame_hex": "57ab000407020000000000000f",
-      "go_hid": [
+      "hid": [
         1,
         1
       ],
-      "go_rejects": false
+      "rejects": false
     }
   ]
 }

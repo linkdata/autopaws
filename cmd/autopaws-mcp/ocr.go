@@ -93,19 +93,21 @@ func runTesseract(ctx context.Context, executable string, pgm []byte, timeout ti
 
 var excessOCRNewlines = regexp.MustCompile(`\n{4,}`)
 
-func pythonWhitespace(r rune) bool {
+// ocrWhitespace is Unicode white space plus the U+001C..U+001F separators.
+func ocrWhitespace(r rune) bool {
 	return unicode.IsSpace(r) || r >= 0x1c && r <= 0x1f
 }
 
-// Keep Python's operation order and its Unicode whitespace semantics.
+// postprocessOCR trims trailing white space from each line, caps blank-line
+// runs at two, fixes common "|s" misreadings of ls and trims the result.
 func postprocessOCR(text string) string {
 	lines := strings.Split(text, "\n")
 	for i, line := range lines {
-		lines[i] = strings.TrimRightFunc(line, pythonWhitespace)
+		lines[i] = strings.TrimRightFunc(line, ocrWhitespace)
 	}
 	text = excessOCRNewlines.ReplaceAllString(strings.Join(lines, "\n"), "\n\n\n")
 	for _, correction := range [][2]string{{" |s ", " ls "}, {" |s\n", " ls\n"}, {"\n|s ", "\nls "}} {
 		text = strings.ReplaceAll(text, correction[0], correction[1])
 	}
-	return strings.TrimFunc(text, pythonWhitespace)
+	return strings.TrimFunc(text, ocrWhitespace)
 }
