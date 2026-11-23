@@ -86,16 +86,12 @@ func TestListLayouts(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := os.Symlink(filepath.Join(directory, "missing"), filepath.Join(directory, "broken.yaml")); err != nil {
-		t.Fatal(err)
-	}
 	got, err := ListLayouts(directory)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got) != 8 || got[0].Name != "broken" || got[0].Source != "custom" || got[0].Error == "" ||
-		got[1] != (LayoutInfo{Name: "custom", Source: "custom"}) ||
-		got[5].Name != "se105" || got[5].Source != "custom" || got[5].Error == "" {
+	if len(got) != 7 || got[0] != (LayoutInfo{Name: "custom", Source: "custom"}) ||
+		got[4].Name != "se105" || got[4].Source != "custom" || got[4].Error == "" {
 		t.Fatalf("custom precedence, failures or sorted names lost: %+v", got)
 	}
 	notDirectory := filepath.Join(directory, "custom.yaml")

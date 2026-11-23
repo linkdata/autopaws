@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -31,7 +32,7 @@ func TestCommandTokenHelpCancellationAndReadErrors(t *testing.T) {
 			}
 		}
 		var stdout, stderr bytes.Buffer
-		if code := run(t.Context(), []string{"-token-file", path}, nil, &stdout, &stderr); code != 1 || stdout.Len() != 0 || !strings.Contains(stderr.String(), path) {
+		if code := run(t.Context(), []string{"-token-file", path}, nil, &stdout, &stderr); code != 1 || stdout.Len() != 0 || !strings.Contains(stderr.String(), strconv.Quote(path)) {
 			t.Fatalf("token read error = exit %d stdout %q stderr %q", code, stdout.String(), stderr.String())
 		}
 	}

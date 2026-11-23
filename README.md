@@ -320,49 +320,64 @@ pairs and do not establish hardware coverage.
 
 Use Go 1.27.4+, Node.js 26.13.1, the golangci-lint version pinned in
 [CI](.github/workflows/ci.yml), actionlint, ShellCheck, zip/unzip and a C compiler for race tests.
-Run the complete local gate after final edits and before pushing or starting CI:
+The local gate is the same on Linux, macOS and Windows: run the development
+host's native builds, tests and linters, plus all supported-platform cross-builds
+and release checks. Run it after final edits and before pushing or manually
+starting CI. Cross-builds check compilation; they do not run another OS's tests.
+No host needs WSL, a VM or another machine to run other-platform native tests
+before opening a PR.
 
-```sh
-actionlint
-bash -n .github/scripts/build-release.sh
-shellcheck .github/scripts/build-release.sh
-node --check web/assets/viewer-helpers.mjs
-node --check web/assets/viewer.mjs
-node --check web/assets/sw.js
-node --check web/assets/audio-playback.mjs
-node --check web/assets/audio-worklet.mjs
-node --test web/*.test.mjs
-CGO_ENABLED=0 go build ./...
-CGO_ENABLED=0 go build -o /dev/null ./cmd/autopaws-kvm
-golangci-lint run
-CGO_ENABLED=1 go test -race -coverprofile=coverage.out ./...
-go tool cover -func=coverage.out
-go tool cover -html=coverage.out -o=coveragereport.html.out
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build ./...
-CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./...
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
-CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build ./...
-CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-kvm
-CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build ./...
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-kvm
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/autopaws-mcp
-CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -o /dev/null ./cmd/autopaws-mcp
-autopaws_assets=$(mktemp -d)
-bash .github/scripts/build-release.sh ci "$autopaws_assets/dist"
-(cd "$autopaws_assets/dist" && sha256sum --check SHA256SUMS)
-for archive in "$autopaws_assets"/dist/*.zip; do unzip -tq "$archive"; done
-rm -r "$autopaws_assets"
+Run these commands in Bash, using Git Bash or MSYS2 on Windows with native
+Windows Go, Node.js and a compatible MinGW-w64 GCC on `PATH`. On macOS, install
+FFmpeg first; the gate enables its native media fixtures. Tesseract is optional:
+the real OCR corpus test skips when it is absent.
+
+```bash
+(
+  set -euo pipefail
+  GOOS=$(go env GOHOSTOS)
+  GOARCH=$(go env GOHOSTARCH)
+  export GOOS GOARCH
+  autopaws_checks=$(mktemp -d)
+  trap 'rm -r "$autopaws_checks"' EXIT
+  if [[ "$GOOS" == darwin ]]; then
+    command -v ffmpeg >/dev/null
+    export AUTOPAWS_FFMPEG_TEST=1
+  fi
+  actionlint
+  bash -n .github/scripts/build-release.sh
+  shellcheck .github/scripts/build-release.sh
+  node --check web/assets/viewer-helpers.mjs
+  node --check web/assets/viewer.mjs
+  node --check web/assets/sw.js
+  node --check web/assets/audio-playback.mjs
+  node --check web/assets/audio-worklet.mjs
+  node --test web/*.test.mjs
+  CGO_ENABLED=0 go build ./...
+  golangci-lint run
+  CGO_ENABLED=1 go test -race -coverprofile=coverage.out ./...
+  go tool cover -func=coverage.out
+  go tool cover -html=coverage.out -o=coveragereport.html.out
+  for autopaws_platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+    CGO_ENABLED=0 GOOS="${autopaws_platform%/*}" GOARCH="${autopaws_platform#*/}" go build ./...
+  done
+  bash .github/scripts/build-release.sh ci "$autopaws_checks/dist"
+  (
+    cd "$autopaws_checks/dist"
+    if command -v sha256sum >/dev/null 2>&1; then
+      sha256sum --check SHA256SUMS
+    else
+      shasum -a 256 --check SHA256SUMS
+    fi
+  )
+  for archive in "$autopaws_checks"/dist/*.zip; do unzip -tq "$archive"; done
+)
 ```
 
-On macOS, replace `sha256sum --check` with `shasum -a 256 --check`, install FFmpeg
-and run the native media fixtures:
-
-```sh
-AUTOPAWS_FFMPEG_TEST=1 CGO_ENABLED=1 go test -race ./avfoundation
-```
+Native tests for other operating systems belong on matching CI runners. Require
+all applicable CI jobs to pass before merging. The current workflow runs native
+Linux and macOS tests; Windows currently has cross-build coverage only in CI.
+Physical KVM acceptance is performed locally with hardware, outside GitHub Actions.
 
 ## License
 
