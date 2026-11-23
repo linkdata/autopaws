@@ -96,20 +96,6 @@
           "description": "absolute or relative. Omit to use the daemon's configured mode.",
           "type": "string"
         },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
-          ]
-        },
         "x": {
           "description": "Optional screenshot x pixel. Supply both x and y.",
           "type": [
@@ -157,20 +143,6 @@
         "start_y": {
           "description": "Start y pixel in the latest screenshot.",
           "type": "integer"
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
-          ]
         }
       },
       "required": [
@@ -191,20 +163,6 @@
         "relative": {
           "description": "Use unscaled relative deltas, each -127 through 127. Default false.",
           "type": "boolean"
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
-          ]
         },
         "x": {
           "description": "Screenshot x pixel, or signed horizontal delta when relative is true.",
@@ -231,20 +189,6 @@
         "amount": {
           "description": "Signed wheel amount, clamped by the daemon to -127 through 127.",
           "type": "integer"
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
-          ]
         }
       },
       "required": [
@@ -271,20 +215,6 @@
           "type": [
             "null",
             "array"
-          ]
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
           ]
         }
       },
@@ -342,20 +272,6 @@
           "type": [
             "null",
             "array"
-          ]
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
           ]
         }
       },
@@ -445,20 +361,6 @@
         "text": {
           "description": "Text to type. Characters unavailable in the target layout are rejected before typing.",
           "type": "string"
-        },
-        "wait_for": {
-          "description": "Optional visual condition to check after input using the configured vision endpoint. Returns the checked screenshot; model acceptance does not guarantee completion.",
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "wait_timeout_ms": {
-          "description": "Observation budget including vision calls, 1..60000 milliseconds, default 5000. Requires wait_for. Timeout preserves the successful input result; do not replay input automatically.",
-          "type": [
-            "null",
-            "integer"
-          ]
         }
       },
       "required": [

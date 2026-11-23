@@ -11,6 +11,7 @@ import (
 	"image/jpeg"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -76,6 +77,52 @@ func waitAssertFrame(t *testing.T, report observationResult, returned []byte, fr
 	}
 }
 
+func TestWaitToolSchemasFollowVisionConfiguration(t *testing.T) {
+	for _, configured := range []bool{false, true, false} {
+		options := mcpOptions{TesseractPath: "resolved-at-startup"}
+		if configured {
+			options.Vision = &visionClient{}
+		}
+		session := sdkConnect(t, newServer(t.Context(), options, unitCaller(func(context.Context, string, any, any) error {
+			t.Error("tools/list called API")
+			return nil
+		})))
+		result, err := session.client.ListTools(sdkContext(t), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var inputTools int
+		for _, tool := range result.Tools {
+			inputTool := slices.Contains([]string{"type_text", "send_key", "send_key_sequence", "mouse_move", "mouse_click", "mouse_drag", "mouse_scroll"}, tool.Name)
+			if inputTool {
+				inputTools++
+			}
+			encoded, err := json.Marshal(tool.InputSchema)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var schema struct {
+				Properties map[string]json.RawMessage `json:"properties"`
+				Required   []string                   `json:"required"`
+			}
+			if err := json.Unmarshal(encoded, &schema); err != nil {
+				t.Fatal(err)
+			}
+			for _, field := range []string{"wait_for", "wait_timeout_ms"} {
+				if _, exists := schema.Properties[field]; exists != (configured && inputTool) {
+					t.Errorf("%s advertises %s=%t with vision=%t", tool.Name, field, exists, configured)
+				}
+				if slices.Contains(schema.Required, field) {
+					t.Errorf("%s requires optional %s", tool.Name, field)
+				}
+			}
+		}
+		if inputTools != 7 {
+			t.Fatalf("found %d input tools, want 7", inputTools)
+		}
+	}
+}
+
 func TestWaitValidationSendsNoInput(t *testing.T) {
 	for _, configured := range []bool{false, true} {
 		var calls atomic.Int32
@@ -107,7 +154,11 @@ func TestWaitValidationSendsNoInput(t *testing.T) {
 				{"wait_for": "condition", "wait_timeout_ms": 60001},
 			}
 			if !configured {
-				invalid = append(invalid, map[string]any{"wait_for": "condition"})
+				invalid = append(invalid,
+					map[string]any{"wait_for": "condition"},
+					map[string]any{"wait_for": nil},
+					map[string]any{"wait_timeout_ms": nil},
+				)
 			}
 			for _, wait := range invalid {
 				args := make(map[string]any)

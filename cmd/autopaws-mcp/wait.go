@@ -24,7 +24,7 @@ func (input *waitInput) takeWait() waitInput {
 	return wait
 }
 
-func (owner *toolServer) validateWait(input waitInput) error {
+func validateWait(input waitInput) error {
 	if input.WaitFor == nil {
 		if input.WaitTimeoutMS != nil {
 			return errors.New("wait_timeout_ms requires wait_for")
@@ -36,9 +36,6 @@ func (owner *toolServer) validateWait(input waitInput) error {
 	}
 	if input.WaitTimeoutMS != nil && (*input.WaitTimeoutMS < 1 || *input.WaitTimeoutMS > 60000) {
 		return errors.New("wait_timeout_ms must be in 1..60000")
-	}
-	if owner.options.Vision == nil {
-		return errors.New("wait_for requires -vision-api and -vision-model")
 	}
 	return nil
 }

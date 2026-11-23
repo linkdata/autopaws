@@ -277,8 +277,9 @@ The client sends `Authorization: Bearer TOKEN`. Provider options are a JSON
 object; for example, a service without JSON-schema support can override
 `response_format` while MCP still validates the returned boolean object.
 
-The seven keyboard/mouse tools accept optional `wait_for` and
-`wait_timeout_ms` arguments:
+With vision disabled, `wait_for` and `wait_timeout_ms` are absent from tool
+schemas and rejected if supplied. When vision is configured, the seven
+keyboard/mouse tools advertise these optional arguments:
 
 ```json
 {

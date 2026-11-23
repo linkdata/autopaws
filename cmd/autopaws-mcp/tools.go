@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -119,6 +120,15 @@ func newServer(lifetime context.Context, options mcpOptions, caller apiCaller) *
 
 func addTool[In any](server *mcp.Server, owner *toolServer, name, description string, readOnly bool, handle func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, error)) {
 	tool := &mcp.Tool{Name: name, Description: description}
+	if owner.options.Vision == nil {
+		schema, err := jsonschema.For[In](nil)
+		if err != nil {
+			panic(err)
+		}
+		delete(schema.Properties, "wait_for")
+		delete(schema.Properties, "wait_timeout_ms")
+		tool.InputSchema = schema
+	}
 	if readOnly {
 		tool.Annotations = &mcp.ToolAnnotations{ReadOnlyHint: true}
 	}
@@ -137,7 +147,7 @@ func addTool[In any](server *mcp.Server, owner *toolServer, name, description st
 		waitParams, inputTool := any(&input).(interface{ takeWait() waitInput })
 		if inputTool {
 			wait = waitParams.takeWait()
-			if err := owner.validateWait(wait); err != nil {
+			if err := validateWait(wait); err != nil {
 				return nil, nil, err
 			}
 		}
