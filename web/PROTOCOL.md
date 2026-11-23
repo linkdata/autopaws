@@ -41,10 +41,10 @@ includes the negotiated `sampleRate` and `channels`; for example,
 `{"type":"config","audio":{"status":"available","generation":"7","sampleRate":48000,"channels":2}}`.
 Audio is captured lazily while web clients are connected. On Linux, auto
 selection follows the current selected video USB device; an explicit PCM path
-stays fixed. macOS requires an explicit AVFoundation audio selector. Each
+stays fixed. macOS and Windows require explicit AVFoundation/DirectShow audio selectors. Each
 video generation reopens audio, including resolution changes and successful
-macOS capture recovery. Selection/open/read failures make audio unavailable
-without ending video or input. Native macOS audio retries an explicit selector
+FFmpeg capture recovery. Selection/open/read failures make audio unavailable
+without ending video or input. FFmpeg audio retries an explicit selector
 after one second while viewers remain connected. Every audio-generation change
 is sent as configuration before any samples belonging to that generation.
 JSON uint64 generations are decimal strings
@@ -62,7 +62,7 @@ All multibyte integers are **unsigned little-endian**:
 |4|uint32|Common timestamp flags, below |
 |8|uint64|Video settings/recovery generation, or audio configuration generation |
 |16|uint64|Video connection delivery sequence, or audio source-block sequence |
-|24|uint64|Capture timestamp in nanoseconds on the server's `CLOCK_MONOTONIC`, or zero if unavailable |
+|24|uint64|Capture timestamp in nanoseconds on the server's host monotonic clock, or zero if unavailable |
 |32|uint32|Video source JPEG width; zero for audio |
 |36|uint32|Video source JPEG height; zero for audio |
 |40|uint32|Video crop x; zero for audio |
@@ -72,9 +72,13 @@ All multibyte integers are **unsigned little-endian**:
 |56|uint32|Audio sample-frame count; zero for video |
 |60|uint32|Audio block duration in nanoseconds; zero for video |
 
+The server's host monotonic clock is `CLOCK_MONOTONIC` on Linux/macOS, or Windows
+`QueryPerformanceCounter` converted to nanoseconds. It is not wall-clock time;
+values must not be compared across hosts or host restarts.
+
 Timestamp flags have the **same meanings for both media kinds**:
 
-* Bit 0 (`1`): the timestamp is available and belongs to server CLOCK_MONOTONIC.
+* Bit 0 (`1`): the timestamp is available and belongs to the server's host monotonic clock.
   Without it, offset 24 is zero and must not be used for timing.
 * Bit 1 (`2`): video timestamp denotes start of exposure. With bits 1 and 2 clear, a valid
   video timestamp denotes end of frame. Audio leaves this bit clear and its
@@ -82,7 +86,7 @@ Timestamp flags have the **same meanings for both media kinds**:
 * Bit 2 (`4`): the monotonic timestamp is an estimate rather than a device timestamp.
   Linux video leaves this bit clear. Linux audio sets it because its first sample time is
   estimated from an ALSA monotonic timestamp/delay observation and block frame count.
-  macOS video and audio both set this bit: their timestamps estimate FFmpeg pipe
+  macOS and Windows video and audio set this bit: their timestamps estimate FFmpeg pipe
   receipt on the server monotonic clock, not device capture time. FFmpeg/OS
   buffering is unmeasured; video uses read-start time and audio estimates its first
   sample from read completion minus the block duration.
@@ -167,4 +171,4 @@ On disconnect or server shutdown, connections with held input attempt release
 through the shared coordinator with a one-second application budget. An action's
 failure cleanup is not repeated on disconnect; overlapping shutdown reuses a
 cleanup's remaining deadline. Serial recovery resets held input; interrupted input
-is never replayed. Executing Linux kernel calls can outlast the cleanup budget.
+is never replayed. Executing kernel device calls can outlast the cleanup budget.

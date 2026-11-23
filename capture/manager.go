@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package capture
 
@@ -32,7 +32,7 @@ type Source interface {
 }
 
 // Options contains selected settings and narrow source/clock seams. Nil hooks
-// use the platform capture backend and CLOCK_MONOTONIC. The native macOS source
+// use the platform capture backend and host monotonic clock. The FFmpeg source
 // retries failures while demand remains. Zero IdleTimeout uses ten seconds.
 type Options struct {
 	Device        string

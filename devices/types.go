@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 // Package devices discovers KVM serial and capture devices.
 package devices
@@ -14,13 +14,13 @@ import (
 // ErrNoVideo means no node passed the supported capture-node filter.
 var ErrNoVideo = errors.New("devices: no video capture device found")
 
-// SerialDevice is one supported CH340/CH341 tty.
+// SerialDevice is one supported CH340/CH341 serial port.
 type SerialDevice struct {
 	Path string
 	USB  serial.USBDevice
 }
 
-// VideoDevice is a Linux VIDEO_CAPTURE node or a macOS AVFoundation input.
+// VideoDevice is a Linux VIDEO_CAPTURE node or an FFmpeg capture input.
 type VideoDevice struct {
 	Path, Name string
 	USB        serial.USBDevice
@@ -28,7 +28,7 @@ type VideoDevice struct {
 }
 
 // AudioDevice is a capture input. CardID is the ALSA card ID on Linux and the
-// AVFoundation input name on macOS. Card and Device are Linux PCM numbers.
+// FFmpeg input name on macOS/Windows. Card and Device are Linux PCM numbers.
 type AudioDevice struct {
 	Path, CardID string
 	Card, Device int
@@ -36,8 +36,8 @@ type AudioDevice struct {
 }
 
 // Inventory follows platform discovery order (numeric nodes on Linux, lexical
-// serial paths and AVFoundation enumeration on macOS). Empty USB identities,
-// including macOS media inputs, never correlate video and audio.
+// serial paths and FFmpeg enumeration elsewhere). Empty USB identities,
+// including macOS/Windows media inputs, never correlate video and audio.
 type Inventory struct {
 	Serial []SerialDevice
 	Video  []VideoDevice

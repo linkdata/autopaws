@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package capture
 
@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/linkdata/autopaws/avfoundation"
+	"github.com/linkdata/autopaws/directshow"
 	"github.com/linkdata/autopaws/v4l2"
 )
 
@@ -371,8 +372,11 @@ func TestManagerOptionsAvailabilityAndDefaultSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	expected := os.ErrNotExist
-	if runtime.GOOS == "darwin" {
+	switch runtime.GOOS {
+	case "darwin":
 		expected = avfoundation.ErrDevice
+	case "windows":
+		expected = directshow.ErrDevice
 	}
 	if _, err := manager.Snapshot(context.Background()); !errors.Is(err, ErrUnavailable) || !errors.Is(err, expected) {
 		t.Fatalf("default source open error lost: %v", err)

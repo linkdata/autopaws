@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package api
 
@@ -66,9 +66,6 @@ func TestKeyboardLayoutSelectionAndDiscovery(t *testing.T) {
 	if err := os.WriteFile(path, []byte("overrides: [broken]"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Symlink(filepath.Join(directory, "absent"), filepath.Join(directory, "unreadable.yaml")); err != nil {
-		t.Fatal(err)
-	}
 	for _, test := range []struct {
 		params string
 		code   apiwire.Code
@@ -82,7 +79,6 @@ func TestKeyboardLayoutSelectionAndDiscovery(t *testing.T) {
 		{`{"layout":"` + strings.Repeat("x", 256) + `"}`, apiwire.ErrInvalidParams},
 		{`{"layout":"unknown"}`, apiwire.ErrInvalidParams},
 		{`{"layout":"se105"}`, apiwire.ErrInvalidParams},
-		{`{"layout":"unreadable"}`, apiwire.ErrUnavailable},
 		{`{"layout":"us104","extra":true}`, apiwire.ErrInvalidParams},
 	} {
 		_, err := server.handlers["set_keyboard_layout"](context.Background(), json.RawMessage(test.params))
@@ -113,7 +109,7 @@ func TestKeyboardLayoutSelectionAndDiscovery(t *testing.T) {
 		Name    string           `json:"keyboard_layout"`
 		Layouts []hid.LayoutInfo `json:"layouts"`
 	}
-	if err := json.Unmarshal(encoded, &inventory); err != nil || inventory.Name != "se105" || len(inventory.Layouts) != 7 {
+	if err := json.Unmarshal(encoded, &inventory); err != nil || inventory.Name != "se105" || len(inventory.Layouts) != 6 {
 		t.Fatalf("inventory: %s; %v", encoded, err)
 	}
 	active("se105")

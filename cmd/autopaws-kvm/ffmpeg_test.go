@@ -1,4 +1,4 @@
-//go:build darwin && (amd64 || arm64)
+//go:build (darwin || windows) && (amd64 || arm64)
 
 package main
 
@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"os/exec"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -19,7 +20,11 @@ func TestServeRuntimeRequiresFFmpegBeforeCreatingOwners(t *testing.T) {
 	cfg := config.Defaults()
 	cfg.SerialBaud = 1 // A transport must not be constructed before this check.
 	err := serveRuntime(t.Context(), cfg, io.Discard)
-	if !errors.Is(err, exec.ErrNotFound) || !strings.Contains(err.Error(), "brew install ffmpeg") {
+	hint := "brew install ffmpeg"
+	if runtime.GOOS == "windows" {
+		hint = "docs/windows-setup.md"
+	}
+	if !errors.Is(err, exec.ErrNotFound) || !strings.Contains(err.Error(), hint) {
 		t.Fatalf("missing FFmpeg startup error = %v", err)
 	}
 }

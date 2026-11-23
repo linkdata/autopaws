@@ -5,7 +5,6 @@ package avfoundation
 import (
 	"errors"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -58,16 +57,5 @@ func TestRejectUnsafeNames(t *testing.T) {
 	devices := []Device{{Path: "avfoundation:USB", Name: "USB"}, {Path: "avfoundation:USB Capture", Name: "USB Capture"}}
 	if _, err := selectDevice(devices, devices[0].Path, false); !errors.Is(err, ErrDevice) {
 		t.Fatalf("accepted ambiguous prefix: %v", err)
-	}
-}
-
-func TestBoundedDiagnostics(t *testing.T) {
-	var output boundedBuffer
-	data := strings.Repeat("x", 100<<10)
-	if n, err := output.Write([]byte(data)); err != nil || n != len(data) {
-		t.Fatalf("write = %d, %v", n, err)
-	}
-	if len(output.String()) != 64<<10 {
-		t.Fatalf("retained %d bytes", len(output.String()))
 	}
 }

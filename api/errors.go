@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package api
 
@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"io/fs"
-	"syscall"
 
 	"github.com/linkdata/autopaws/apiwire"
 	"github.com/linkdata/autopaws/capture"
@@ -28,7 +27,7 @@ func classifyError(err error) (apiwire.Code, string) {
 		code = apiwire.ErrUnsupported
 	case errors.Is(err, hid.ErrLayout):
 		var pathError *fs.PathError
-		if errors.As(err, &pathError) && !errors.Is(err, syscall.ENAMETOOLONG) {
+		if errors.As(err, &pathError) && !invalidLayoutPath(err) {
 			code = apiwire.ErrUnavailable
 		} else {
 			code = apiwire.ErrInvalidParams

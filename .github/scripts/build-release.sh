@@ -14,15 +14,11 @@ output=$(cd "$output" && pwd)
 for platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
   os=${platform%/*}
   arch=${platform#*/}
-  commands=(autopaws-mcp)
-  if [[ "$os" == linux || "$os" == darwin ]]; then
-    commands+=(autopaws-kvm)
-  fi
   suffix=
   if [[ "$os" == windows ]]; then
     suffix=.exe
   fi
-  for command in "${commands[@]}"; do
+  for command in autopaws-kvm autopaws-mcp; do
     CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
       -ldflags="-s -w -X main.version=$version" \
       -o "$output/${command}_${version}_${os}_${arch}${suffix}" "./cmd/$command"
@@ -31,15 +27,19 @@ done
 
 staging=$(mktemp -d)
 trap 'rm -rf "$staging"' EXIT
-for platform in linux/amd64 linux/arm64 darwin/arm64; do
+for platform in linux/amd64 linux/arm64 darwin/arm64 windows/amd64 windows/arm64; do
   os=${platform%/*}
   arch=${platform#*/}
+  suffix=
+  if [[ "$os" == windows ]]; then
+    suffix=.exe
+  fi
   for command in autopaws-kvm autopaws-mcp; do
-    cp "$output/${command}_${version}_${os}_${arch}" "$staging/$command"
+    cp "$output/${command}_${version}_${os}_${arch}${suffix}" "$staging/$command$suffix"
   done
   (
     cd "$staging"
-    zip -q -X "$output/autopaws_${version}_${os}_${arch}.zip" autopaws-kvm autopaws-mcp
+    zip -q -X "$output/autopaws_${version}_${os}_${arch}.zip" "autopaws-kvm$suffix" "autopaws-mcp$suffix"
   )
 done
 

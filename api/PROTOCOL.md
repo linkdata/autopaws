@@ -66,7 +66,7 @@ across API and browser callers, including holds, delays and cleanup. Use one
 operator at a time; separate connections do not merge independent held state.
 
 Cancellation after input may have reached the target attempts release before the
-next action. Cleanup has a one-second application budget; executing Linux kernel
+next action. Cleanup has a one-second application budget; executing kernel device
 calls can outlast it. Recovery releases all input and clears held state; interrupted
 input is never replayed. Cleanup failures appear in the error detail. Shutdown
 attempts keyboard and mouse release before closing serial transport.
@@ -208,10 +208,16 @@ processed earlier input or that HDMI content has stabilized. Executing kernel
 operations can outlast the acquisition deadline.
 
 On macOS, device selectors are `avfoundation:<exact name>` from discovery.
-FFmpeg video uses estimated pipe read-start timestamps on the server monotonic
-clock. The snapshot still waits for a read started after the request, but
-FFmpeg/OS buffering means this does not establish camera capture freshness.
 Duplicate device names are ambiguous; no numeric indices are accepted.
+On Windows, use the `dshow:<alternative name>` selector returned by discovery.
+An exact friendly name is accepted only when it identifies one input of the
+requested media type. Windows audio requires an explicit audio-device selector.
+
+Freshness comparisons use the server's host monotonic clock: `CLOCK_MONOTONIC`
+on Linux/macOS, or Windows `QueryPerformanceCounter` converted to nanoseconds.
+FFmpeg video uses estimated pipe read-start timestamps on that clock. The
+snapshot still waits for a read started after the request, but
+FFmpeg/OS buffering means this does not establish camera capture freshness.
 
 Snapshots are validated JPEGs with any detected crop applied. Uncropped images
 are not re-encoded; cropped images use quality-85 encoding. Width/height describe the returned image, which can differ
@@ -221,7 +227,7 @@ quality parameter. Capture starts on demand and stops after ten idle seconds.
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending
 old-generation snapshots fail with `capture changed`; callers retry explicitly.
-Idle opens retain that generation. On macOS, a stalled source is closed and
+Idle opens retain that generation. On macOS and Windows, a stalled source is closed and
 retried while demand remains; a successful automatic recovery advances the
 generation and resets queued frames and crop detection. Failed attempts do not
 advance it. A device selection is accepted even with no source open, and a

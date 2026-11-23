@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "status": "PASS for the recorded Windows host checklist, with the coverage limits below.",
+  "source": {
+    "base_commit": "26bb873",
+    "build_state": "Windows host support working tree, not a committed release",
+    "binary": {
+      "path": "dist/windows11/autopaws-kvm.exe",
+      "sha256": "70074cf02e83f716b833fb83038948989cfa372f7583a503e3ffa42be6bed8d9",
+      "version": "devel",
+      "cgo_enabled": "0",
+      "go_command": "go build -o dist/windows11/autopaws-kvm.exe ./cmd/autopaws-kvm"
+    },
+    "mcp_binary": {
+      "path": "dist/windows11/autopaws-mcp.exe",
+      "sha256": "9209d05b3cb4a67fc198f4963b052add38c5c51b2a0741067770d7cc859fcf25",
+      "go_command": "go build -o dist/windows11/autopaws-mcp.exe ./cmd/autopaws-mcp"
+    }
+  },
+  "host": {
+    "os": "Windows 11 Pro",
+    "version": "10.0.26300",
+    "build": "26300",
+    "architecture": "amd64",
+    "manufacturer": "LENOVO",
+    "model": "20UES66B00",
+    "go_version": "1.27.4",
+    "ffmpeg_version": "9.1"
+  },
+  "target": {
+    "os": "Linux",
+    "purpose": "Dedicated test target",
+    "configured_coordinate_width": 1280,
+    "configured_coordinate_height": 720,
+    "initial_configured_keyboard_layout": "us104",
+    "confirmed_x11_keyboard_layout": "se",
+    "verified_daemon_keyboard_layout": "se105",
+    "keyboard_layout_confirmed_on_target": true,
+    "access": "USB HID and HDMI capture; target SSH was not required"
+  },
+  "configuration": {
+    "api": "127.0.0.1:9329",
+    "web": "127.0.0.1:9330",
+    "serial_baud": 9600,
+    "serial_mode": "8N1",
+    "mouse_button_mode": "relative",
+    "capture_width": 1920,
+    "capture_height": 1080,
+    "initial_autocrop": false,
+    "final_autocrop": true,
+    "initial_serial_selection": "Explicit COM3",
+    "later_serial_selection": "After moving USB connections, Windows assigned COM4. The daemon was restarted with automatic serial selection for later checks.",
+    "initial_video_selector": "dshow:UGREEN 15389",
+    "audio_selector": "dshow:Digital Audio Interface (UGREEN 15389)",
+    "later_video_selection": "A later check selected the canonical DirectShow alternative-name selector returned by discovery. The exact selector is not included in this record.",
+    "later_keyboard_layout": "Read-only localectl status confirmed the target X11 layout as se. The daemon was then set to se105 for the visual input checks.",
+    "viewer": "In-app Chromium renderer"
+  },
+  "devices": {
+    "serial": {
+      "type": "CH340/CH9329",
+      "usb_vid": "1a86",
+      "usb_pid": "7523",
+      "ports_observed": ["COM3", "COM4"]
+    },
+    "capture": {
+      "name": "UGREEN 15389",
+      "usb_vid": "2b89",
+      "usb_pid": "5389",
+      "video": "MJPEG at 1920x1080",
+      "audio_output": "48 kHz stereo S16_LE in 10 ms blocks"
+    }
+  },
+  "checks": [
+    {
+      "name": "Version and device discovery",
+      "status": "PASS",
+      "observation": "The development binary reported its version. Device listing found COM3 initially, COM4 after moving the USB connections, and the UGREEN video and audio inputs."
+    },
+    {
+      "name": "JPEG acquisition",
+      "status": "PASS",
+      "observation": "A captured JPEG decoded in memory with dimensions 1920x1080. This verifies decodable media, not its visual contents or target-side input effects."
+    },
+    {
+      "name": "Simultaneous WebSocket video and audio",
+      "status": "PASS for transport and format metadata",
+      "observation": "One WebSocket received video and 48 kHz stereo audio in 10 ms PCM blocks, with no invalid headers observed. The observed PCM peak was 2; this does not establish meaningful HDMI sound content or browser playback.",
+      "invalid_headers": 0,
+      "observed_pcm_peak": 2
+    },
+    {
+      "name": "Idle stop and reopen",
+      "status": "PASS for media metadata",
+      "observation": "Three cycles each received media for four seconds, then remained idle for twelve seconds. Each cycle delivered 79 video frames and 360 audio blocks containing 172800 sample frames. Audio generations advanced through 1, 2 and 3.",
+      "cycles": 3,
+      "media_seconds_per_cycle": 4,
+      "idle_seconds_per_cycle": 12,
+      "video_frames_per_cycle": 79,
+      "audio_blocks_per_cycle": 360,
+      "audio_sample_frames_per_cycle": 172800,
+      "audio_generations": [1, 2, 3]
+    },
+    {
+      "name": "Serial disconnect and reconnect on COM3",
+      "status": "PASS for transport availability",
+      "disconnected_at_utc": "2026-11-23T09:15:04Z",
+      "writes_resumed_at_utc": "2026-11-23T09:15:22Z",
+      "observation": "With explicit COM3 selection, writes reported unavailable while the serial device was disconnected and reported success after reconnect. Target-side effects were not visually verified."
+    },
+    {
+      "name": "First capture recovery sequence",
+      "status": "Recovered after USB port changes; cause unresolved",
+      "recovered_at_utc": "2026-11-23T09:18:34Z",
+      "observation": "Windows reported Configuration Descriptor Request Failed for the capture device. A complete USB and HDMI power cycle did not restore enumeration. Moving USB connections restored PnP enumeration, and media resumed on the existing WebSocket without restarting the daemon or reselecting video. This does not establish that a USB port was defective.",
+      "video_generation_before": 1,
+      "video_generation_after": 2,
+      "audio_generations_observed_around_recovery": [10, 11]
+    },
+    {
+      "name": "Subsequent disconnect and automatic recovery on the new USB connections",
+      "status": "PASS for transport and media metadata",
+      "serial_unavailable_at_utc": "2026-11-23T09:22:11Z",
+      "counts_when_media_stopped": {
+        "video_frames": 443,
+        "audio_blocks": 2238
+      },
+      "audio_unavailable_at_utc": "2026-11-23T09:22:16Z",
+      "serial_writes_resumed_at_utc": "2026-11-23T09:22:31Z",
+      "video_resumed_at_utc": "2026-11-23T09:22:35Z",
+      "audio_available_at_utc": "2026-11-23T09:22:36Z",
+      "video_generation_before": 1,
+      "video_generation_after": 2,
+      "audio_generation_before": 4,
+      "audio_generation_after": 5,
+      "observation": "The same WebSocket remained connected. Serial writes and media recovered without restarting the daemon or reselecting video. No target-side effect or audible playback was verified."
+    },
+    {
+      "name": "Live resolution changes",
+      "status": "PASS for dimensions and generations",
+      "observation": "Changing capture to 1280x720 and then back to 1920x1080 produced the exact requested JPEG dimensions and advanced the capture generation. Autocrop was disabled."
+    },
+    {
+      "name": "Explicit capture selection",
+      "status": "PASS",
+      "observation": "Canonical video selection produced a fresh frame. An explicit missing selector reported unavailable without falling back to another input. Restoring the canonical selector restored a fresh frame."
+    },
+    {
+      "name": "COM4 contention",
+      "status": "PASS",
+      "observation": "While the daemon owned COM4, a .NET serial-port open attempt failed with UnauthorizedAccessException, as expected for exclusive access."
+    },
+    {
+      "name": "Shutdown while explicit COM3 was absent",
+      "status": "Processes cleaned up; missing-device release error reported",
+      "observation": "After Ctrl+C, no daemon or owned FFmpeg processes remained. Release cleanup reported that it could not open the missing explicitly selected COM3. A later healthy-device shutdown is recorded separately."
+    },
+    {
+      "name": "Browser video and positioned input",
+      "status": "PASS",
+      "observation": "The in-app Chromium viewer displayed live target video at approximately 19 to 20 frames per second. Positioned clicks opened a terminal and operated target controls. A held-button drag visibly selected target text. No screen contents were retained.",
+      "observed_frame_rate_fps": [19, 20]
+    },
+    {
+      "name": "Target keyboard layout and visual keyboard input",
+      "status": "PASS",
+      "observation": "Read-only localectl status confirmed the target X11 layout as se. After set_keyboard_layout selected se105, mixed-case ASCII, digits, punctuation and Swedish letters visually matched the requested input. The browser Ctrl+Alt+T shortcut opened a terminal. No typed contents or screenshots were retained."
+    },
+    {
+      "name": "API request cancellation and fresh input",
+      "status": "PASS",
+      "observation": "A slow type_text request was canceled by closing its TCP connection after 200 ms. Debug serial output showed only the first character's key report, followed by a release report and outcome=canceled. A fresh lowercase input action completed in 2.842 seconds and its target output was visually verified. Interrupted text was not replayed.",
+      "connection_closed_after_ms": 200,
+      "fresh_input_duration_seconds": 2.842
+    },
+    {
+      "name": "WebSocket held-key release",
+      "status": "PASS",
+      "observation": "A separate WebSocket held ShiftLeft and then closed. Debug serial output showed modifier 2 followed by an all-zero release report before the next action. Subsequent lowercase input visually matched the request."
+    },
+    {
+      "name": "HDMI channel content and browser playback",
+      "status": "PASS",
+      "observation": "The original target audio route produced a PCM peak of 2 during the native sound test. After selecting HDMI output in the native sound settings and playing separate left and right samples, captured peaks reached 1045 on the left and 1049 on the right. The user confirmed hearing both samples through the viewer with audio enabled. Mute control returned to the unmuted state successfully. The original target output route was restored and the sound settings window was closed. A compact read-only route query visually confirmed restoration of the original default output. No audio recording or acoustic latency measurement was made.",
+      "initial_observed_pcm_peak": 2,
+      "hdmi_observed_pcm_peak_left": 1045,
+      "hdmi_observed_pcm_peak_right": 1049
+    },
+    {
+      "name": "Absolute and relative pointer movement",
+      "status": "PASS",
+      "observation": "An API absolute move to target coordinates (640, 360), followed by a relative move of (+127, 0), placed the visible target cursor at the expected location within display scaling."
+    },
+    {
+      "name": "Healthy Ctrl+C release and cleanup",
+      "status": "PASS for input release and resource cleanup",
+      "observation": "Ctrl+C while ShiftLeft and the left mouse button were held emitted zero keyboard and relative mouse reports. Both WebSocket clients closed, and no daemon or FFmpeg process remained. A subsequent exclusive .NET open of COM4 succeeded. The outer PowerShell PTY returned 1 on Ctrl+C, while the daemon emitted no cleanup error; this does not establish daemon exit code 0.",
+      "held_reports_observed_local": "2026-11-23 10:40:59",
+      "keyboard_release_observed_local": "2026-11-23 10:41:12.656",
+      "relative_mouse_release_observed_local": "2026-11-23 10:41:12.669",
+      "local_timezone": "Europe/Stockholm",
+      "held_modifier_byte": 2,
+      "held_left_button_byte": 1,
+      "outer_pty_exit_code": 1
+    },
+    {
+      "name": "Default autocrop full-frame input and viewer reconnect",
+      "status": "PASS for the full-frame case",
+      "observation": "The same binary restarted with default autocrop enabled, se105 layout, automatic serial selection and the same media devices. The live viewer reconnected automatically. A fresh JPEG validated at 1920x1080, and one five-second interval delivered 99 video frames and 500 audio blocks with no invalid headers. The physical full-frame input was not falsely cropped. Deliberately imposed letterboxing was not tested physically; common synthetic crop tests cover that behavior.",
+      "autocrop": true,
+      "jpeg_width": 1920,
+      "jpeg_height": 1080,
+      "interval_seconds": 5,
+      "video_frames": 99,
+      "audio_blocks": 500,
+      "invalid_headers": 0
+    },
+    {
+      "name": "Native MCP capture coordinates and invalidation",
+      "status": "PASS",
+      "observation": "The native MCP binary completed stdio initialization and tool calls. Absolute input before capture was rejected. Successive capture resolutions of 1920x1080, 1280x720 and 1920x1080 each rejected stale coordinates until a fresh capture_screen completed. Every fresh JPEG decoded at the exact requested dimensions, and each screenshot center mapped to target coordinates (640, 360), as verified in the API response. Images were discarded in memory. Closing MCP stdin exited 0.",
+      "capture_resolutions": [[1920, 1080], [1280, 720], [1920, 1080]],
+      "mapped_target_center": [640, 360],
+      "eof_exit_code": 0
+    }
+  ],
+  "pending_acceptance": [],
+  "limits": [
+    "Transport success and valid media metadata do not prove target-side input effects.",
+    "The capture enumeration failure's cause remains unknown.",
+    "Physical autocrop validation covered a full-frame signal without false cropping. Deliberately imposed letterboxing was not tested physically; common synthetic crop tests cover it.",
+    "The outer PowerShell PTY status on Ctrl+C does not establish the daemon's exit code. Healthy-device input release, process cleanup and COM4 reopening were verified.",
+    "No end-to-end or acoustic latency measurement was performed.",
+    "Only the recorded Windows amd64 host and devices were checked; ARM64 hardware was not tested."
+  ],
+  "retained_artifacts": "Metadata and pass/fail observations only. No screenshots, OCR, audio recordings or other media were retained."
+}

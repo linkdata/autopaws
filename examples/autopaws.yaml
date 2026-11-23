@@ -1,4 +1,6 @@
 # Example for one Linux KVM host and one mirrored/single-display target.
+# On Windows use COMn for serial-device and copy dshow: selectors from
+# --list-devices for capture-device and audio-device. See docs/windows-setup.md.
 # Replace the serial path and target dimensions with your actual configuration.
 # Defaults shown explicitly: loopback API and relative mouse button reports.
 # To serve only the web viewer, set api: "".
@@ -23,6 +25,7 @@ autocrop: true
 web-fps: 20
 # Empty selects capture audio on the selected video's complete USB device path.
 # Set off to disable it, or use an explicit /dev/snd/pcmC...D...c capture path.
+# macOS and Windows require an explicit audio selector, or off.
 audio-device: ""
 log-level: info
 debug-keys: false

@@ -288,7 +288,7 @@
       "additionalProperties": false,
       "properties": {
         "device": {
-          "description": "Capture device path such as /dev/video0, or macOS avfoundation:NAME from list_capture_devices. Numeric indexes are not supported.",
+          "description": "Capture device path such as /dev/video0, macOS avfoundation:NAME, or Windows dshow:SELECTOR from list_capture_devices. Numeric indexes are not supported.",
           "type": "string"
         }
       },

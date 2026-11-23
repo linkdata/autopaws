@@ -12,11 +12,13 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/linkdata/autopaws/internal/ffmpegmedia"
 )
 
 var (
 	ErrDevice = errors.New("avfoundation: device missing or ambiguous")
-	ErrClosed = errors.New("avfoundation: stream closed")
+	ErrClosed = ffmpegmedia.ErrClosed
 )
 
 // Device describes one camera/capture input or microphone input. Paths select
@@ -36,7 +38,9 @@ func Discover(ctx context.Context) ([]Device, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "ffmpeg", "-nostdin", "-hide_banner", "-f", "avfoundation", "-list_devices", "true", "-i", "")
-	var output boundedBuffer
+	ffmpegmedia.ConfigureCommand(cmd)
+	cmd.WaitDelay = time.Second
+	var output ffmpegmedia.Diagnostics
 	cmd.Stderr = &output
 	err := cmd.Run()
 	if ctx.Err() != nil {
@@ -113,17 +117,3 @@ func selectDevice(devices []Device, path string, audio bool) (Device, error) {
 	}
 	return result, nil
 }
-
-// boundedBuffer limits diagnostics retained from an external process.
-type boundedBuffer struct{ data []byte }
-
-func (b *boundedBuffer) Write(data []byte) (int, error) {
-	n := len(data)
-	const limit = 64 << 10
-	if left := limit - len(b.data); left > 0 {
-		b.data = append(b.data, data[:min(left, n)]...)
-	}
-	return n, nil
-}
-
-func (b *boundedBuffer) String() string { return strings.TrimSpace(string(b.data)) }

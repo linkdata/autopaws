@@ -7,12 +7,12 @@ autopaws controls a computer through a CH9329 USB HID emulator and a USB HDMI
 capture card. Use a browser for keyboard, mouse, video and audio, or an MCP client
 for agent access.
 
-- `autopaws-kvm`: Linux/macOS daemon serving the hardware, JSON Lines API and web viewer.
+- `autopaws-kvm`: Linux/macOS/Windows 11 daemon serving the hardware, JSON Lines API and web viewer.
 - `autopaws-mcp`: Linux/macOS/Windows stdio MCP server connecting to the daemon, with optional Tesseract OCR.
 
 ## Hardware and wiring
 
-Use an amd64 or arm64 Linux/macOS host, a CH9329 behind a CH340/CH341 USB-UART,
+Use an amd64 or arm64 Linux/macOS/Windows 11 host, a CH9329 behind a CH340/CH341 USB-UART,
 and a UVC HDMI capture card with USB audio. The target can run any OS.
 
 1. Connect the target's HDMI output to the capture card, and the card's USB connection to the host.
@@ -51,19 +51,21 @@ autopaws-kvm --version
 
 | Command | OS/architecture pairs |
 |---|---|
-| `autopaws-kvm` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64` |
+| `autopaws-kvm` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
 | `autopaws-mcp` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
 
 Assets are named `COMMAND_TAG_OS_ARCH`, with `.exe` on Windows. Install the MCP
 asset as `autopaws-mcp` or `autopaws-mcp.exe`. Use its absolute path in GUI clients.
 ZIP bundles named `autopaws_TAG_OS_ARCH.zip` contain both `autopaws-kvm` and
-`autopaws-mcp` for `linux_amd64`, `linux_arm64` and `darwin_arm64`.
+`autopaws-mcp` for `linux_amd64`, `linux_arm64`, `darwin_arm64`, `windows_amd64`
+and `windows_arm64`. Windows bundles contain both `.exe` files.
 `SHA256SUMS` covers standalone binaries and ZIPs.
 On macOS, verify with `shasum -a 256 --check -`; on Windows, compare `SHA256SUMS`
 with `Get-FileHash -Algorithm SHA256 PATH`.
 
-macOS requires [FFmpeg and device permissions](docs/macos-setup.md). Binaries are
-not notarized; if quarantine blocks a verified download, run
+macOS and Windows require FFmpeg on the daemon's `PATH`; see
+[macOS setup](docs/macos-setup.md) or [Windows setup](docs/windows-setup.md) for
+device selectors and permissions. macOS binaries are not notarized; if quarantine blocks a verified download, run
 `xattr -d com.apple.quarantine /absolute/path/to/binary`.
 
 ### Build from source
@@ -77,8 +79,8 @@ CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
 ```
 
 On Windows PowerShell, use `$env:CGO_ENABLED = "0"` before `go build`.
-Linux/macOS builds produce both commands; Windows builds produce only
-`autopaws-mcp`. Source builds report version `devel`. On Linux/macOS, install with:
+All supported hosts build both commands. Source builds report version `devel`.
+On Linux/macOS, install with:
 
 ```sh
 sudo install -m 0755 dist/autopaws-kvm dist/autopaws-mcp /usr/local/bin/
@@ -93,7 +95,8 @@ sudo usermod --append --groups dialout,video,audio "$USER"
 ```
 
 See [Linux setup](docs/linux-setup.md) for permissions, stable device paths and
-systemd, or [macOS setup](docs/macos-setup.md) for FFmpeg and device selectors.
+systemd, [macOS setup](docs/macos-setup.md) for AVFoundation, or
+[Windows setup](docs/windows-setup.md) for COM ports and DirectShow selectors.
 List devices, then start the daemon with the target's actual settings:
 
 ```sh
@@ -145,19 +148,19 @@ unknown/duplicate keys, nulls, aliases and extra documents are rejected.
 | `api` | `127.0.0.1:9329` | JSON Lines API `host:port`; empty disables it |
 | `web` | empty | Viewer `host:port`; empty disables it |
 | `token-file` | empty | Shared-secret file for API and web; empty disables authentication |
-| `serial-device` | empty | Serial path; empty auto-detects CH340/CH341 |
+| `serial-device` | empty | Serial path or Windows `COMn`; empty auto-detects CH340/CH341 |
 | `serial-baud` | `9600` | Supported baud rate below |
 | `screen-width` | `1920` | Positive target coordinate width |
 | `screen-height` | `1080` | Positive target coordinate height |
 | `target-layout` | `us104` | Target text layout |
 | `layouts-dir` | empty | Custom layouts, searched before built-ins |
 | `mouse-button-mode` | `relative` | `relative` or `absolute` button reports |
-| `capture-device` | empty | Linux video path or macOS `avfoundation:NAME`; empty auto-selects |
+| `capture-device` | empty | Linux video path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; empty auto-selects |
 | `capture-width` | `1920` | Requested width, 1–4294967295 |
 | `capture-height` | `1080` | Requested height, 1–4294967295 |
 | `autocrop` | `true` | Detect and crop black borders |
 | `web-fps` | `20` | Viewer frame rate, 1–120 |
-| `audio-device` | empty | Linux PCM path or macOS `avfoundation:NAME`; `off` disables audio |
+| `audio-device` | empty | Linux PCM path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; `off` disables audio |
 | `log-level` | `info` | `debug`, `info`, `warn` or `error` |
 | `debug-keys` | `false` | Log input/packet records regardless of log level |
 
@@ -169,17 +172,18 @@ video stream. A one-pixel target axis maps to HID zero. See
 Listen addresses accept hostnames, IPv4 and bracketed IPv6. An empty host binds
 all interfaces; ports are 0–65535, with zero selecting an ephemeral port.
 Logs go to stderr. SIGINT/SIGTERM stop the daemon and attempt input release;
-kernel device calls can outlast application cleanup deadlines.
+use Ctrl+C in a Windows console. Kernel device calls can outlast application cleanup deadlines.
 
 ## Capture and browser viewer
 
 Linux capture uses V4L2 MJPG. Automatic video selection prefers non-webcam names;
 automatic audio matches the selected video's USB device. An explicit PCM path
-stays fixed. macOS uses FFmpeg/AVFoundation and requires explicit audio selection.
+stays fixed. macOS uses FFmpeg/AVFoundation; Windows uses FFmpeg/DirectShow.
+Both share one FFmpeg media pipeline and require explicit audio selection.
 
 Capture starts on demand and stops after ten seconds without video demand.
 Snapshots wait up to five seconds for a fresh decodable frame and optionally crop
-black borders. Linux timestamps reflect device capture; macOS timing estimates
+black borders. Linux timestamps reflect device capture; macOS/Windows timing estimates
 pipe receipt and cannot account for FFmpeg/OS buffering. A fresh frame does not
 prove the target finished processing input. Missing capture hardware leaves input
 usable. Device/resolution changes invalidate pending snapshots with `capture changed`.
@@ -195,7 +199,7 @@ The installable viewer caches no assets or media.
 
 Click Audio to play and mute to stop. Playback requires AudioWorklet and a secure
 context; use localhost or an [SSH tunnel](#security). Errors leave video and input
-usable. macOS converts audio to 48 kHz stereo; Linux uses the negotiated PCM rate.
+usable. macOS and Windows convert audio to 48 kHz stereo; Linux uses the negotiated PCM rate.
 Audio choices persist across reconnects. Recovery flushes buffered samples;
 configuration changes reopen the selected source. The server/browser application
 queues total at most 200 ms, excluding capture, network and output-device latency.
@@ -313,7 +317,9 @@ results and limits. Linux input, capture/audio recovery and Chromium/Firefox
 playback passed on the recorded hardware. A limited Windows target smoke covered
 capture and safe keyboard/pointer actions. An Apple silicon macOS host passed
 input, capture and reconnect checks against Ubuntu; acoustic browser playback
-and latency remain unvalidated. Cross-builds cover supported OS/architecture
+and latency remain unvalidated on macOS. A Windows 11 amd64 host passed input,
+MCP coordinates, recovery and Chromium video/audio checks against Linux, with
+the limits documented in the record. Cross-builds cover supported OS/architecture
 pairs and do not establish hardware coverage.
 
 ## Development
@@ -328,8 +334,8 @@ No host needs WSL, a VM or another machine to run other-platform native tests
 before opening a PR.
 
 Run these commands in Bash, using Git Bash or MSYS2 on Windows with native
-Windows Go, Node.js and a compatible MinGW-w64 GCC on `PATH`. On macOS, install
-FFmpeg first; the gate enables its native media fixtures. Tesseract is optional:
+Windows Go, Node.js and a compatible MinGW-w64 GCC on `PATH`. Install FFmpeg for
+the generated media fixtures on every host. Tesseract is optional:
 the real OCR corpus test skips when it is absent.
 
 ```bash
@@ -340,10 +346,8 @@ the real OCR corpus test skips when it is absent.
   export GOOS GOARCH
   autopaws_checks=$(mktemp -d)
   trap 'rm -r "$autopaws_checks"' EXIT
-  if [[ "$GOOS" == darwin ]]; then
-    command -v ffmpeg >/dev/null
-    export AUTOPAWS_FFMPEG_TEST=1
-  fi
+  command -v ffmpeg >/dev/null
+  export AUTOPAWS_FFMPEG_TEST=1
   actionlint
   bash -n .github/scripts/build-release.sh
   shellcheck .github/scripts/build-release.sh
@@ -375,8 +379,8 @@ the real OCR corpus test skips when it is absent.
 ```
 
 Native tests for other operating systems belong on matching CI runners. Require
-all applicable CI jobs to pass before merging. The current workflow runs native
-Linux and macOS tests; Windows currently has cross-build coverage only in CI.
+all applicable CI jobs to pass before merging. The workflow runs native Linux,
+macOS and Windows tests, including generated media fixtures without hardware.
 Physical KVM acceptance is performed locally with hardware, outside GitHub Actions.
 
 ## License

@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package serial
 
@@ -20,7 +20,8 @@ var (
 
 // USBDevice identifies a discovered USB device. VID and PID are lowercase
 // hexadecimal strings. BusPath identifies the USB ancestor shared by its
-// interfaces; identical devices on different ports have distinct paths.
+// interfaces on Unix, or the serial Plug and Play instance on Windows.
+// Identical devices on different ports have distinct paths.
 type USBDevice struct {
 	VID     string
 	PID     string
@@ -28,7 +29,7 @@ type USBDevice struct {
 }
 
 // Detect selects the only supported serial device, or returns ErrNotFound or
-// ErrAmbiguous. On Linux, an empty sysRoot means /sys; macOS ignores sysRoot.
+// ErrAmbiguous. On Linux, an empty sysRoot means /sys; other platforms ignore sysRoot.
 func Detect(sysRoot string) (string, error) {
 	return detect(context.Background(), sysRoot)
 }
