@@ -8,14 +8,13 @@ import (
 	"testing"
 )
 
-var ocrReport = flag.String("ocr-report", "", "write measured Go/original-Python OCR corpus results to this JSON file")
+var ocrReport = flag.String("ocr-report", "", "write measured OCR corpus results to this JSON file")
 
 type ocrCorpusCase struct {
-	Name       string `json:"name"`
-	JPEG       string `json:"jpeg"`
-	PythonPGM  string `json:"python_pgm"`
-	Expected   string `json:"expected"`
-	PythonText string `json:"original_python_text"`
+	Name        string `json:"name"`
+	JPEG        string `json:"jpeg"`
+	BaselinePGM string `json:"baseline_pgm"`
+	Expected    string `json:"expected"`
 }
 
 func runeEditDistance(a, b string) int {
@@ -54,8 +53,8 @@ func TestOCRCorpus(t *testing.T) {
 		t.Fatalf("corpus=%d,error%v", len(corpus), err)
 	}
 	type result struct {
-		Name, GoText, PythonText, Expected string
-		GoErrors, PythonErrors             int
+		Name, Text, BaselineText, Expected string
+		Errors, BaselineErrors             int
 	}
 	var results []result
 	for _, sample := range corpus {
@@ -68,7 +67,7 @@ func TestOCRCorpus(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			baseline, err := os.ReadFile(filepath.Join(directory, sample.PythonPGM))
+			baseline, err := os.ReadFile(filepath.Join(directory, sample.BaselinePGM))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -76,14 +75,14 @@ func TestOCRCorpus(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			python := postprocessOCR(text)
-			goErrors := runeEditDistance(sample.Expected, actual)
-			pythonErrors := runeEditDistance(sample.Expected, python)
-			t.Logf("Go%d / Python%d character edits; expected%d runes\nGo: %q\nPython: %q", goErrors, pythonErrors, len([]rune(sample.Expected)), actual, python)
-			if goErrors > pythonErrors {
-				t.Errorf("Go preprocessing is less accurate than original Python: %d vs%d edits", goErrors, pythonErrors)
+			baselineText := postprocessOCR(text)
+			edits := runeEditDistance(sample.Expected, actual)
+			baselineEdits := runeEditDistance(sample.Expected, baselineText)
+			t.Logf("%d / baseline %d character edits; expected %d runes\ngot: %q\nbaseline: %q", edits, baselineEdits, len([]rune(sample.Expected)), actual, baselineText)
+			if edits > baselineEdits {
+				t.Errorf("preprocessing is less accurate than the baseline: %d vs %d edits", edits, baselineEdits)
 			}
-			results = append(results, result{sample.Name, actual, python, sample.Expected, goErrors, pythonErrors})
+			results = append(results, result{sample.Name, actual, baselineText, sample.Expected, edits, baselineEdits})
 		})
 	}
 	if *ocrReport != "" {

@@ -135,7 +135,7 @@ func TestOCRPreprocessingLumaInversionAndNearestNeighbor(t *testing.T) {
 	}
 }
 
-func TestOCRPostprocessingMatchesPython(t *testing.T) {
+func TestOCRPostprocessing(t *testing.T) {
 	for _, tc := range []struct{ input, want string }{
 		{"", ""},
 		{"  prompt$ ls  \n next\t\r\n", "prompt$ ls\n next"},

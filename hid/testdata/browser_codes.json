@@ -1,5 +1,4 @@
 {
-  "source": "linkdata/serial-hid-kvm@a66c6e8b2d936717fcd543319ecd339ca43ec235/src/serial_hid_kvm/_web_viewer.py",
   "keys": {
     "Escape": 41,
     "F1": 58,

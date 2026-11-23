@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <linux/videodev2.h>
 
-/* Original feasibility-probe provenance is linked in README.md. No device I/O or ioctls run here. */
+/* No device I/O or ioctls run here. */
 #define S(t) printf(#t ".size=%zu\n" #t ".align=%zu\n", sizeof(struct t), _Alignof(struct t))
 #define O(t, f) printf(#t "." #f "=%zu\n", offsetof(struct t, f))
 #define I(n) printf(#n "=0x%lx\n", (unsigned long)(n))

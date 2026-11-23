@@ -5,7 +5,7 @@ and PowerShell-style blue. They contain fixed text rendered in Liberation Mono
 Regular at 24 px. They are not target screenshots; the PowerShell style does not
 establish Windows runtime support. No font binary is included.
 
-`provenance.json` records source/font hashes, Pillow and Tesseract versions.
+`provenance.json` records the font hash, Pillow and Tesseract versions.
 Lossless PGM baselines let tests compare preprocessing with the same installed
 Tesseract. `unsupported-cmyk.jpg` is a synthetic blank 8×8 CMYK JPEG for the
 unsupported-color-model error path.

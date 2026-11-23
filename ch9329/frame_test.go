@@ -30,7 +30,7 @@ type goldenFrames struct {
 
 func readGolden(t *testing.T) goldenFrames {
 	t.Helper()
-	data, err := os.ReadFile("testdata/python_frames.json")
+	data, err := os.ReadFile("testdata/frames.json")
 	if err != nil {
 		t.Fatal(err)
 	}

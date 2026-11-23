@@ -1,7 +1,8 @@
-"""Generate safe synthetic OCR fixtures and original-Python preprocessing baselines.
+"""Generate safe synthetic OCR fixtures and baseline preprocessing outputs.
 
 Requires Pillow and pytesseract only when regenerating fixtures, not for Go tests.
-The reference argument must name the original mcp-serial-hid-kvm ocr.py source.
+The --baseline argument names a module whose TerminalOCR class produces the
+baseline PGMs and texts.
 """
 import argparse
 import hashlib
@@ -14,12 +15,12 @@ import warnings
 from PIL import Image, ImageDraw, ImageFont, __version__ as pillow_version
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--reference", type=Path, required=True)
+parser.add_argument("--baseline", type=Path, required=True)
 parser.add_argument("--tesseract", default="tesseract")
 parser.add_argument("--font", type=Path, default=Path("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"))
 args = parser.parse_args()
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-spec = importlib.util.spec_from_file_location("original_ocr", args.reference)
+spec = importlib.util.spec_from_file_location("baseline_ocr", args.baseline)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 engine = module.TerminalOCR(args.tesseract)
@@ -45,10 +46,10 @@ for name, background, foreground, expected in fixtures:
     image.save(jpeg, quality=95, subsampling=0)
     with Image.open(jpeg) as decoded:
         processed = engine.preprocess_image(decoded)
-        processed.save(root / (name + ".python.pgm"), format="PPM")
-        python_text = engine.extract_text(decoded)
-    records.append({"name": name, "jpeg": jpeg.name, "python_pgm": name + ".python.pgm",
-                    "expected": expected, "original_python_text": python_text})
+        processed.save(root / (name + ".baseline.pgm"), format="PPM")
+        baseline_text = engine.extract_text(decoded)
+    records.append({"name": name, "jpeg": jpeg.name, "baseline_pgm": name + ".baseline.pgm",
+                    "expected": expected, "baseline_text": baseline_text})
 (root / "corpus.json").write_text(json.dumps(records, indent=2) + "\n")
 metadata = {
     "synthetic": True,
@@ -57,7 +58,6 @@ metadata = {
     "font_sha256": hashlib.sha256(args.font.read_bytes()).hexdigest(),
     "font_size": 24,
     "pillow_version": pillow_version,
-    "original_ocr_source_sha256": hashlib.sha256(args.reference.read_bytes()).hexdigest(),
     "tesseract_version": subprocess.check_output([args.tesseract, "--version"], text=True).splitlines()[0],
 }
 (root / "provenance.json").write_text(json.dumps(metadata, indent=2) + "\n")

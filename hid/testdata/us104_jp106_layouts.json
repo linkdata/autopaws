@@ -1,6 +1,4 @@
 {
-  "source_revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
-  "source": "src/serial_hid_kvm/hid_keycodes.py",
   "layouts": {
     "us104": [
       {

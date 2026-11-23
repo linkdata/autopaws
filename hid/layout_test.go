@@ -54,7 +54,7 @@ func TestLayoutGoldens(t *testing.T) {
 		userDirectory     string
 		inheritedControls bool
 	}{
-		"python_layouts.json":         {names: []string{"jp106", "us104"}},
+		"us104_jp106_layouts.json":    {names: []string{"jp106", "us104"}},
 		"xkb_layouts.json":            {names: []string{"de105", "fr105", "se105", "uk105"}, inheritedControls: true},
 		"windows_swedish_layout.json": {names: []string{"se105-windows"}, userDirectory: filepath.Join("..", "examples", "layouts"), inheritedControls: true},
 	} {
@@ -262,9 +262,9 @@ func TestKeycodeAliases(t *testing.T) {
 			Keycode *byte  `json:"keycode"`
 		} `json:"special_lookup"`
 	}
-	readJSON(t, "python_keycodes.json", &golden)
+	readJSON(t, "keycodes.json", &golden)
 	if len(modifiers) != len(golden.Modifiers) || len(specialKeys) != len(golden.Special) {
-		t.Fatalf("Go/Python alias counts differ: modifiers %d/%d, special keys %d/%d",
+		t.Fatalf("alias counts differ: modifiers %d/%d, special keys %d/%d",
 			len(modifiers), len(golden.Modifiers), len(specialKeys), len(golden.Special))
 	}
 	hexInputs := make([]string, len(golden.Hex))
@@ -273,7 +273,7 @@ func TestKeycodeAliases(t *testing.T) {
 	}
 	slices.Sort(hexInputs)
 	if want := []string{"0X2c", "0x", "0x100", "0x87"}; !slices.Equal(hexInputs, want) {
-		t.Fatalf("Python hex inputs = %v; want %v", hexInputs, want)
+		t.Fatalf("fixture hex inputs = %v; want %v", hexInputs, want)
 	}
 	for name, want := range golden.Modifiers {
 		if got, ok := Modifier(strings.ToUpper(name)); !ok || got != want {
@@ -289,10 +289,10 @@ func TestKeycodeAliases(t *testing.T) {
 		got, ok := SpecialKey(vector.Input)
 		if vector.Keycode == nil {
 			if ok {
-				t.Errorf("SpecialKey(%q) = %x, true; Python rejected it", vector.Input, got)
+				t.Errorf("SpecialKey(%q) = %x, true; want rejection", vector.Input, got)
 			}
 		} else if !ok || got != *vector.Keycode {
-			t.Errorf("SpecialKey(%q) = %x, %v; Python returned %x", vector.Input, got, ok, *vector.Keycode)
+			t.Errorf("SpecialKey(%q) = %x, %v; want %x", vector.Input, got, ok, *vector.Keycode)
 		}
 	}
 	if _, ok := Modifier("unknown"); ok {

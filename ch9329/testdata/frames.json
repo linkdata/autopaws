@@ -1,0 +1,335 @@
+{
+  "notes": [
+    "Keyboard reports skip zero keycodes, keep order and duplicates, and send at most six keycodes.",
+    "Absolute coordinates clamp to 0..4095. Relative deltas and wheel values clamp to -127..127."
+  ],
+  "keyboard": [
+    {
+      "name": "no_keys",
+      "modifier": 0,
+      "keycodes": [],
+      "expected_hex": "57ab00020800000000000000000c"
+    },
+    {
+      "name": "single_key",
+      "modifier": 0,
+      "keycodes": [
+        4
+      ],
+      "expected_hex": "57ab000208000004000000000010"
+    },
+    {
+      "name": "modifier_with_key",
+      "modifier": 1,
+      "keycodes": [
+        6
+      ],
+      "expected_hex": "57ab000208010006000000000013"
+    },
+    {
+      "name": "multiple_keys",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6
+      ],
+      "expected_hex": "57ab00020800000405060000001b"
+    },
+    {
+      "name": "max_six_keys",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_hex": "57ab000208000004050607080933"
+    },
+    {
+      "name": "more_than_six_keys_truncated",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "expected_hex": "57ab000208000004050607080933"
+    },
+    {
+      "name": "ordered_keys",
+      "modifier": 0,
+      "keycodes": [
+        26,
+        4
+      ],
+      "expected_hex": "57ab00020800001a04000000002a"
+    },
+    {
+      "name": "zero_keycodes_filtered",
+      "modifier": 0,
+      "keycodes": [
+        0,
+        4
+      ],
+      "expected_hex": "57ab000208000004000000000010"
+    },
+    {
+      "name": "shift_enter",
+      "modifier": 2,
+      "keycodes": [
+        40
+      ],
+      "expected_hex": "57ab000208020028000000000036"
+    },
+    {
+      "name": "interspersed_zeros",
+      "modifier": 255,
+      "keycodes": [
+        0,
+        4,
+        0,
+        5,
+        6,
+        0,
+        7,
+        8,
+        0,
+        9,
+        10
+      ],
+      "expected_hex": "57ab000208ff0004050607080932"
+    },
+    {
+      "name": "duplicates_preserved",
+      "modifier": 0,
+      "keycodes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5
+      ],
+      "expected_hex": "57ab000208000004040404040424"
+    },
+    {
+      "name": "all_zero",
+      "modifier": 255,
+      "keycodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab000208ff000000000000000b"
+    },
+    {
+      "name": "full_byte_keycodes",
+      "modifier": 255,
+      "keycodes": [
+        255,
+        254,
+        253,
+        252,
+        251,
+        250,
+        249
+      ],
+      "expected_hex": "57ab000208ff00fffefdfcfbfaf6"
+    }
+  ],
+  "mouse": [
+    {
+      "name": "origin",
+      "kind": "absolute",
+      "args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab000407020000000000000f"
+    },
+    {
+      "name": "max_position_all_buttons",
+      "kind": "absolute",
+      "args": [
+        7,
+        4095,
+        4095,
+        0
+      ],
+      "expected_hex": "57ab0004070207ff0fff0f0032"
+    },
+    {
+      "name": "low_x_high_y",
+      "kind": "absolute",
+      "args": [
+        1,
+        -1,
+        4096,
+        1
+      ],
+      "expected_hex": "57ab00040702010000ff0f011f"
+    },
+    {
+      "name": "high_x_low_y",
+      "kind": "absolute",
+      "args": [
+        2,
+        4096,
+        -1,
+        -1
+      ],
+      "expected_hex": "57ab0004070202ff0f0000ff1e"
+    },
+    {
+      "name": "little_endian",
+      "kind": "absolute",
+      "args": [
+        4,
+        291,
+        2748,
+        -127
+      ],
+      "expected_hex": "57ab00040702042301bc0a817e"
+    },
+    {
+      "name": "wheel_high",
+      "kind": "absolute",
+      "args": [
+        0,
+        2048,
+        1024,
+        128
+      ],
+      "expected_hex": "57ab0004070200000800047f9a"
+    },
+    {
+      "name": "wheel_low",
+      "kind": "absolute",
+      "args": [
+        0,
+        0,
+        0,
+        -128
+      ],
+      "expected_hex": "57ab0004070200000000008190"
+    },
+    {
+      "name": "extreme_coordinates",
+      "kind": "absolute",
+      "args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        9223372036854775807
+      ],
+      "expected_hex": "57ab00040702ff0000ff0f7f9b"
+    },
+    {
+      "name": "still",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_hex": "57ab00050501000000000d"
+    },
+    {
+      "name": "max_delta",
+      "kind": "relative",
+      "args": [
+        7,
+        127,
+        127,
+        127
+      ],
+      "expected_hex": "57ab00050501077f7f7f91"
+    },
+    {
+      "name": "min_delta",
+      "kind": "relative",
+      "args": [
+        1,
+        -127,
+        -127,
+        -127
+      ],
+      "expected_hex": "57ab000505010181818191"
+    },
+    {
+      "name": "clamp_both",
+      "kind": "relative",
+      "args": [
+        2,
+        -128,
+        128,
+        1
+      ],
+      "expected_hex": "57ab0005050102817f0110"
+    },
+    {
+      "name": "sign_mix",
+      "kind": "relative",
+      "args": [
+        4,
+        1,
+        -1,
+        -1
+      ],
+      "expected_hex": "57ab000505010401ffff10"
+    },
+    {
+      "name": "wheel_high",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        128
+      ],
+      "expected_hex": "57ab000505010000007f8c"
+    },
+    {
+      "name": "wheel_low",
+      "kind": "relative",
+      "args": [
+        0,
+        0,
+        0,
+        -128
+      ],
+      "expected_hex": "57ab00050501000000818e"
+    },
+    {
+      "name": "extreme_deltas",
+      "kind": "relative",
+      "args": [
+        255,
+        -9223372036854775808,
+        9223372036854775807,
+        -9223372036854775808
+      ],
+      "expected_hex": "57ab00050501ff817f818d"
+    }
+  ],
+  "release_all_hex": [
+    "57ab00020800000000000000000c",
+    "57ab00050501000000000d"
+  ]
+}

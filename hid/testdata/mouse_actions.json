@@ -1,18 +1,5 @@
 {
-  "provenance": {
-    "repository": "https://github.com/linkdata/serial-hid-kvm",
-    "revision": "a66c6e8b2d936717fcd543319ecd339ca43ec235",
-    "files_sha256": {
-      "src/serial_hid_kvm/hid_mouse.py": "c9de918954e59f5ecd48dfe217d7f562d6eff2a48a0b15b31205ddf231d0e051",
-      "src/serial_hid_kvm/hid_protocol.py": "6e2e2f43c4fb498b2681b92cbd68fb69f5451f4a33af26417daecf42509704a0",
-      "tests/test_hid_mouse.py": "55809d6ce467ab93b5bf6a6f21c207b49f0298b23fff7ba75ff28077fc30179b",
-      "tests/test_viewer_input.py": "6241a8f8713146e62de4675a0acaa41bd32ccd5eaf058938c724bef069617cef"
-    },
-    "generator": "export_mouse.py",
-    "safety": "RecordingDevice only; atexit registration and sleeps patched; real serial.Serial construction raises AssertionError.",
-    "coordinate_note": "Main cases use a 4096x4096 source, matching Python tests and identity mapping. Deliberate Go pixel mapping differences are separate.",
-    "scope_note": "Python observations are not a decision to retain state bugs, partial-coordinate fallback, or relative-mode drag behavior. No hardware evidence is established."
-  },
+  "note": "Cases use a 4096x4096 screen, so pixel and HID coordinates are equal. mouse_coordinates.json covers other screen sizes.",
   "cases": [
     {
       "name": "click_positioned_absolute_default_left",
@@ -27,7 +14,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -63,7 +50,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -99,7 +86,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -133,7 +120,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -169,7 +156,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -188,7 +175,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -216,7 +203,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -234,7 +221,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -251,7 +238,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -279,7 +266,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -315,7 +302,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -351,7 +338,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -385,7 +372,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -421,7 +408,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -440,7 +427,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -468,7 +455,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -486,7 +473,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -503,7 +490,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -531,7 +518,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -575,7 +562,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -619,7 +606,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -661,7 +648,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -697,7 +684,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -720,7 +707,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -752,7 +739,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -774,7 +761,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -791,7 +778,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -821,7 +808,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -836,7 +823,7 @@
           "args": [
             "right"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -851,7 +838,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -867,7 +854,7 @@
             3000,
             2000
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -883,7 +870,7 @@
             -127,
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -898,7 +885,7 @@
           "args": [
             -3
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -913,7 +900,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -928,7 +915,7 @@
           "args": [
             "right"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -943,7 +930,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -958,7 +945,7 @@
           "args": [
             3
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -984,7 +971,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1007,7 +994,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1030,7 +1017,7 @@
             30,
             40
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1047,7 +1034,7 @@
             30,
             40
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1072,7 +1059,7 @@
             -127,
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1088,7 +1075,7 @@
             0,
             0
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1104,7 +1091,7 @@
             127,
             -127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1119,7 +1106,7 @@
           "args": [
             -127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1134,7 +1121,7 @@
           "args": [
             0
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1149,7 +1136,7 @@
           "args": [
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1173,7 +1160,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1190,14 +1177,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -1207,14 +1193,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -1224,14 +1209,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -1239,7 +1223,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1265,7 +1249,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1309,7 +1293,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1353,7 +1337,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1395,7 +1379,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1431,7 +1415,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1454,7 +1438,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1486,7 +1470,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1508,7 +1492,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1525,7 +1509,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": null
           },
           "events": [
@@ -1557,7 +1541,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1601,7 +1585,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1645,7 +1629,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1687,7 +1671,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1723,7 +1707,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1746,7 +1730,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1778,7 +1762,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1800,7 +1784,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -1817,7 +1801,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "relative"
           },
           "events": [
@@ -1849,7 +1833,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -1885,7 +1869,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -1921,7 +1905,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -1955,7 +1939,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -1991,7 +1975,7 @@
             1,
             2
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2010,7 +1994,7 @@
             5,
             6
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2038,7 +2022,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2056,7 +2040,7 @@
             100,
             200
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2073,7 +2057,7 @@
             100,
             200
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2099,7 +2083,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2114,7 +2098,7 @@
           "args": [
             "right"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2129,7 +2113,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2145,7 +2129,7 @@
             3000,
             2000
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2161,7 +2145,7 @@
             -127,
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2176,7 +2160,7 @@
           "args": [
             -3
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2191,7 +2175,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2206,7 +2190,7 @@
           "args": [
             "right"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2221,7 +2205,7 @@
           "args": [
             "middle"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2236,7 +2220,7 @@
           "args": [
             3
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2262,7 +2246,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2281,7 +2265,7 @@
             10,
             20
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "absolute"
           },
           "events": [
@@ -2300,7 +2284,7 @@
             30,
             40
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2321,7 +2305,7 @@
             30,
             40
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2350,7 +2334,7 @@
             -127,
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2366,7 +2350,7 @@
             0,
             0
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2382,7 +2366,7 @@
             127,
             -127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2397,7 +2381,7 @@
           "args": [
             -127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2412,7 +2396,7 @@
           "args": [
             0
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2427,7 +2411,7 @@
           "args": [
             127
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2451,7 +2435,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",
@@ -2468,14 +2452,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -2485,14 +2468,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -2502,14 +2484,13 @@
             1,
             1
           ],
-          "kwargs": {
+          "options": {
             "button_mode": "bogus"
           },
           "events": [],
           "held_buttons_after": 1,
           "error": {
-            "type": "ValueError",
-            "message": "Invalid button_mode: 'bogus'"
+            "type": "invalid_button_mode"
           }
         },
         {
@@ -2517,7 +2498,7 @@
           "args": [
             "left"
           ],
-          "kwargs": {},
+          "options": {},
           "events": [
             {
               "kind": "frame",

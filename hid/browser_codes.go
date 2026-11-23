@@ -1,6 +1,6 @@
 package hid
 
-// Browser physical codes match the pinned Python viewer reference.
+// browserKeys maps KeyboardEvent.code values to HID keyboard usages.
 var browserKeys = map[string]byte{
 	"ArrowDown":      0x51,
 	"ArrowLeft":      0x50,

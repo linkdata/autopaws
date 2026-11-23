@@ -2,9 +2,9 @@
 
 | File | Coverage |
 |---|---|
-| `python_layouts.json` | US104 and JP106 character maps, 97 entries each |
-| `python_keycodes.json` | Modifier/special-key aliases and hexadecimal lookup |
-| `python_tokenizer.json` | 34 tokenizer examples and 15 tag-validity cases |
+| `us104_jp106_layouts.json` | US104 and JP106 character maps, 97 entries each |
+| `keycodes.json` | Modifier/special-key aliases and hexadecimal lookup |
+| `tokenizer.json` | 34 tokenizer examples and 15 tag-validity cases |
 | `keyboard_actions.json` | Ten keyboard operations with frames and emission times |
 | `mouse_actions.json` | 44 mouse cases with frames, delays and held-button state |
 | `mouse_coordinates.json` | 21 coordinate boundary cases |
