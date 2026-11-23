@@ -188,8 +188,7 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 		t.Fatalf("extract suppressed subprocess failure=%v", err)
 	}
 	_, err = runTesseract(t.Context(), filepath.Join(t.TempDir(), "missing"), []byte("P5\n"), time.Second)
-	var missing *os.PathError
-	if !errors.As(err, &missing) {
+	if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, exec.ErrNotFound) {
 		t.Fatalf("start failure lost=%v", err)
 	}
 }

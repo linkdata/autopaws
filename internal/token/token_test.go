@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -14,7 +15,7 @@ func TestReadFile(t *testing.T) {
 	}
 	dir := t.TempDir()
 	missing := filepath.Join(dir, "missing")
-	if _, err := ReadFile(missing); !errors.Is(err, os.ErrNotExist) || !strings.Contains(err.Error(), missing) {
+	if _, err := ReadFile(missing); !errors.Is(err, os.ErrNotExist) || !strings.Contains(err.Error(), strconv.Quote(missing)) {
 		t.Fatalf("read cause/path lost: %v", err)
 	}
 	for _, contents := range []string{"", " \r\n\t", "bad\xffsecret", " \tå+; percent% secret\r\n"} {
@@ -27,7 +28,7 @@ func TestReadFile(t *testing.T) {
 			if err != nil || got != "å+; percent% secret" {
 				t.Fatalf("trimmed UTF-8 token = %q, %v", got, err)
 			}
-		} else if err == nil || got != "" || !strings.Contains(err.Error(), path) || strings.Contains(err.Error(), "bad") {
+		} else if err == nil || got != "" || !strings.Contains(err.Error(), strconv.Quote(path)) || strings.Contains(err.Error(), "bad") {
 			t.Fatalf("invalid token accepted or leaked: %q, %v", got, err)
 		}
 	}

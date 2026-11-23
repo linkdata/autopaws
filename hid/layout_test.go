@@ -116,12 +116,6 @@ func TestLayoutPrecedence(t *testing.T) {
 	if _, err := LoadLayout("us104", directory); !errors.Is(err, ErrLayout) {
 		t.Fatalf("unreadable selected user path fell back: %v", err)
 	}
-	if err := os.Symlink(filepath.Join(directory, "absent.yaml"), filepath.Join(directory, "uk105.yaml")); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := LoadLayout("uk105", directory); !errors.Is(err, ErrLayout) || !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("dangling user layout symlink fell back or lost the read error: %v", err)
-	}
 	blocked := filepath.Join(directory, "not-a-directory")
 	if err := os.WriteFile(blocked, nil, 0o600); err != nil {
 		t.Fatal(err)

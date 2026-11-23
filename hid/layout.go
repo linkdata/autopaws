@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
 	"unicode/utf8"
 
 	"go.yaml.in/yaml/v3"
@@ -70,6 +71,9 @@ func ListLayouts(userDirectory string) ([]LayoutInfo, error) {
 		sources[strings.TrimSuffix(entry.Name(), ".yaml")] = "builtin"
 	}
 	if userDirectory != "" {
+		if err := validateLayoutDirectory(userDirectory); err != nil {
+			return nil, err
+		}
 		entries, err := os.ReadDir(userDirectory)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return nil, fmt.Errorf("%w: list %s: %w", ErrLayout, userDirectory, err)
@@ -104,6 +108,9 @@ func LoadLayout(name, userDirectory string) (*Layout, error) {
 		return nil, fmt.Errorf("%w: %w %q", ErrLayout, ErrUnknownLayout, name)
 	}
 	if userDirectory != "" {
+		if err := validateLayoutDirectory(userDirectory); err != nil {
+			return nil, err
+		}
 		path := filepath.Join(userDirectory, name+".yaml")
 		_, err := os.Lstat(path)
 		if err == nil {
@@ -126,6 +133,20 @@ func LoadLayout(name, userDirectory string) (*Layout, error) {
 		return nil, fmt.Errorf("%w: %w %q", ErrLayout, ErrUnknownLayout, name)
 	}
 	return decodeLayout(data)
+}
+
+func validateLayoutDirectory(path string) error {
+	info, err := os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("%w: inspect directory %s: %w", ErrLayout, path, err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("%w: %w", ErrLayout, &fs.PathError{Op: "open", Path: path, Err: syscall.ENOTDIR})
+	}
+	return nil
 }
 
 func decodeLayout(data []byte) (*Layout, error) {
