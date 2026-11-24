@@ -1,0 +1,3607 @@
+{
+  "generated_utc": "2026-11-24T11:28:46Z",
+  "host_os": "darwin",
+  "host_arch": "arm64",
+  "macos_version": "26.7.3",
+  "tesseract_version": "tesseract 5.5.4",
+  "native_script_sha256": "f63ad97de68a7e2c2cdab7150cf14c88b75d1acde4db41ed7fb29dfde7eaf1da",
+  "repetitions": 5,
+  "method": [
+    "Same JPEG bytes per image, loaded once; capture and JPEG disk reads excluded from timing.",
+    "Current production extractOCR includes full JPEG decode, optional region crop, grayscale/invert, 2x PGM, Tesseract --oem 3 --psm 6 subprocess, and postprocessing.",
+    "Experimental prototype analyzeNativeVision includes JPEG metadata decode, optional full JPEG decode plus region crop and JPEG quality95 encode, system osascript startup, accurate Vision OCR, language autodetection with correction disabled, JSON parsing and pixel conversion.",
+    "Five timed repetitions per path per image, no discarded warmup, invocation order alternates by image and repetition; first invocation is included in reported median.",
+    "Raw character error rate preserves all whitespace and case; normalized character error rate uses case-sensitive Levenshtein rune distance after Unicode whitespace collapse divided by expected rune count; only computed where full expected text is supplied.",
+    "Exact label hits are literal case-sensitive substrings; normalized label hits collapse whitespace and lowercase before substring matching.",
+    "Vision coordinate hit requires a normalized text-matching observation center inside the expected top-left pixel rectangle; this measures OCR line location, not control semantics.",
+    "Fixture rectangles are broad line regions derived from generator positions (x20,y14+38*line,24px monospace); physical rectangles come from the manifest.",
+    "Region inputs use the original full screenshot JPEG with the actual production region parameter for both paths; region timing includes crop/encode work. Screenshot dimensions and Vision box coordinates remain in the full original image coordinate system.",
+    "Current Tesseract integration exposes plain text only, so coordinate metrics are unavailable; this is not a statement about the Tesseract engine's TSV/hOCR capability."
+  ],
+  "results": [
+    {
+      "image": {
+        "name": "fixture-linux-console",
+        "path": "cmd/autopaws-mcp/testdata/ocr/linux-console.jpg",
+        "expected": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+        "labels": [
+          {
+            "text": "Autopaws Linux console",
+            "x": 15,
+            "y": 14,
+            "width": 329,
+            "height": 32
+          },
+          {
+            "text": "Build status: PASS",
+            "x": 15,
+            "y": 52,
+            "width": 271,
+            "height": 32
+          },
+          {
+            "text": "Video input: 1920 x 1080",
+            "x": 15,
+            "y": 90,
+            "width": 358,
+            "height": 32
+          }
+        ]
+      },
+      "width": 720,
+      "height": 140,
+      "jpeg_bytes": 17807,
+      "jpeg_sha256": "8b9b66ed0319a61700ee5e3dc0d8a141ab7308888e7738be99bedbc5c0cf0a6a",
+      "sample_order": [
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            142.171542,
+            139.982291,
+            131.793917,
+            142.997,
+            130.989125
+          ],
+          "first_ms": 142.171542,
+          "median_ms": 139.982291,
+          "min_ms": 130.989125,
+          "max_ms": 142.997
+        },
+        "raw_text": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 66,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 66,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "Autopaws Linux console",
+                "x": 15,
+                "y": 14,
+                "width": 329,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Build status: PASS",
+                "x": 15,
+                "y": 52,
+                "width": 271,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Video input: 1920 x 1080",
+                "x": 15,
+                "y": 90,
+                "width": 358,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            474.793625,
+            471.888083,
+            526.352667,
+            452.952583,
+            543.5155
+          ],
+          "first_ms": 474.793625,
+          "median_ms": 474.793625,
+          "min_ms": 452.952583,
+          "max_ms": 543.5155
+        },
+        "raw_text": "Autopaws Linux console\nBuild status: PASS\nVideo input: 1920 x 1080",
+        "observations": [
+          {
+            "text": "Autopaws Linux console",
+            "confidence": 1,
+            "x": 17.773471834218498,
+            "y": 12.864203325553142,
+            "width": 320.4855651855469,
+            "height": 30.27106380462646
+          },
+          {
+            "text": "Build status: PASS",
+            "confidence": 1,
+            "x": 19.999997550000074,
+            "y": 53.99999972500001,
+            "width": 260.00000000000006,
+            "height": 22
+          },
+          {
+            "text": "Video input: 1920 x 1080",
+            "confidence": 1,
+            "x": 17.999998850000054,
+            "y": 92.000000325,
+            "width": 348,
+            "height": 26
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 66,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 66,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "coordinate_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "Autopaws Linux console",
+                "x": 15,
+                "y": 14,
+                "width": 329,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Build status: PASS",
+                "x": 15,
+                "y": 52,
+                "width": 271,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Video input: 1920 x 1080",
+                "x": 15,
+                "y": 90,
+                "width": 358,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                2
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "fixture-dark-terminal",
+        "path": "cmd/autopaws-mcp/testdata/ocr/dark-terminal.jpg",
+        "expected": "agent@linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+        "labels": [
+          {
+            "text": "agent@linux:~$ printf hello",
+            "x": 15,
+            "y": 14,
+            "width": 401.5,
+            "height": 32
+          },
+          {
+            "text": "hello autopaws",
+            "x": 15,
+            "y": 52,
+            "width": 213,
+            "height": 32
+          },
+          {
+            "text": "Files: README.md main.go",
+            "x": 15,
+            "y": 90,
+            "width": 358,
+            "height": 32
+          }
+        ]
+      },
+      "width": 720,
+      "height": 140,
+      "jpeg_bytes": 24327,
+      "jpeg_sha256": "0ed31c8ecec67d6b2cc31d6482358390d675ba882a8849a50e15b715edda7b86",
+      "sample_order": [
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            146.298708,
+            130.852625,
+            144.2685,
+            130.323916,
+            145.350583
+          ],
+          "first_ms": 146.298708,
+          "median_ms": 144.2685,
+          "min_ms": 130.323916,
+          "max_ms": 146.298708
+        },
+        "raw_text": "agent@Linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 67,
+          "raw_rune_edits": 1,
+          "raw_rune_character_error_rate": 0.014925373134328358,
+          "expected_runes": 67,
+          "rune_edits": 1,
+          "rune_character_error_rate": 0.014925373134328358,
+          "label_count": 3,
+          "exact_label_hits": 2,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "agent@linux:~$ printf hello",
+                "x": 15,
+                "y": 14,
+                "width": 401.5,
+                "height": 32
+              },
+              "exact_text_match": false,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "hello autopaws",
+                "x": 15,
+                "y": 52,
+                "width": 213,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Files: README.md main.go",
+                "x": 15,
+                "y": 90,
+                "width": 358,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            525.616959,
+            492.400125,
+            535.208125,
+            536.339625,
+            540.766333
+          ],
+          "first_ms": 525.616959,
+          "median_ms": 535.208125,
+          "min_ms": 492.400125,
+          "max_ms": 540.766333
+        },
+        "raw_text": "agent@linux:~$ printf hello\nhello autopaws\nFiles: README.md main.go",
+        "observations": [
+          {
+            "text": "agent@linux:~$ printf hello",
+            "confidence": 1,
+            "x": 20.00000278571426,
+            "y": 15.999999914285716,
+            "width": 390.00000000000006,
+            "height": 23.999999999999993
+          },
+          {
+            "text": "hello autopaws",
+            "confidence": 1,
+            "x": 17.496349420592892,
+            "y": 52.54306512324717,
+            "width": 202.93576049804688,
+            "height": 27.560585021972667
+          },
+          {
+            "text": "Files: README.md main.go",
+            "confidence": 1,
+            "x": 17.999996520000053,
+            "y": 92.00000008,
+            "width": 348.00000000000006,
+            "height": 24.000000000000007
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 67,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 67,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "coordinate_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "agent@linux:~$ printf hello",
+                "x": 15,
+                "y": 14,
+                "width": 401.5,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "hello autopaws",
+                "x": 15,
+                "y": 52,
+                "width": 213,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Files: README.md main.go",
+                "x": 15,
+                "y": 90,
+                "width": 358,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                2
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "fixture-light-terminal",
+        "path": "cmd/autopaws-mcp/testdata/ocr/light-terminal.jpg",
+        "expected": "user@host:~$ uname\nLinux\nCapture stream ready",
+        "labels": [
+          {
+            "text": "user@host:~$ uname",
+            "x": 15,
+            "y": 14,
+            "width": 271,
+            "height": 32
+          },
+          {
+            "text": "Linux",
+            "x": 15,
+            "y": 52,
+            "width": 82.5,
+            "height": 32
+          },
+          {
+            "text": "Capture stream ready",
+            "x": 15,
+            "y": 90,
+            "width": 300,
+            "height": 32
+          }
+        ]
+      },
+      "width": 720,
+      "height": 140,
+      "jpeg_bytes": 14236,
+      "jpeg_sha256": "7b07688e1485178c4f7403a723b1fc33bdc681d2d40c1b23938c35d64d10b3cf",
+      "sample_order": [
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            121.510083,
+            135.3535,
+            121.195459,
+            134.964917,
+            120.770542
+          ],
+          "first_ms": 121.510083,
+          "median_ms": 121.510083,
+          "min_ms": 120.770542,
+          "max_ms": 135.3535
+        },
+        "raw_text": "user@host:~$ uname\nLinux\nCapture stream ready",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 45,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 45,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "user@host:~$ uname",
+                "x": 15,
+                "y": 14,
+                "width": 271,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Linux",
+                "x": 15,
+                "y": 52,
+                "width": 82.5,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Capture stream ready",
+                "x": 15,
+                "y": 90,
+                "width": 300,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            558.488083,
+            568.648666,
+            512.709459,
+            550.041958,
+            506.325208
+          ],
+          "first_ms": 558.488083,
+          "median_ms": 550.041958,
+          "min_ms": 506.325208,
+          "max_ms": 568.648666
+        },
+        "raw_text": "user@host:~$ uname\nLinux\nCapture stream ready",
+        "observations": [
+          {
+            "text": "user@host:~$ uname",
+            "confidence": 1,
+            "x": 20.00000185714282,
+            "y": 17.99999991428571,
+            "width": 260,
+            "height": 20.000000000000007
+          },
+          {
+            "text": "Linux",
+            "confidence": 1,
+            "x": 19.99999960000001,
+            "y": 53.999999779999996,
+            "width": 71.99999999999999,
+            "height": 22
+          },
+          {
+            "text": "Capture stream ready",
+            "confidence": 1,
+            "x": 20.00000362499992,
+            "y": 93.9999999,
+            "width": 290,
+            "height": 24.000000000000007
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 45,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 45,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "coordinate_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "user@host:~$ uname",
+                "x": 15,
+                "y": 14,
+                "width": 271,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Linux",
+                "x": 15,
+                "y": 52,
+                "width": 82.5,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Capture stream ready",
+                "x": 15,
+                "y": 90,
+                "width": 300,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                2
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "fixture-powershell-style",
+        "path": "cmd/autopaws-mcp/testdata/ocr/powershell-style.jpg",
+        "expected": "PS C:\\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready",
+        "labels": [
+          {
+            "text": "PS C:\\Autopaws> Write-Output hello",
+            "x": 15,
+            "y": 14,
+            "width": 503,
+            "height": 32
+          },
+          {
+            "text": "hello autopaws",
+            "x": 15,
+            "y": 52,
+            "width": 213,
+            "height": 32
+          },
+          {
+            "text": "Status: Ready",
+            "x": 15,
+            "y": 90,
+            "width": 198.5,
+            "height": 32
+          }
+        ]
+      },
+      "width": 720,
+      "height": 140,
+      "jpeg_bytes": 23644,
+      "jpeg_sha256": "521c30b17c094065c13f8a0c6e8674fe99644879a918bf52f3deff24021804b1",
+      "sample_order": [
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            143.097583,
+            130.230083,
+            140.724083,
+            130.625917,
+            139.185084
+          ],
+          "first_ms": 143.097583,
+          "median_ms": 139.185084,
+          "min_ms": 130.230083,
+          "max_ms": 143.097583
+        },
+        "raw_text": "PS C:\\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 63,
+          "raw_rune_edits": 0,
+          "raw_rune_character_error_rate": 0,
+          "expected_runes": 63,
+          "rune_edits": 0,
+          "rune_character_error_rate": 0,
+          "label_count": 3,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "PS C:\\Autopaws> Write-Output hello",
+                "x": 15,
+                "y": 14,
+                "width": 503,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "hello autopaws",
+                "x": 15,
+                "y": 52,
+                "width": 213,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 15,
+                "y": 90,
+                "width": 198.5,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            558.62225,
+            587.966625,
+            575.819958,
+            531.235458,
+            524.012791
+          ],
+          "first_ms": 558.62225,
+          "median_ms": 558.62225,
+          "min_ms": 524.012791,
+          "max_ms": 587.966625
+        },
+        "raw_text": "PS C: \\Autopaws> Write-Output hello\nhello autopaws\nStatus: Ready",
+        "observations": [
+          {
+            "text": "PS C: \\Autopaws> Write-Output hello",
+            "confidence": 1,
+            "x": 20.00000512499986,
+            "y": 15.999999675000002,
+            "width": 490,
+            "height": 26
+          },
+          {
+            "text": "hello autopaws",
+            "confidence": 1,
+            "x": 17.488470946927777,
+            "y": 52.4684037092091,
+            "width": 204.83856201171872,
+            "height": 27.797863960266117
+          },
+          {
+            "text": "Status: Ready",
+            "confidence": 1,
+            "x": 18.000002224999946,
+            "y": 94.00000030000001,
+            "width": 190,
+            "height": 23.999999999999993
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 63,
+          "raw_rune_edits": 1,
+          "raw_rune_character_error_rate": 0.015873015873015872,
+          "expected_runes": 63,
+          "rune_edits": 1,
+          "rune_character_error_rate": 0.015873015873015872,
+          "label_count": 3,
+          "exact_label_hits": 2,
+          "normalized_label_hits": 2,
+          "coordinate_hits": 2,
+          "labels": [
+            {
+              "expected": {
+                "text": "PS C:\\Autopaws> Write-Output hello",
+                "x": 15,
+                "y": 14,
+                "width": 503,
+                "height": 32
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "hello autopaws",
+                "x": 15,
+                "y": 52,
+                "width": 213,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 15,
+                "y": 90,
+                "width": 198.5,
+                "height": 32
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                2
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "mac-desktop-pointer-over-text",
+        "path": "/private/tmp/autopaws-ocr-bench/mac-desktop.jpg",
+        "labels": [
+          {
+            "text": "Finder",
+            "x": 44,
+            "y": 2,
+            "width": 66,
+            "height": 27
+          },
+          {
+            "text": "Arkiv",
+            "x": 108,
+            "y": 2,
+            "width": 46,
+            "height": 27
+          },
+          {
+            "text": "Redigera",
+            "x": 155,
+            "y": 2,
+            "width": 72,
+            "height": 27
+          },
+          {
+            "text": "Innehåll",
+            "x": 235,
+            "y": 2,
+            "width": 65,
+            "height": 27
+          },
+          {
+            "text": "Gå",
+            "x": 303,
+            "y": 2,
+            "width": 33,
+            "height": 27
+          },
+          {
+            "text": "Fönster",
+            "x": 337,
+            "y": 2,
+            "width": 63,
+            "height": 27
+          },
+          {
+            "text": "Hjälp",
+            "x": 403,
+            "y": 2,
+            "width": 47,
+            "height": 27
+          }
+        ]
+      },
+      "width": 1920,
+      "height": 1080,
+      "jpeg_bytes": 42922,
+      "jpeg_sha256": "87167ecedd8e20621bf8fb3cccb28383587c3d091cd0bad9e2d939e1637715c8",
+      "sample_order": [
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            1138.107,
+            1142.828292,
+            1126.621084,
+            1142.443833,
+            1127.799417
+          ],
+          "first_ms": 1138.107,
+          "median_ms": 1138.107,
+          "min_ms": 1126.621084,
+          "max_ms": 1142.828292
+        },
+        "raw_text": "é Finder Arkiv Redigera Innehall GA Fénster Hijalp a % F G Q & tis 24nov.12:15\nms > . rls . f",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 7,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            577.852625,
+            641.15775,
+            538.62675,
+            580.095,
+            563.814917
+          ],
+          "first_ms": 577.852625,
+          "median_ms": 577.852625,
+          "min_ms": 538.62675,
+          "max_ms": 641.15775
+        },
+        "raw_text": "Fingler Arkiv Redigera Innehåll Gå Fönster Hjälp\n100-\n8\ntis 24 nov. 12:15",
+        "observations": [
+          {
+            "text": "Fingler Arkiv Redigera Innehåll Gå Fönster Hjälp",
+            "confidence": 1,
+            "x": 44.651176260719325,
+            "y": 5.5813958619512105,
+            "width": 396.279052734375,
+            "height": 25.418603897094783
+          },
+          {
+            "text": "100-",
+            "confidence": 1,
+            "x": 1680.0000005387474,
+            "y": 8.372093055130412,
+            "width": 22.32558059692387,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "8",
+            "confidence": 1,
+            "x": 1758.1395348458282,
+            "y": 8.372093055130412,
+            "width": 16.744186401367216,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "tis 24 nov. 12:15",
+            "confidence": 1,
+            "x": 1794.4186047450034,
+            "y": 5.58139531094433,
+            "width": 106.04650878906249,
+            "height": 16.7441864013672
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 7,
+          "exact_label_hits": 6,
+          "normalized_label_hits": 6,
+          "coordinate_hits": 1,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "mac-desktop-pointer-clear",
+        "path": "/private/tmp/autopaws-ocr-bench/mac-desktop-clean.jpg",
+        "labels": [
+          {
+            "text": "Finder",
+            "x": 44,
+            "y": 2,
+            "width": 66,
+            "height": 27
+          },
+          {
+            "text": "Arkiv",
+            "x": 108,
+            "y": 2,
+            "width": 46,
+            "height": 27
+          },
+          {
+            "text": "Redigera",
+            "x": 155,
+            "y": 2,
+            "width": 72,
+            "height": 27
+          },
+          {
+            "text": "Innehåll",
+            "x": 235,
+            "y": 2,
+            "width": 65,
+            "height": 27
+          },
+          {
+            "text": "Gå",
+            "x": 303,
+            "y": 2,
+            "width": 33,
+            "height": 27
+          },
+          {
+            "text": "Fönster",
+            "x": 337,
+            "y": 2,
+            "width": 63,
+            "height": 27
+          },
+          {
+            "text": "Hjälp",
+            "x": 403,
+            "y": 2,
+            "width": 47,
+            "height": 27
+          }
+        ]
+      },
+      "width": 1920,
+      "height": 1080,
+      "jpeg_bytes": 43048,
+      "jpeg_sha256": "86ef9b9d0aa749e8352b06f656648f68aa34333e2b4af44ba0e557c36e54af24",
+      "sample_order": [
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            1172.644,
+            1152.817,
+            1161.930375,
+            1154.5555,
+            1163.422917
+          ],
+          "first_ms": 1172.644,
+          "median_ms": 1161.930375,
+          "min_ms": 1152.817,
+          "max_ms": 1172.644
+        },
+        "raw_text": "@ Finder Arkiv Redigera Innehall GA Fénster Hjalp +\na % FF G Q Bf) tis 24nov. 12:16\n\" > : > % \\\nSBSSHUGRB@HB2S +8: OB BAU",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 7,
+          "exact_label_hits": 3,
+          "normalized_label_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            568.322167,
+            558.395459,
+            593.604208,
+            573.540583,
+            591.76075
+          ],
+          "first_ms": 568.322167,
+          "median_ms": 573.540583,
+          "min_ms": 558.395459,
+          "max_ms": 593.604208
+        },
+        "raw_text": "Finder\nArkiv\nRedigera nnehåll Gå\nFönster Hjälp\n100-\n8\ntis 24 nov. 12:16",
+        "observations": [
+          {
+            "text": "Finder",
+            "confidence": 1,
+            "x": 47.44186031867166,
+            "y": 8.372093138996245,
+            "width": 61.39534759521485,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Arkiv",
+            "confidence": 1,
+            "x": 106.04651378936055,
+            "y": 8.372092894810134,
+            "width": 41.860462188720696,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Redigera nnehåll Gå",
+            "confidence": 1,
+            "x": 153.48837568645519,
+            "y": 5.581395078386158,
+            "width": 173.02325439453128,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "Fönster Hjälp",
+            "confidence": 1,
+            "x": 329.3023238096441,
+            "y": 5.581395357455965,
+            "width": 111.62790679931639,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "100-",
+            "confidence": 1,
+            "x": 1680.0000005387474,
+            "y": 8.372093055130412,
+            "width": 22.32558059692387,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "8",
+            "confidence": 1,
+            "x": 1758.1395348458282,
+            "y": 8.372093055130412,
+            "width": 16.744186401367216,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "tis 24 nov. 12:16",
+            "confidence": 1,
+            "x": 1794.4186047450034,
+            "y": 5.58139531094433,
+            "width": 106.04650878906249,
+            "height": 16.7441864013672
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 7,
+          "exact_label_hits": 6,
+          "normalized_label_hits": 6,
+          "coordinate_hits": 3,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                2
+              ]
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                2
+              ]
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                3
+              ]
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                3
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "mac-finder-menu",
+        "path": "/private/tmp/autopaws-ocr-bench/mac-finder-menu.jpg",
+        "labels": [
+          {
+            "text": "Finder",
+            "x": 44,
+            "y": 2,
+            "width": 66,
+            "height": 27
+          },
+          {
+            "text": "Arkiv",
+            "x": 108,
+            "y": 2,
+            "width": 46,
+            "height": 27
+          },
+          {
+            "text": "Redigera",
+            "x": 155,
+            "y": 2,
+            "width": 72,
+            "height": 27
+          },
+          {
+            "text": "Innehåll",
+            "x": 235,
+            "y": 2,
+            "width": 65,
+            "height": 27
+          },
+          {
+            "text": "Gå",
+            "x": 303,
+            "y": 2,
+            "width": 33,
+            "height": 27
+          },
+          {
+            "text": "Fönster",
+            "x": 337,
+            "y": 2,
+            "width": 63,
+            "height": 27
+          },
+          {
+            "text": "Hjälp",
+            "x": 403,
+            "y": 2,
+            "width": 47,
+            "height": 27
+          },
+          {
+            "text": "Om Finder",
+            "x": 50,
+            "y": 35,
+            "width": 170,
+            "height": 27
+          },
+          {
+            "text": "Inställningar",
+            "x": 70,
+            "y": 71,
+            "width": 150,
+            "height": 27
+          },
+          {
+            "text": "Töm papperskorgen",
+            "x": 70,
+            "y": 106,
+            "width": 165,
+            "height": 27
+          },
+          {
+            "text": "Tjänster",
+            "x": 50,
+            "y": 141,
+            "width": 150,
+            "height": 26
+          },
+          {
+            "text": "Göm Finder",
+            "x": 50,
+            "y": 177,
+            "width": 150,
+            "height": 23
+          },
+          {
+            "text": "Göm övriga",
+            "x": 50,
+            "y": 201,
+            "width": 150,
+            "height": 23
+          },
+          {
+            "text": "Visa alla",
+            "x": 50,
+            "y": 225,
+            "width": 150,
+            "height": 24
+          }
+        ]
+      },
+      "width": 1920,
+      "height": 1080,
+      "jpeg_bytes": 49598,
+      "jpeg_sha256": "010e045c25fc85e9530518c37bb573201c487c2c36bf919147dff0627517ece5",
+      "sample_order": [
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            1199.732458,
+            1200.742459,
+            1191.142333,
+            1195.189875,
+            1186.714958
+          ],
+          "first_ms": 1199.732458,
+          "median_ms": 1195.189875,
+          "min_ms": 1186.714958,
+          "max_ms": 1200.742459
+        },
+        "raw_text": "é Fi fle Arkiv Redigera Innehall Ga Fénster Hjalp aS % =F ©! Q © | tis 24 nov. 12:16\n\nOm Finder\n\n® Installningar...\n\nTjanster >\n\nG6m Finder\n\nGém dvriga\n£ -S ‘i\nSBSSUGRB@HB2S +8: OB BAU",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 14,
+          "exact_label_hits": 4,
+          "normalized_label_hits": 4,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Om Finder",
+                "x": 50,
+                "y": 35,
+                "width": 170,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Inställningar",
+                "x": 70,
+                "y": 71,
+                "width": 150,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Töm papperskorgen",
+                "x": 70,
+                "y": 106,
+                "width": 165,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Tjänster",
+                "x": 50,
+                "y": 141,
+                "width": 150,
+                "height": 26
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Göm Finder",
+                "x": 50,
+                "y": 177,
+                "width": 150,
+                "height": 23
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Göm övriga",
+                "x": 50,
+                "y": 201,
+                "width": 150,
+                "height": 23
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Visa alla",
+                "x": 50,
+                "y": 225,
+                "width": 150,
+                "height": 24
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            736.819834,
+            757.982333,
+            730.075625,
+            772.043625,
+            745.268541
+          ],
+          "first_ms": 736.819834,
+          "median_ms": 745.268541,
+          "min_ms": 730.075625,
+          "max_ms": 772.043625
+        },
+        "raw_text": "Finger Arkiv\nOm Finder\n• Instäliningar...\nTom pappeskoegenw\nTiänster\nGöm Finder\nGöm övriga\nRedigera\nInnehåll\nGà\nFönster\nHjälp\n仑华园\n魷H\n100-\ntis 24 nov. 12:16",
+        "observations": [
+          {
+            "text": "Finger Arkiv",
+            "confidence": 1,
+            "x": 50.2325580197641,
+            "y": 8.000000221784681,
+            "width": 97.67441558837892,
+            "height": 23.000000000000078
+          },
+          {
+            "text": "Om Finder",
+            "confidence": 1,
+            "x": 53.0232575090275,
+            "y": 41.86046498783345,
+            "width": 69.76744079589844,
+            "height": 14.139534950256314
+          },
+          {
+            "text": "• Instäliningar...",
+            "confidence": 1,
+            "x": 52.639185650646596,
+            "y": 74.9802543697523,
+            "width": 106.8827896118164,
+            "height": 18.227807998657127
+          },
+          {
+            "text": "Tom pappeskoegenw",
+            "confidence": 0.30000001192092896,
+            "x": 53.02325290095848,
+            "y": 111.62790689233967,
+            "width": 153.48837280273438,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "Tiänster",
+            "confidence": 1,
+            "x": 53.0232571864553,
+            "y": 145.11627897620554,
+            "width": 53.02325439453126,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Göm Finder",
+            "confidence": 1,
+            "x": 53.023260086039656,
+            "y": 181.0000001598745,
+            "width": 75.34883117675784,
+            "height": 14.34883689880377
+          },
+          {
+            "text": "Göm övriga",
+            "confidence": 1,
+            "x": 53.02325849520801,
+            "y": 206.51162781341492,
+            "width": 72.55813598632812,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Redigera",
+            "confidence": 1,
+            "x": 161.86046650471815,
+            "y": 8.372092929693832,
+            "width": 61.39534759521485,
+            "height": 13.953488349914668
+          },
+          {
+            "text": "Innehåll",
+            "confidence": 1,
+            "x": 237.20930391901345,
+            "y": 8.372092894810134,
+            "width": 53.02325439453124,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Gà",
+            "confidence": 1,
+            "x": 304.1860470304417,
+            "y": 8.372093134012793,
+            "width": 22.32558059692387,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Fönster",
+            "confidence": 1,
+            "x": 340.46511787250176,
+            "y": 8.372092894810134,
+            "width": 53.02325439453124,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Hjälp",
+            "confidence": 1,
+            "x": 401.8604646869011,
+            "y": 8.372093080856672,
+            "width": 39.06976699829103,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "仑华园",
+            "confidence": 0.30000001192092896,
+            "x": 226.04651317051804,
+            "y": 111.62790684829854,
+            "width": 44.65116119384766,
+            "height": 14.37209320068364
+          },
+          {
+            "text": "魷H",
+            "confidence": 0.30000001192092896,
+            "x": 239.99999967334128,
+            "y": 180.9999999272234,
+            "width": 27.906976699829123,
+            "height": 14.348837375640858
+          },
+          {
+            "text": "100-",
+            "confidence": 1,
+            "x": 1680.0000005108404,
+            "y": 8.372093013269858,
+            "width": 22.32558059692387,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "tis 24 nov. 12:16",
+            "confidence": 1,
+            "x": 1794.4186047450034,
+            "y": 5.58139531094433,
+            "width": 106.04650878906249,
+            "height": 16.7441864013672
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 14,
+          "exact_label_hits": 9,
+          "normalized_label_hits": 9,
+          "coordinate_hits": 7,
+          "labels": [
+            {
+              "expected": {
+                "text": "Finder",
+                "x": 44,
+                "y": 2,
+                "width": 66,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                1,
+                5
+              ]
+            },
+            {
+              "expected": {
+                "text": "Arkiv",
+                "x": 108,
+                "y": 2,
+                "width": 46,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": false,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Redigera",
+                "x": 155,
+                "y": 2,
+                "width": 72,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                7
+              ]
+            },
+            {
+              "expected": {
+                "text": "Innehåll",
+                "x": 235,
+                "y": 2,
+                "width": 65,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                8
+              ]
+            },
+            {
+              "expected": {
+                "text": "Gå",
+                "x": 303,
+                "y": 2,
+                "width": 33,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Fönster",
+                "x": 337,
+                "y": 2,
+                "width": 63,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                10
+              ]
+            },
+            {
+              "expected": {
+                "text": "Hjälp",
+                "x": 403,
+                "y": 2,
+                "width": 47,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                11
+              ]
+            },
+            {
+              "expected": {
+                "text": "Om Finder",
+                "x": 50,
+                "y": 35,
+                "width": 170,
+                "height": 27
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Inställningar",
+                "x": 70,
+                "y": 71,
+                "width": 150,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Töm papperskorgen",
+                "x": 70,
+                "y": 106,
+                "width": 165,
+                "height": 27
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Tjänster",
+                "x": 50,
+                "y": 141,
+                "width": 150,
+                "height": 26
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Göm Finder",
+                "x": 50,
+                "y": 177,
+                "width": 150,
+                "height": 23
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                5
+              ]
+            },
+            {
+              "expected": {
+                "text": "Göm övriga",
+                "x": 50,
+                "y": 201,
+                "width": 150,
+                "height": 23
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                6
+              ]
+            },
+            {
+              "expected": {
+                "text": "Visa alla",
+                "x": 50,
+                "y": 225,
+                "width": 150,
+                "height": 24
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "name": "mac-textedit-full-frame",
+        "path": "/private/tmp/autopaws-ocr-bench/mac-textedit.jpg",
+        "labels": [
+          {
+            "text": "AUTOPAWS OCR BENCHMARK",
+            "x": 216,
+            "y": 177,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Status: Ready",
+            "x": 216,
+            "y": 191,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Build: PASS 42 / 100",
+            "x": 216,
+            "y": 205,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Path: /Users/test/Autopaws/main.go",
+            "x": 216,
+            "y": 219,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Command: go test -race ./...",
+            "x": 216,
+            "y": 233,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+            "x": 216,
+            "y": 247,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Svenska: räksmörgås ÅÄÖ åäö",
+            "x": 216,
+            "y": 261,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Button labels: Connect Save Cancel",
+            "x": 216,
+            "y": 275,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Version: v0.4.0 1920x1080",
+            "x": 216,
+            "y": 289,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "END AUTOPAWS BENCHMARK",
+            "x": 216,
+            "y": 303,
+            "width": 410,
+            "height": 15
+          }
+        ]
+      },
+      "width": 1920,
+      "height": 1080,
+      "jpeg_bytes": 75860,
+      "jpeg_sha256": "0a53e7dd0e15affa4afacf2ee98837c12fd4ba9c56cd6816fb88b776d0ba2d2b",
+      "sample_order": [
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            1370.27275,
+            1363.194917,
+            1368.876625,
+            1359.168208,
+            1365.982334
+          ],
+          "first_ms": 1370.27275,
+          "median_ms": 1365.982334,
+          "min_ms": 1359.168208,
+          "max_ms": 1370.27275
+        },
+        "raw_text": "@ = Textredigerare Arkiv § Redigera Format Innehall Fdénster Hjalp a % =F ©! Q © | tis 24 nov. 12:17\nL ] Namnldst\nB\\rju\\s QB x Hevvetica ¢ Normal ¢ 2 » BJSli=l= =~ wo\no 2 4 6 8 10 12 14 16 ate] 20\nAUTOPAWS OCR BENCHMARK\nStatus: Ready\nBuild: PASS 42 / 100\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1Ile/+:;_-+=1=[]\nSvenska: raksmérgas AAO 446\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\nEND AUTOPAWS BENCHMARK]\na | Am i” 24 tee m ab",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 10,
+          "exact_label_hits": 7,
+          "normalized_label_hits": 7,
+          "labels": [
+            {
+              "expected": {
+                "text": "AUTOPAWS OCR BENCHMARK",
+                "x": 216,
+                "y": 177,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 216,
+                "y": 191,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Build: PASS 42 / 100",
+                "x": 216,
+                "y": 205,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Path: /Users/test/Autopaws/main.go",
+                "x": 216,
+                "y": 219,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Command: go test -race ./...",
+                "x": 216,
+                "y": 233,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+                "x": 216,
+                "y": 247,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Svenska: räksmörgås ÅÄÖ åäö",
+                "x": 216,
+                "y": 261,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Button labels: Connect Save Cancel",
+                "x": 216,
+                "y": 275,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Version: v0.4.0 1920x1080",
+                "x": 216,
+                "y": 289,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "END AUTOPAWS BENCHMARK",
+                "x": 216,
+                "y": 303,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            921.934791,
+            895.799,
+            866.54925,
+            914.6415,
+            891.245125
+          ],
+          "first_ms": 921.934791,
+          "median_ms": 895.799,
+          "min_ms": 866.54925,
+          "max_ms": 921.934791
+        },
+        "raw_text": "Textredigerare\nArkiv\nRedigera\nFormat\nInnehåll\nFönster\nHjälp\nNamnlöst - Redigerad\nMeVeLCa\nAUTOPAWS OCR BENCHMARK\nBuild: PASS 42/100\nratn./users/testAutopaws/main.gc\nCommand: go test-race ./...\nTEIS\nSvenska: räksmörgas AÃO àão\nKulton abes: sonned save bancel\nVersion: v0.4.01920x1080\nEND AUTOPAWS BENCHMARK)\n100-\n8\ntis 24 nov. 12:17",
+        "observations": [
+          {
+            "text": "Textredigerare",
+            "confidence": 1,
+            "x": 47.44186365198033,
+            "y": 8.372092894810134,
+            "width": 106.04650878906249,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Arkiv",
+            "confidence": 1,
+            "x": 164.65116366364515,
+            "y": 8.372092894810134,
+            "width": 39.06976699829101,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Redigera",
+            "confidence": 1,
+            "x": 217.67441901121907,
+            "y": 8.372092894810134,
+            "width": 66.97674560546875,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Format",
+            "confidence": 1,
+            "x": 287.4418620585483,
+            "y": 8.372092894810134,
+            "width": 53.02325439453129,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Innehåll",
+            "confidence": 1,
+            "x": 343.25581688624743,
+            "y": 8.372092894810134,
+            "width": 64.1860427856445,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "Fönster",
+            "confidence": 1,
+            "x": 418.6046525352925,
+            "y": 8.372092929693832,
+            "width": 53.02325439453124,
+            "height": 13.953488349914668
+          },
+          {
+            "text": "Hjälp",
+            "confidence": 1,
+            "x": 485.581396747604,
+            "y": 8.372093124897804,
+            "width": 36.279067993164134,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "Namnlöst - Redigerad",
+            "confidence": 1,
+            "x": 295.8139620325444,
+            "y": 86.51162777853105,
+            "width": 150.69766235351562,
+            "height": 13.953488349914549
+          },
+          {
+            "text": "MeVeLCa",
+            "confidence": 0.30000001192092896,
+            "x": 365.58139531473444,
+            "y": 125.58139568705893,
+            "width": 53.02325057983399,
+            "height": 5.581394672393798
+          },
+          {
+            "text": "AUTOPAWS OCR BENCHMARK",
+            "confidence": 1,
+            "x": 217.67441910067686,
+            "y": 175.81395359001414,
+            "width": 178.60464477539065,
+            "height": 17.186046600341744
+          },
+          {
+            "text": "Build: PASS 42/100",
+            "confidence": 1,
+            "x": 217.6744218423362,
+            "y": 203.72093010411254,
+            "width": 114.4186019897461,
+            "height": 14.279069900512638
+          },
+          {
+            "text": "ratn./users/testAutopaws/main.gc",
+            "confidence": 1,
+            "x": 214.88373996181087,
+            "y": 223.25581420207672,
+            "width": 192.55812072753906,
+            "height": 8.372092247009363
+          },
+          {
+            "text": "Command: go test-race ./...",
+            "confidence": 1,
+            "x": 217.6744271488235,
+            "y": 231.62790670629317,
+            "width": 150.6976623535156,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "TEIS",
+            "confidence": 0.30000001192092896,
+            "x": 357.1522153491622,
+            "y": 250.78453351172186,
+            "width": 53.137424468994126,
+            "height": 9.128607749939102
+          },
+          {
+            "text": "Svenska: räksmörgas AÃO àão",
+            "confidence": 1,
+            "x": 217.67441894446085,
+            "y": 256.74418591321796,
+            "width": 170.23255920410153,
+            "height": 19.534883499145437
+          },
+          {
+            "text": "Kulton abes: sonned save bancel",
+            "confidence": 1,
+            "x": 217.67442023939407,
+            "y": 279.00000006249087,
+            "width": 192.5581359863281,
+            "height": 5.999999999999979
+          },
+          {
+            "text": "Version: v0.4.01920x1080",
+            "confidence": 1,
+            "x": 214.88372325566644,
+            "y": 287.00000018173716,
+            "width": 147.9069671630859,
+            "height": 17.186046600341744
+          },
+          {
+            "text": "END AUTOPAWS BENCHMARK)",
+            "confidence": 1,
+            "x": 214.88372234267132,
+            "y": 301.0000002039156,
+            "width": 181.39533996582028,
+            "height": 17.139534950256422
+          },
+          {
+            "text": "100-",
+            "confidence": 1,
+            "x": 1680.0000005108404,
+            "y": 8.372093013269858,
+            "width": 22.32558059692387,
+            "height": 16.7441864013672
+          },
+          {
+            "text": "8",
+            "confidence": 1,
+            "x": 1758.1395348458282,
+            "y": 8.372093055130412,
+            "width": 16.744186401367216,
+            "height": 16.74418640136708
+          },
+          {
+            "text": "tis 24 nov. 12:17",
+            "confidence": 1,
+            "x": 1794.4186073961664,
+            "y": 5.581395031874523,
+            "width": 106.04650878906249,
+            "height": 16.7441864013672
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "label_count": 10,
+          "exact_label_hits": 2,
+          "normalized_label_hits": 2,
+          "coordinate_hits": 2,
+          "labels": [
+            {
+              "expected": {
+                "text": "AUTOPAWS OCR BENCHMARK",
+                "x": 216,
+                "y": 177,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                9
+              ]
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 216,
+                "y": 191,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Build: PASS 42 / 100",
+                "x": 216,
+                "y": 205,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Path: /Users/test/Autopaws/main.go",
+                "x": 216,
+                "y": 219,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Command: go test -race ./...",
+                "x": 216,
+                "y": 233,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+                "x": 216,
+                "y": 247,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Svenska: räksmörgås ÅÄÖ åäö",
+                "x": 216,
+                "y": 261,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Button labels: Connect Save Cancel",
+                "x": 216,
+                "y": 275,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Version: v0.4.0 1920x1080",
+                "x": 216,
+                "y": 289,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "END AUTOPAWS BENCHMARK",
+                "x": 216,
+                "y": 303,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                17
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "image": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        },
+        "name": "mac-textedit-region",
+        "path": "/private/tmp/autopaws-ocr-bench/mac-textedit.jpg",
+        "expected": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\nBuild: PASS 42 / 100\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race ./...\nSymbols: 0O 1Il | / \\ : ; _ - + = { } [ ]\nSvenska: räksmörgås ÅÄÖ åäö\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\nEND AUTOPAWS BENCHMARK",
+        "labels": [
+          {
+            "text": "AUTOPAWS OCR BENCHMARK",
+            "x": 216,
+            "y": 177,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Status: Ready",
+            "x": 216,
+            "y": 191,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Build: PASS 42 / 100",
+            "x": 216,
+            "y": 205,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Path: /Users/test/Autopaws/main.go",
+            "x": 216,
+            "y": 219,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Command: go test -race ./...",
+            "x": 216,
+            "y": 233,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+            "x": 216,
+            "y": 247,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Svenska: räksmörgås ÅÄÖ åäö",
+            "x": 216,
+            "y": 261,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Button labels: Connect Save Cancel",
+            "x": 216,
+            "y": 275,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "Version: v0.4.0 1920x1080",
+            "x": 216,
+            "y": 289,
+            "width": 410,
+            "height": 15
+          },
+          {
+            "text": "END AUTOPAWS BENCHMARK",
+            "x": 216,
+            "y": 303,
+            "width": 410,
+            "height": 15
+          }
+        ]
+      },
+      "width": 1920,
+      "height": 1080,
+      "jpeg_bytes": 75860,
+      "jpeg_sha256": "0a53e7dd0e15affa4afacf2ee98837c12fd4ba9c56cd6816fb88b776d0ba2d2b",
+      "sample_order": [
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision",
+        "vision,tesseract",
+        "tesseract,vision"
+      ],
+      "tesseract_current": {
+        "timing": {
+          "samples_ms": [
+            180.787708,
+            187.866167,
+            179.568584,
+            187.506958,
+            183.196125
+          ],
+          "first_ms": 180.787708,
+          "median_ms": 183.196125,
+          "min_ms": 179.568584,
+          "max_ms": 187.866167
+        },
+        "raw_text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\n\nBuild: PASS 42 / 100\n\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1le/+#:;_-+=l=[]\nSvenska: raksmérgas AAO aad\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\n\nEND AUTOPAWS BENCHMARK",
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 275,
+          "raw_rune_edits": 32,
+          "raw_rune_character_error_rate": 0.11636363636363636,
+          "expected_runes": 275,
+          "rune_edits": 29,
+          "rune_character_error_rate": 0.10545454545454545,
+          "label_count": 10,
+          "exact_label_hits": 7,
+          "normalized_label_hits": 7,
+          "labels": [
+            {
+              "expected": {
+                "text": "AUTOPAWS OCR BENCHMARK",
+                "x": 216,
+                "y": 177,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 216,
+                "y": 191,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Build: PASS 42 / 100",
+                "x": 216,
+                "y": 205,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Path: /Users/test/Autopaws/main.go",
+                "x": 216,
+                "y": 219,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Command: go test -race ./...",
+                "x": 216,
+                "y": 233,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+                "x": 216,
+                "y": 247,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Svenska: räksmörgås ÅÄÖ åäö",
+                "x": 216,
+                "y": 261,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false
+            },
+            {
+              "expected": {
+                "text": "Button labels: Connect Save Cancel",
+                "x": 216,
+                "y": 275,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "Version: v0.4.0 1920x1080",
+                "x": 216,
+                "y": 289,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            },
+            {
+              "expected": {
+                "text": "END AUTOPAWS BENCHMARK",
+                "x": 216,
+                "y": 303,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true
+            }
+          ]
+        }
+      },
+      "vision_prototype": {
+        "timing": {
+          "samples_ms": [
+            444.952416,
+            563.628333,
+            473.914917,
+            539.940083,
+            577.0585
+          ],
+          "first_ms": 444.952416,
+          "median_ms": 539.940083,
+          "min_ms": 444.952416,
+          "max_ms": 577.0585
+        },
+        "raw_text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\nBuild: PASS 42/ 100\nPath:/Users/test/Autopaws/main.go\nCommand: go test -race ./...\nSymbols: 00 1ll ≤/+:\n-+=|=[]\nSvenska: räksmörgás AÃO đao\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\nEND AUTOPAWS BENCHMARK",
+        "observations": [
+          {
+            "text": "AUTOPAWS OCR BENCHMARK",
+            "confidence": 1,
+            "x": 216,
+            "y": 176.0000001655251,
+            "width": 181.99999696666674,
+            "height": 13.904109589041088
+          },
+          {
+            "text": "Status: Ready",
+            "confidence": 1,
+            "x": 216,
+            "y": 191.74503568516158,
+            "width": 80.02535724207763,
+            "height": 14.194860017462943
+          },
+          {
+            "text": "Build: PASS 42/ 100",
+            "confidence": 1,
+            "x": 216,
+            "y": 205.79452064726027,
+            "width": 113.99999857500003,
+            "height": 11.917808219178081
+          },
+          {
+            "text": "Path:/Users/test/Autopaws/main.go",
+            "confidence": 1,
+            "x": 216.00000242499993,
+            "y": 219.6986300625,
+            "width": 194,
+            "height": 13.904109589041088
+          },
+          {
+            "text": "Command: go test -race ./...",
+            "confidence": 1,
+            "x": 216.00000192499996,
+            "y": 233.60273967636985,
+            "width": 154,
+            "height": 15.890410958904125
+          },
+          {
+            "text": "Symbols: 00 1ll ≤/+:",
+            "confidence": 1,
+            "x": 216.00000191469732,
+            "y": 247.50684908333335,
+            "width": 121.99999237060547,
+            "height": 13.904109589041088
+          },
+          {
+            "text": "-+=|=[]",
+            "confidence": 0.5,
+            "x": 353.99999942,
+            "y": 247.50684941438357,
+            "width": 58.00000000000001,
+            "height": 13.904109589041104
+          },
+          {
+            "text": "Svenska: räksmörgás AÃO đao",
+            "confidence": 1,
+            "x": 216.0000012333333,
+            "y": 255.45205446347032,
+            "width": 170,
+            "height": 19.86301369863015
+          },
+          {
+            "text": "Button labels: Connect Save Cancel",
+            "confidence": 1,
+            "x": 216,
+            "y": 275.3150687248858,
+            "width": 195.99999773333343,
+            "height": 13.904109589041104
+          },
+          {
+            "text": "Version: v0.4.0 1920x1080",
+            "confidence": 1,
+            "x": 216,
+            "y": 289.21917818150683,
+            "width": 145.99999817500003,
+            "height": 11.917808219178081
+          },
+          {
+            "text": "END AUTOPAWS BENCHMARK",
+            "confidence": 1,
+            "x": 216,
+            "y": 303.12328774571915,
+            "width": 179.99999775000003,
+            "height": 13.904109589041088
+          }
+        ],
+        "stable_text_across_repetitions": true,
+        "metrics": {
+          "raw_expected_runes": 275,
+          "raw_rune_edits": 29,
+          "raw_rune_character_error_rate": 0.10545454545454545,
+          "expected_runes": 275,
+          "rune_edits": 28,
+          "rune_character_error_rate": 0.10181818181818182,
+          "label_count": 10,
+          "exact_label_hits": 6,
+          "normalized_label_hits": 6,
+          "coordinate_hits": 6,
+          "labels": [
+            {
+              "expected": {
+                "text": "AUTOPAWS OCR BENCHMARK",
+                "x": 216,
+                "y": 177,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                0
+              ]
+            },
+            {
+              "expected": {
+                "text": "Status: Ready",
+                "x": 216,
+                "y": 191,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                1
+              ]
+            },
+            {
+              "expected": {
+                "text": "Build: PASS 42 / 100",
+                "x": 216,
+                "y": 205,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Path: /Users/test/Autopaws/main.go",
+                "x": 216,
+                "y": 219,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Command: go test -race ./...",
+                "x": 216,
+                "y": 233,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                4
+              ]
+            },
+            {
+              "expected": {
+                "text": "Symbols: 0O 1Il | / \\ : ; _ - + = { } [ ]",
+                "x": 216,
+                "y": 247,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Svenska: räksmörgås ÅÄÖ åäö",
+                "x": 216,
+                "y": 261,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": false,
+              "normalized_text_match": false,
+              "coordinate_hit": false
+            },
+            {
+              "expected": {
+                "text": "Button labels: Connect Save Cancel",
+                "x": 216,
+                "y": 275,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                8
+              ]
+            },
+            {
+              "expected": {
+                "text": "Version: v0.4.0 1920x1080",
+                "x": 216,
+                "y": 289,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                9
+              ]
+            },
+            {
+              "expected": {
+                "text": "END AUTOPAWS BENCHMARK",
+                "x": 216,
+                "y": 303,
+                "width": 410,
+                "height": 15
+              },
+              "exact_text_match": true,
+              "normalized_text_match": true,
+              "coordinate_hit": true,
+              "matching_observation_indexes": [
+                10
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "shipping_scope": "Only optional region on existing Tesseract get_screen_text and execute_and_read. Vision was an experimental prototype and is not part of this change.",
+  "host_cpu": "Apple M3 Ultra",
+  "ground_truth_notes": {
+    "body": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\nBuild: PASS 42 / 100\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race ./...\nSymbols: 0O 1Il | / \\ : ; _ - + = { } [ ]\nSvenska: räksmörgås ÅÄÖ åäö\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\nEND AUTOPAWS BENCHMARK",
+    "crop": [
+      216,
+      176,
+      798,
+      321
+    ],
+    "physical_ground_truth": "Transcribed before seeing OCR output. Body is intended HID text, visually checked for changes in TextEdit. Labels are selected useful text, not complete screen transcription. Menu labels omit trailing ellipsis to avoid glyph-vs-string ambiguity; disabled menu items included.",
+    "textedit": "Unsaved rich text document, Helvetica 12, default formatting",
+    "capture": "1920x1080 AVFoundation unchanged JPEG; crop diagnostic separately recompressed quality95,no chroma subsampling",
+    "desktop_capture_ms": [
+      551.29,
+      546.08
+    ],
+    "menu_capture_ms": 60.41,
+    "textedit_capture_ms": 539.88
+  },
+  "artifact_provenance": {
+    "artifacts": {
+      "/private/tmp/autopaws-ocr-bench/benchmark_test.go": {
+        "sha256": "72a2b15152b69e2734f125ce1950f5878fb2f4bb2423dd3e6a1887aebedcc4de",
+        "bytes": 13932
+      },
+      "/private/tmp/autopaws-ocr-bench/overlay.json": {
+        "sha256": "72de5859167217c7bf0b01ec59a3a82979b4df060bc59002689d70131c0978e2",
+        "bytes": 152
+      },
+      "/private/tmp/autopaws-ocr-bench/run.sh": {
+        "sha256": "104968e2808d7ca57456068be41cb279f6bb086c1763797581ba3a9f21690ef2",
+        "bytes": 1390
+      },
+      "/private/tmp/autopaws-ocr-bench/manifest.json": {
+        "sha256": "1b169fd775ac6393e8d112345cccf9e2fb184911a18e642302bb0ee08ea69d9d",
+        "bytes": 7342
+      },
+      "/private/tmp/autopaws-ocr-bench/ground-truth-notes.json": {
+        "sha256": "cbdf0fca6e3c80d16110371663cbc3a421c151448d1d1ee7b21188f2fe5ed589",
+        "bytes": 989
+      },
+      "/private/tmp/autopaws-ocr-bench/results.json": {
+        "sha256": "7f28c105ba8abd4696ded675d4d2888e07665b7c1513ba10f7b854795754a663",
+        "bytes": 94270
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/source-manifest.json": {
+        "sha256": "4c29771dc45970e3d902d58949361dd7737707e055b831239dd22136bdec957a",
+        "bytes": 10268
+      }
+    },
+    "preserved_source": {
+      "/private/tmp/autopaws-ocr-bench/prototype/README.md": {
+        "sha256": "fbdb62227884b30029010539dae74c3ca8e4514b920f34b7108d56a95312fea1",
+        "bytes": 26319
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/api_integration_linux_test.go": {
+        "sha256": "34912b9c677c9585745483e9a4dec08bae73d02dd7d181e3a3ed85f82ecd01ca",
+        "bytes": 15821
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/capture.go": {
+        "sha256": "dd52bbbf2ecd32a120153f9c44b74bd7699429c28fff2775e76a7ccf773d5d8a",
+        "bytes": 3366
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/capture_test.go": {
+        "sha256": "4192e7dbff1898a27619cf0140c32e0023311de819af20cbeabf415d4ca6d8fd",
+        "bytes": 8237
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/capturelog.go": {
+        "sha256": "6504a0295f342442299aca038229ce0baeb75b1521d5ad7cc6b2a00d252a54da",
+        "bytes": 1101
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/capturelog_linux_test.go": {
+        "sha256": "158b8ff682616ae5ec7599107f3c4c9abe628b27a5d275b9e5dbf954a87ef3f7",
+        "bytes": 1559
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/capturelog_test.go": {
+        "sha256": "94fe4d8bc7e7d495b40a1d292849f1969d3b610093f85b69369826c7ef3d1c7b",
+        "bytes": 2858
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/layout_integration_linux_test.go": {
+        "sha256": "c5be283a351d7d2725af74913bfd2de18ce7c6c36858f18fb81bed31c7e534a3",
+        "bytes": 2206
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/main.go": {
+        "sha256": "99c48a4e7e570bb1c4cfcf03ec2161b36c677316cd8f1042689b85a46b732895",
+        "bytes": 317
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/mcp_integration_test.go": {
+        "sha256": "d36635c45d7288ad9b939805534cca970e6ece0c37db1482d8ec5db9599cde67",
+        "bytes": 34167
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_vision_darwin.go": {
+        "sha256": "c06f150e2199721dac1eb5082ab84b749b031cddbf4a3322824902793b18a14b",
+        "bytes": 3687
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_vision_darwin.js": {
+        "sha256": "f63ad97de68a7e2c2cdab7150cf14c88b75d1acde4db41ed7fb29dfde7eaf1da",
+        "bytes": 1414
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_vision_darwin_test.go": {
+        "sha256": "a583fbfccf4984482ac2c4af0bbdc295a218c2e563107f78cb069f4c65837cd7",
+        "bytes": 5055
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_wait_darwin.go": {
+        "sha256": "09401bfc1cd6040024ea59285a8ca46283391da0cb5c1c49f98f0d43d50e22c6",
+        "bytes": 2002
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_wait_darwin_test.go": {
+        "sha256": "0d31d5fdae3f8ca8ed29c6439f2a4da0140a94fe41e689155d9f37a9ea3e59f5",
+        "bytes": 10383
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/native_wait_other.go": {
+        "sha256": "9876896cc61af283c11ea0f199f7330584c0972c7fdd1c76024ed4e40b279464",
+        "bytes": 367
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr.go": {
+        "sha256": "3cbde18538a3f4474f09c3063ca23a5af8e5e8e61271501a257fee0f2ee7ff5a",
+        "bytes": 3630
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_corpus_test.go": {
+        "sha256": "98cadffe997726aff0d15d2addc081f158695293c7d14295163cc2e29fd1a971",
+        "bytes": 2683
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_integration_test.go": {
+        "sha256": "59d4397621c54ff4fe1a083a042bdc433b8e933a48c2db991748f8accef85862",
+        "bytes": 8255
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_path.go": {
+        "sha256": "9de859587aada36ad77966eb25c77d1026ee092d49d316dc72e9c468ce696ae4",
+        "bytes": 1068
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_path_test.go": {
+        "sha256": "6916804a1b7160fe9744555cfc85c7746f0893cecdda09881945e70c237861d9",
+        "bytes": 2806
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_region.go": {
+        "sha256": "f3da6079f8e826b7d7305e670d4ee7ef58155e5e351894173bbd91504c6bf684",
+        "bytes": 1703
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_region_test.go": {
+        "sha256": "f0c91c2ae04b390bae293f84db2fc0cabaff6bfd4ec1fc32cff46d78e95105e9",
+        "bytes": 5019
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_test.go": {
+        "sha256": "8ae5c253c4b09e491dcd1c0324095fd4641ba648629d4128fbfb3f6882de37ad",
+        "bytes": 8308
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_tools.go": {
+        "sha256": "dfccc6a0227be9cc679296dea53d89ea29943458a3b4c5510c99f0c099a03d72",
+        "bytes": 2148
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/ocr_tools_test.go": {
+        "sha256": "1eb93c26be30bf93b4daadcd111722147774dbf9b10eb2f155dc1535bbe25377",
+        "bytes": 1660
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/run.go": {
+        "sha256": "bf8d0c0321bd179c7bba5cdc21c48e1a7cb3428d486527cdc161772affa37215",
+        "bytes": 2476
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/run_test.go": {
+        "sha256": "b752030a24eea2b7e2eea7ae06aefd6a9ae2831e973c85efa8b9e02291d19a25",
+        "bytes": 8322
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/screen.go": {
+        "sha256": "023df10ae4557ce7cbece6f4f8f2da62be6a99c3e1086b9048c01df02cbfa581",
+        "bytes": 4245
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/screen_test.go": {
+        "sha256": "74f3cf8844f4f87806ae07361fdf698b4a2427e227dea920649651d1dcd60549",
+        "bytes": 3502
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/README.md": {
+        "sha256": "ac116c505246d6627ee2d105b5541a4494f733439384e3baa1ad6479e0d2e0db",
+        "bytes": 1437
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/accuracy.json": {
+        "sha256": "ec3e6d7005ccd6cf2a366a8f09d6682c478b82ed85fe3f03e6699ad68b255469",
+        "bytes": 1328
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/corpus.json": {
+        "sha256": "b1c6589f2157afbdfd653046fd1100c8db4b5f3c794a8d907b9d8050b338f64c",
+        "bytes": 1175
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/dark-terminal.baseline.pgm": {
+        "sha256": "858987dc09ee664f0cc92f18faadcec99e22fffb0884d890c8becd4da0d06a6c",
+        "bytes": 403216
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/dark-terminal.jpg": {
+        "sha256": "0ed31c8ecec67d6b2cc31d6482358390d675ba882a8849a50e15b715edda7b86",
+        "bytes": 24327
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/generate.py": {
+        "sha256": "4ebf1868baa6a4e9e132f7ee85c461b74dba130aa95b93c2df7e33caf8dde906",
+        "bytes": 3009
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/light-terminal.baseline.pgm": {
+        "sha256": "e0e37ad9ba2e98f175671cf38d9ccfe4a770d470714b39f3264e45aec52b17a7",
+        "bytes": 403216
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/light-terminal.jpg": {
+        "sha256": "7b07688e1485178c4f7403a723b1fc33bdc681d2d40c1b23938c35d64d10b3cf",
+        "bytes": 14236
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/linux-console.baseline.pgm": {
+        "sha256": "ee228def450b1a8fcb61122a782d9491af3ec963499a5cbe97485f87fca68511",
+        "bytes": 403216
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/linux-console.jpg": {
+        "sha256": "8b9b66ed0319a61700ee5e3dc0d8a141ab7308888e7738be99bedbc5c0cf0a6a",
+        "bytes": 17807
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/powershell-style.baseline.pgm": {
+        "sha256": "a22ef1848aadb34dbb1d4d325e8fdf141fe5eab58a54cd3b0617b46f589e1011",
+        "bytes": 403216
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/powershell-style.jpg": {
+        "sha256": "521c30b17c094065c13f8a0c6e8674fe99644879a918bf52f3deff24021804b1",
+        "bytes": 23644
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/provenance.json": {
+        "sha256": "45973f5e5122bc97b8b2ab62d67712ae6470c3443cfff67e075f321e02c9e512",
+        "bytes": 405
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/ocr/unsupported-cmyk.jpg": {
+        "sha256": "6ce8fbfdada0f2ee25c5115f90dc4add6b92f5a6df6ed6baa84d222f58b39d1e",
+        "bytes": 353
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/tools-ocr.golden.json": {
+        "sha256": "2e57f4d28c27ca054fbcfdc97048f4701b3832c44d4cf7cedb0dc9718f5eb13f",
+        "bytes": 12202
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/testdata/tools.golden.json": {
+        "sha256": "3f3f35098b79487f2585dc49d2f98e912a7fa062f7f11b0e6ff7f3b7ac62b952",
+        "bytes": 10826
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/token_integration_linux_test.go": {
+        "sha256": "c7613286e80dc6c175c2a3fe727418b76d6b55a9911090d3a66989e269549b17",
+        "bytes": 3183
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/token_test.go": {
+        "sha256": "d4d57105c00a7b96504950f314528bf56aa6e32e30132cac69dd69ff047d92f5",
+        "bytes": 1264
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/tools.go": {
+        "sha256": "08822e738986cd3d739aa88807e3a01566053e361b90389a99a3f1d105beba12",
+        "bytes": 13621
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/tools_test.go": {
+        "sha256": "15fc31ec81623230c0524fcbed05667438cadbe4150b210cf9ceee8cf5dc231a",
+        "bytes": 1306
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/vision.go": {
+        "sha256": "fd87f6a1eb1499e4353e19a0611f167080436d87291526e809c1590ad4e2cd6e",
+        "bytes": 6926
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/vision_test.go": {
+        "sha256": "6137d6cee84416b7270407bf520f8a4e7d30a4ec891e0c742863e8f721d57f2a",
+        "bytes": 10765
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/wait.go": {
+        "sha256": "a830e00be7b648d602848673644e5c0ff81ae8673cca559730d536410bf284d8",
+        "bytes": 7801
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/cmd/autopaws-mcp/wait_test.go": {
+        "sha256": "61abb82e5fda8d0e6c820a9fd17bd058949123fb3c97ac36596303236c1b31c1",
+        "bytes": 26099
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/go.mod": {
+        "sha256": "574e206f6ae6917c863727ee45cd20f7c5921a42186c15b8432a61112c108821",
+        "bytes": 518
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/go.sum": {
+        "sha256": "6ecf507393db3ceb386961a8b3eacf1678adb848795bdb53a23d6e241d0382e5",
+        "bytes": 2356
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/actions_test.go": {
+        "sha256": "6b349d09603723c3fdc0e5b2b8dfda758bb567656e5a530a7aea7954a3537585",
+        "bytes": 2298
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/config.go": {
+        "sha256": "cd81bebb0188985f43c2bf5989e79de6b4364ae54aad7c5d15cf9d6492e80681",
+        "bytes": 5498
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/config_test.go": {
+        "sha256": "73fc093158b55c740efce6476b9187eba0e0cbff7ae01424e6465113aa177d1c",
+        "bytes": 15787
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/mcp.go": {
+        "sha256": "93725b4c30ee1dda22ad070e10823e1fc2ff552cffa0e64a0f1124b0cb63a77a",
+        "bytes": 3455
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/mcp_test.go": {
+        "sha256": "ae52ad3e70a2d5f44f46bee91912e831bc821ca0d33bddc81a4f5896236051ae",
+        "bytes": 3864
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/parse.go": {
+        "sha256": "9c5123c9aaaed5b616227075f6ade68b65069768934c4924e2f85a344260ee80",
+        "bytes": 9286
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/internal/config/token_test.go": {
+        "sha256": "833757fe21feae3518517f8e2e1e35f7b08689f2da288d1f7e6ef6ad2cef2e71",
+        "bytes": 1626
+      },
+      "/private/tmp/autopaws-ocr-bench/prototype/source-manifest.json": {
+        "sha256": "4c29771dc45970e3d902d58949361dd7737707e055b831239dd22136bdec957a",
+        "bytes": 10268
+      }
+    }
+  },
+  "limitations": [
+    "Nine images on one Mac host, five alternating calls per engine per image; no general speed or accuracy guarantee.",
+    "Four small synthetic terminal fixtures, four full-screen physical Mac captures, and one real region request on the full TextEdit capture. Small fixture timing is not full-screen tool timing.",
+    "Capture and disk reads excluded from engine timings. Region timings include full JPEG decoding, cropping, and the actual OCR pipeline.",
+    "Tesseract used the existing English single-block mode and 2x preprocessing; Vision used accurate recognition, language autodetection and no correction. Neither engine was tuned per image.",
+    "Physical label scores are literal query hits for a predefined partial transcript, not whole-screen character accuracy or exact UI identification. Coordinates require matching text and box-center overlap with a manually chosen target area.",
+    "Only synthetic fixtures and the controlled document region have a complete transcript for character error rates. Confidence is an engine score, not an accuracy guarantee.",
+    "Physical screenshots and the experimental Vision source remain in the local benchmark directory and are not committed. The reproduction script and preserved prototype are local artifacts referenced by provenance."
+  ],
+  "physical_mcp_smoke": {
+    "binary_sha256": "c4bbd24115212ccb585d47a942931331255b4b3ecacd611fabe0941741c4bb32",
+    "reports": [
+      {
+        "tool": "get_screen_text",
+        "arguments": {},
+        "elapsed_ms": 1721.69,
+        "is_error": false,
+        "text_bytes": 110,
+        "image_count": 0,
+        "contains_Arkiv": true
+      },
+      {
+        "tool": "get_screen_text",
+        "arguments": {
+          "region": {
+            "x": 105,
+            "y": 0,
+            "width": 50,
+            "height": 30
+          }
+        },
+        "elapsed_ms": 117.12,
+        "is_error": false,
+        "text_bytes": 5,
+        "image_count": 0,
+        "recognized_text": "Arkiv"
+      },
+      {
+        "tool": "mouse_move",
+        "arguments": {
+          "x": 0,
+          "y": 0
+        },
+        "elapsed_ms": 0.35,
+        "is_error": true,
+        "text_bytes": 55,
+        "image_count": 0,
+        "detail": "capture_screen must succeed before absolute mouse input"
+      },
+      {
+        "tool": "get_screen_text",
+        "arguments": {
+          "region": {
+            "x": -1,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          }
+        },
+        "elapsed_ms": 0.13,
+        "is_error": true,
+        "text_bytes": 65,
+        "image_count": 0,
+        "detail": "region requires nonnegative x and y and positive width and height"
+      },
+      {
+        "tool": "get_screen_text",
+        "arguments": {
+          "region": {
+            "x": 1919,
+            "y": 0,
+            "width": 2,
+            "height": 1
+          }
+        },
+        "elapsed_ms": 92.26,
+        "is_error": true,
+        "text_bytes": 47,
+        "image_count": 0,
+        "detail": "region must fit inside the 1920x1080 screenshot"
+      }
+    ],
+    "note": "Single functional run on the connected Mac with 1920x1080 AVFoundation capture, se105 layout and audio off. Initial full-frame call includes capture startup; do not use these timings as a paired benchmark. Verified region text only, no mouse-coordinate establishment, and invalid geometry/bounds errors."
+  }
+}

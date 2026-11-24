@@ -15,10 +15,14 @@ import (
 
 const ocrTimeout = 15 * time.Second
 
-func extractOCR(ctx context.Context, executable string, data []byte) (string, error) {
+func extractOCR(ctx context.Context, executable string, data []byte, region *screenRegion) (string, error) {
 	img, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
 		return "", fmt.Errorf("decode OCR JPEG: %w", err)
+	}
+	img, err = cropOCRImage(img, region)
+	if err != nil {
+		return "", err
 	}
 	pgm, err := preparePGM(img)
 	if err != nil {

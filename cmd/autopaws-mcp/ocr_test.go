@@ -34,6 +34,14 @@ func TestMain(m *testing.M) {
 			os.Exit(11)
 		}
 		switch mode {
+		case "dimensions":
+			var magic string
+			var width, height, maximum int
+			if _, err := fmt.Fscanf(bytes.NewReader(data), "%s\n%d %d\n%d\n", &magic, &width, &height, &maximum); err != nil {
+				os.Exit(15)
+			}
+			fmt.Fprintf(os.Stdout, "%dx%d", width, height)
+			os.Exit(0)
 		case "success":
 			fmt.Fprint(os.Stdout, "  result line  \n\n\n\nsecond line \n")
 			os.Exit(0)
@@ -154,7 +162,7 @@ func TestOCRPostprocessing(t *testing.T) {
 
 func TestOCRExecAndJPEGFailures(t *testing.T) {
 	path := fakeTesseract(t, "success")
-	text, err := extractOCR(t.Context(), path, unitJPEG(t))
+	text, err := extractOCR(t.Context(), path, unitJPEG(t), nil)
 	if err != nil || text != "result line\n\n\nsecond line" {
 		t.Fatalf("OCR output=%q error%v", text, err)
 	}
@@ -162,11 +170,11 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 	if err := jpeg.Encode(&grayscale, image.NewGray(image.Rect(0, 0, 8, 8)), nil); err != nil {
 		t.Fatal(err)
 	}
-	if text, err := extractOCR(t.Context(), path, grayscale.Bytes()); err != nil || text != "result line\n\n\nsecond line" {
+	if text, err := extractOCR(t.Context(), path, grayscale.Bytes(), nil); err != nil || text != "result line\n\n\nsecond line" {
 		t.Fatalf("grayscale JPEG OCR=%q,%v", text, err)
 	}
 	for _, data := range [][]byte{nil, []byte("not a JPEG")} {
-		if _, err := extractOCR(t.Context(), path, data); err == nil {
+		if _, err := extractOCR(t.Context(), path, data, nil); err == nil {
 			t.Fatal("invalid JPEG accepted")
 		}
 	}
@@ -174,7 +182,7 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := extractOCR(t.Context(), path, cmyk); err == nil || !strings.Contains(err.Error(), "color model") {
+	if _, err := extractOCR(t.Context(), path, cmyk, nil); err == nil || !strings.Contains(err.Error(), "color model") {
 		t.Fatalf("CMYK JPEG=%v", err)
 	}
 	fakeTesseract(t, "fail")
@@ -183,7 +191,7 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 	if !errors.As(err, &exited) || exited.ExitCode() != 17 || !strings.Contains(err.Error(), "fake Tesseract failure") {
 		t.Fatalf("execution failure lost=%v", err)
 	}
-	_, err = extractOCR(t.Context(), path, unitJPEG(t))
+	_, err = extractOCR(t.Context(), path, unitJPEG(t), nil)
 	if !errors.As(err, &exited) {
 		t.Fatalf("extract suppressed subprocess failure=%v", err)
 	}

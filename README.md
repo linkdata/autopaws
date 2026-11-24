@@ -272,6 +272,24 @@ set screenshot coordinates. `execute_and_read` types a raw command plus Enter,
 waits `wait_seconds` (default 1, range 0–60), then captures OCR output; the wait
 does not establish command completion. Capture logs contain complete screenshots.
 
+Both OCR tools accept an optional `region: {x, y, width, height}` in original
+captured screenshot pixels with a top-left origin. Choose the rectangle from
+`capture_screen` and add padding around the text. For example, call
+`get_screen_text` with:
+
+```json
+{"region": {"x": 100, "y": 180, "width": 300, "height": 80}}
+```
+
+Each call captures a fresh full frame, then crops before the existing 2× OCR
+preprocessing. Omit `region` for full-frame OCR. Positions must be nonnegative
+and sizes positive; this geometry is checked before `execute_and_read` types.
+The rectangle must fit the fresh capture, so bounds errors can occur after
+command input. Results remain plain text and do not set mouse coordinates.
+
+The [recorded OCR comparison](docs/validation/ocr-region-comparison-2026-11-24.json)
+includes latency, text accuracy and region measurements.
+
 See the [implemented flow and cycle measurements](docs/cycle-time-implementation.md)
 and [initial research](docs/cycle-time.md) for KVM/MCP latency benchmarks and
 local UI-analysis experiments.

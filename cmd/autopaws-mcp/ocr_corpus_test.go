@@ -63,7 +63,7 @@ func TestOCRCorpus(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			actual, err := extractOCR(t.Context(), executable, jpeg)
+			actual, err := extractOCR(t.Context(), executable, jpeg, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
