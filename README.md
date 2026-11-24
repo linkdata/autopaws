@@ -250,7 +250,7 @@ With no `-config`, MCP uses defaults and explicit flags only.
 | `list_keyboard_layouts`, `set_keyboard_layout` | Inspect or select target text maps |
 | `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions |
 | `capture_screen` | Fresh JPEG and image dimensions |
-| `get_screen_text`, `execute_and_read` | English OCR; optionally type a command first |
+| `get_screen_text`, `execute_and_read` | Local Tesseract OCR; optionally type a command first |
 | `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Device information and capture settings |
 
 Before absolute movement, positioned clicks or drags, call `capture_screen`.
@@ -265,12 +265,37 @@ target OS layout. Custom YAML names override built-ins; selecting the same name
 reloads its file. Invalid selections keep the working map. Restarting restores
 the startup layout. See [layout selection](CREATING_LAYOUTS.md#changing-the-active-layout).
 
-OCR requires Tesseract with English data, discovered at startup through
+OCR requires Tesseract, discovered at startup through
 `-tesseract`, `PATH`, or Windows `ProgramFiles`/`ProgramFiles(x86)` installations.
 Restart MCP after installing it. OCR calls time out after 15 seconds and do not
 set screenshot coordinates. `execute_and_read` types a raw command plus Enter,
 waits `wait_seconds` (default 1, range 0–60), then captures OCR output; the wait
 does not establish command completion. Capture logs contain complete screenshots.
+
+Both OCR tools accept `language`, defaulting to English (`eng`) when omitted or
+empty. Use combinations such as `eng+swe` for English and Swedish. The matching
+Tesseract traineddata must be installed on the MCP host; missing models produce
+an OCR error and are not installed automatically. This setting is independent of
+the HID keyboard layout and target OS input source.
+
+Both OCR tools accept an optional `region: {x, y, width, height}` in original
+captured screenshot pixels with a top-left origin. Choose the rectangle from
+`capture_screen` and add padding around the text. For example, call
+`get_screen_text` with:
+
+```json
+{"language": "eng+swe", "region": {"x": 100, "y": 180, "width": 300, "height": 80}}
+```
+
+Each call captures a fresh full frame, then crops before the existing 2× OCR
+preprocessing. Omit `region` for full-frame OCR. Positions must be nonnegative
+and sizes positive. Invalid geometry, malformed language names and empty `+`
+components are rejected before `execute_and_read` types. The rectangle must fit
+the fresh capture; bounds and missing-model errors can occur after command input.
+Results remain plain text and do not set mouse coordinates.
+
+The [recorded OCR comparison](docs/validation/ocr-region-comparison-2026-11-24.json)
+includes latency, text accuracy and region measurements.
 
 See the [implemented flow and cycle measurements](docs/cycle-time-implementation.md)
 and [initial research](docs/cycle-time.md) for KVM/MCP latency benchmarks and

@@ -15,16 +15,20 @@ import (
 
 const ocrTimeout = 15 * time.Second
 
-func extractOCR(ctx context.Context, executable string, data []byte) (string, error) {
+func extractOCR(ctx context.Context, executable string, data []byte, input ocrInput) (string, error) {
 	img, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {
 		return "", fmt.Errorf("decode OCR JPEG: %w", err)
+	}
+	img, err = cropOCRImage(img, input.Region)
+	if err != nil {
+		return "", err
 	}
 	pgm, err := preparePGM(img)
 	if err != nil {
 		return "", err
 	}
-	text, err := runTesseract(ctx, executable, pgm, ocrTimeout)
+	text, err := runTesseract(ctx, executable, pgm, input.Language, ocrTimeout)
 	if err != nil {
 		return "", err
 	}
@@ -72,10 +76,13 @@ func preparePGM(img image.Image) ([]byte, error) {
 	return result, nil
 }
 
-func runTesseract(ctx context.Context, executable string, pgm []byte, timeout time.Duration) (string, error) {
+func runTesseract(ctx context.Context, executable string, pgm []byte, language string, timeout time.Duration) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	command := exec.CommandContext(ctx, executable, "stdin", "stdout", "--oem", "3", "--psm", "6")
+	if language == "" {
+		language = "eng"
+	}
+	command := exec.CommandContext(ctx, executable, "stdin", "stdout", "--oem", "3", "--psm", "6", "-l", language)
 	command.Stdin = bytes.NewReader(pgm)
 	var stdout, stderr bytes.Buffer
 	command.Stdout, command.Stderr = &stdout, &stderr
@@ -87,6 +94,10 @@ func runTesseract(ctx context.Context, executable string, pgm []byte, timeout ti
 	}
 	if err != nil {
 		return "", fmt.Errorf("tesseract: %w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	// Tesseract can succeed after dropping an unavailable language from a combination.
+	if strings.Contains(stderr.String(), "Failed loading language") {
+		return "", fmt.Errorf("tesseract: %s", strings.TrimSpace(stderr.String()))
 	}
 	return stdout.String(), nil
 }

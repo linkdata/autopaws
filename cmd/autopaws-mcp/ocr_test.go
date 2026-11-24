@@ -24,7 +24,11 @@ import (
 // is exercised on Windows as well as Unix without a shell script dependency.
 func TestMain(m *testing.M) {
 	if mode := os.Getenv("AUTOPAWS_OCR_TEST_HELPER"); mode != "" {
-		if !reflect.DeepEqual(os.Args[1:], []string{"stdin", "stdout", "--oem", "3", "--psm", "6"}) {
+		language := os.Getenv("AUTOPAWS_OCR_EXPECT_LANGUAGE")
+		if language == "" {
+			language = "eng"
+		}
+		if !reflect.DeepEqual(os.Args[1:], []string{"stdin", "stdout", "--oem", "3", "--psm", "6", "-l", language}) {
 			fmt.Fprint(os.Stderr, "unexpected OCR arguments")
 			os.Exit(10)
 		}
@@ -34,8 +38,24 @@ func TestMain(m *testing.M) {
 			os.Exit(11)
 		}
 		switch mode {
+		case "dimensions":
+			var magic string
+			var width, height, maximum int
+			if _, err := fmt.Fscanf(bytes.NewReader(data), "%s\n%d %d\n%d\n", &magic, &width, &height, &maximum); err != nil {
+				os.Exit(15)
+			}
+			fmt.Fprintf(os.Stdout, "%dx%d", width, height)
+			os.Exit(0)
 		case "success":
 			fmt.Fprint(os.Stdout, "  result line  \n\n\n\nsecond line \n")
+			os.Exit(0)
+		case "partial_language", "warning":
+			fmt.Fprint(os.Stdout, "recognized fallback text")
+			if mode == "partial_language" {
+				fmt.Fprintln(os.Stderr, "Failed loading language 'missing_model'")
+			} else {
+				fmt.Fprintln(os.Stderr, "Estimating resolution as 233")
+			}
 			os.Exit(0)
 		case "fail":
 			fmt.Fprint(os.Stderr, "fake Tesseract failure")
@@ -154,7 +174,7 @@ func TestOCRPostprocessing(t *testing.T) {
 
 func TestOCRExecAndJPEGFailures(t *testing.T) {
 	path := fakeTesseract(t, "success")
-	text, err := extractOCR(t.Context(), path, unitJPEG(t))
+	text, err := extractOCR(t.Context(), path, unitJPEG(t), ocrInput{})
 	if err != nil || text != "result line\n\n\nsecond line" {
 		t.Fatalf("OCR output=%q error%v", text, err)
 	}
@@ -162,11 +182,11 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 	if err := jpeg.Encode(&grayscale, image.NewGray(image.Rect(0, 0, 8, 8)), nil); err != nil {
 		t.Fatal(err)
 	}
-	if text, err := extractOCR(t.Context(), path, grayscale.Bytes()); err != nil || text != "result line\n\n\nsecond line" {
+	if text, err := extractOCR(t.Context(), path, grayscale.Bytes(), ocrInput{}); err != nil || text != "result line\n\n\nsecond line" {
 		t.Fatalf("grayscale JPEG OCR=%q,%v", text, err)
 	}
 	for _, data := range [][]byte{nil, []byte("not a JPEG")} {
-		if _, err := extractOCR(t.Context(), path, data); err == nil {
+		if _, err := extractOCR(t.Context(), path, data, ocrInput{}); err == nil {
 			t.Fatal("invalid JPEG accepted")
 		}
 	}
@@ -174,20 +194,20 @@ func TestOCRExecAndJPEGFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := extractOCR(t.Context(), path, cmyk); err == nil || !strings.Contains(err.Error(), "color model") {
+	if _, err := extractOCR(t.Context(), path, cmyk, ocrInput{}); err == nil || !strings.Contains(err.Error(), "color model") {
 		t.Fatalf("CMYK JPEG=%v", err)
 	}
 	fakeTesseract(t, "fail")
-	_, err = runTesseract(t.Context(), path, []byte("P5\n1 1\n255\nX"), time.Second)
+	_, err = runTesseract(t.Context(), path, []byte("P5\n1 1\n255\nX"), "", time.Second)
 	var exited *exec.ExitError
 	if !errors.As(err, &exited) || exited.ExitCode() != 17 || !strings.Contains(err.Error(), "fake Tesseract failure") {
 		t.Fatalf("execution failure lost=%v", err)
 	}
-	_, err = extractOCR(t.Context(), path, unitJPEG(t))
+	_, err = extractOCR(t.Context(), path, unitJPEG(t), ocrInput{})
 	if !errors.As(err, &exited) {
 		t.Fatalf("extract suppressed subprocess failure=%v", err)
 	}
-	_, err = runTesseract(t.Context(), filepath.Join(t.TempDir(), "missing"), []byte("P5\n"), time.Second)
+	_, err = runTesseract(t.Context(), filepath.Join(t.TempDir(), "missing"), []byte("P5\n"), "", time.Second)
 	if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, exec.ErrNotFound) {
 		t.Fatalf("start failure lost=%v", err)
 	}
@@ -206,7 +226,7 @@ func TestOCRSubprocessTimeoutAndCancellationReapTheHelper(t *testing.T) {
 			if deadline {
 				timeout = 500 * time.Millisecond
 			}
-			go func() { _, err := runTesseract(ctx, path, []byte("P5\n1 1\n255\nX"), timeout); done <- err }()
+			go func() { _, err := runTesseract(ctx, path, []byte("P5\n1 1\n255\nX"), "", timeout); done <- err }()
 			limit := time.NewTimer(5 * time.Second)
 			defer limit.Stop()
 			ticker := time.NewTicker(time.Millisecond)
