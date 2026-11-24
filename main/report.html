@@ -343,9 +343,9 @@ func (capture *Capture) readLoop() error {
         storage := make([]byte, int(config.PeriodFrames)*int(config.Channels)*2)
         recovering := false
         for capture.lifetime.Err() == nil </span>{
-                <span class="cov8" title="57">frames, timestamp, err := capture.read(storage, config)
+                <span class="cov8" title="56">frames, timestamp, err := capture.read(storage, config)
                 if capture.lifetime.Err() != nil </span>{
-                        <span class="cov5" title="13">return nil
+                        <span class="cov5" title="12">return nil
 </span>                }
                 <span class="cov7" title="44">switch </span>{
                 case err == nil:
@@ -376,21 +376,21 @@ func (capture *Capture) readLoop() error {
                         <span class="cov5" title="10">return err</span>
                 }
         }
-        <span class="cov1" title="1">return nil</span>
+        <span class="cov2" title="2">return nil</span>
 }
 
 func (capture *Capture) read(storage []byte, config Config) (uint32, int64, error) {
-        <span class="cov8" title="58">capture.kernelMu.Lock()
+        <span class="cov8" title="57">capture.kernelMu.Lock()
         stopped := capture.lifetime.Err() != nil
         capture.kernelMu.Unlock()
         if stopped </span>{
                 <span class="cov1" title="1">return 0, 0, ErrClosed
 </span>        }
-        <span class="cov8" title="57">transfer := transfer{Buffer: unsafe.Pointer(&amp;storage[0]), Frames: uint64(config.PeriodFrames)}
+        <span class="cov8" title="56">transfer := transfer{Buffer: unsafe.Pointer(&amp;storage[0]), Frames: uint64(config.PeriodFrames)}
         err := capture.ops.ioctl(capture.fd, ioctlRead, unsafe.Pointer(&amp;transfer))
         runtime.KeepAlive(storage)
         if err != nil </span>{
-                <span class="cov7" title="32">return 0, 0, err
+                <span class="cov7" title="31">return 0, 0, err
 </span>        }
         <span class="cov6" title="25">if transfer.Result &lt;= 0 || uint64(transfer.Result) &gt; uint64(config.PeriodFrames) </span>{
                 <span class="cov3" title="3">return 0, 0, ErrSamples
@@ -1621,10 +1621,10 @@ func (server *Server) handleConn(ctx context.Context, conn net.Conn) {
 </span>        }
         <span class="cov8" title="143">select </span>{
         case extraInput := &lt;-monitorReason:
-                <span class="cov3" title="5">if extraInput </span>{
+                <span class="cov3" title="6">if extraInput </span>{
                         <span class="cov1" title="1">err = fmt.Errorf("%w: extra input after request line (action error: %v)", apiwire.ErrInvalidRequest, err)
 </span>                }
-        default:<span class="cov8" title="138"></span>
+        default:<span class="cov8" title="137"></span>
         }
         <span class="cov8" title="143">_ = server.respond(conn, request.ID, request.Method, result, err)</span>
 }
@@ -3415,27 +3415,27 @@ type capturedScreen struct {
 // capture validates and optionally logs a frame, without changing screenshot
 // coordinates. Only a tool that successfully returns an image may commit them.
 func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScreen, error) {
-        <span class="cov10" title="106">var frame struct {
+        <span class="cov10" title="105">var frame struct {
                 JPEG         []byte          `json:"jpeg_b64"`
                 Width        int             `json:"width"`
                 Height       int             `json:"height"`
                 TargetWidth  json.RawMessage `json:"target_width"`
                 TargetHeight json.RawMessage `json:"target_height"`
 </span>        }
-        <span class="cov10" title="106">if err := owner.caller.Call(ctx, "capture_frame", struct{}{}, &amp;frame); err != nil </span>{
+        <span class="cov10" title="105">if err := owner.caller.Call(ctx, "capture_frame", struct{}{}, &amp;frame); err != nil </span>{
                 <span class="cov3" title="4">return capturedScreen{}, err
 </span>        }
-        <span class="cov9" title="102">if frame.Width &lt;= 0 || frame.Height &lt;= 0 </span>{
+        <span class="cov9" title="101">if frame.Width &lt;= 0 || frame.Height &lt;= 0 </span>{
                 <span class="cov1" title="1">return capturedScreen{}, errors.New("capture returned invalid image dimensions")
 </span>        }
-        <span class="cov9" title="101">image, err := jpeg.DecodeConfig(bytes.NewReader(frame.JPEG))
+        <span class="cov9" title="100">image, err := jpeg.DecodeConfig(bytes.NewReader(frame.JPEG))
         if err != nil </span>{
                 <span class="cov2" title="2">return capturedScreen{}, fmt.Errorf("invalid captured JPEG: %w", err)
 </span>        }
-        <span class="cov9" title="99">if image.Width != frame.Width || image.Height != frame.Height </span>{
+        <span class="cov9" title="98">if image.Width != frame.Width || image.Height != frame.Height </span>{
                 <span class="cov1" title="1">return capturedScreen{}, errors.New("captured JPEG dimensions do not match capture metadata")
 </span>        }
-        <span class="cov9" title="98">var targetWidth, targetHeight int
+        <span class="cov9" title="97">var targetWidth, targetHeight int
         if len(frame.TargetWidth) == 0 &amp;&amp; len(frame.TargetHeight) == 0 </span>{
                 // Older daemons omit both target dimensions. Keep their coordinate mapping
                 // compatible, without rediscovering capture devices on the current path.
@@ -3452,18 +3452,18 @@ func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScre
                 if targetWidth &lt;= 0 || targetHeight &lt;= 0 </span>{
                         <span class="cov2" title="2">return capturedScreen{}, errors.New("device info returned invalid target screen dimensions")
 </span>                }
-        } else <span class="cov9" title="86">if json.Unmarshal(frame.TargetWidth, &amp;targetWidth) != nil || json.Unmarshal(frame.TargetHeight, &amp;targetHeight) != nil || targetWidth &lt;= 0 || targetHeight &lt;= 0 </span>{
+        } else <span class="cov9" title="85">if json.Unmarshal(frame.TargetWidth, &amp;targetWidth) != nil || json.Unmarshal(frame.TargetHeight, &amp;targetHeight) != nil || targetWidth &lt;= 0 || targetHeight &lt;= 0 </span>{
                 <span class="cov5" title="8">return capturedScreen{}, errors.New("capture returned invalid target screen dimensions")
 </span>        }
-        <span class="cov9" title="87">if err := ctx.Err(); err != nil </span>{
+        <span class="cov9" title="86">if err := ctx.Err(); err != nil </span>{
                 <span class="cov2" title="2">return capturedScreen{}, err
 </span>        }
-        <span class="cov9" title="85">if owner.options.CaptureLogDir != "" </span>{
+        <span class="cov9" title="84">if owner.options.CaptureLogDir != "" </span>{
                 <span class="cov3" title="3">if err := writeCaptureLog(owner.options.CaptureLogDir, tool, frame.JPEG); err != nil </span>{
                         <span class="cov1" title="1">return capturedScreen{}, err
 </span>                }
         }
-        <span class="cov9" title="84">return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, targetWidth, targetHeight}}, nil</span>
+        <span class="cov9" title="83">return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, targetWidth, targetHeight}}, nil</span>
 }
 
 func (owner *toolServer) captureScreen(ctx context.Context, request *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, error) {
@@ -3928,9 +3928,9 @@ func (state *screenState) commit(ctx context.Context, epoch uint64, dimensions s
                 <span class="cov1" title="1">return err
 </span>        }
         <span class="cov9" title="856">if state.epoch != epoch </span>{
-                <span class="cov6" title="90">return errors.New("capture configuration changed during capture; capture_screen again")
+                <span class="cov5" title="33">return errors.New("capture configuration changed during capture; capture_screen again")
 </span>        }
-        <span class="cov9" title="766">state.dimensions = dimensions
+        <span class="cov9" title="823">state.dimensions = dimensions
         return nil</span>
 }
 
@@ -3938,9 +3938,9 @@ func (state *screenState) snapshot() (screenDimensions, error) {
         <span class="cov10" title="870">state.mu.Lock()
         defer state.mu.Unlock()
         if state.dimensions.width == 0 </span>{
-                <span class="cov7" title="131">return screenDimensions{}, errors.New("capture_screen must succeed before absolute mouse input")
+                <span class="cov6" title="67">return screenDimensions{}, errors.New("capture_screen must succeed before absolute mouse input")
 </span>        }
-        <span class="cov9" title="739">return state.dimensions, nil</span>
+        <span class="cov9" title="803">return state.dimensions, nil</span>
 }
 
 // Pixel mapping uses a full 128-bit product, so large int dimensions cannot
@@ -4342,22 +4342,22 @@ func newVisionClient(config visionConfig) (*visionClient, error) {
 
 // The thumbnail gates model work; unchanged frames also get periodic checks.
 func prepareVisionFrame(ctx context.Context, data []byte) (image.Image, []byte, error) {
-        <span class="cov3" title="30">img, err := jpeg.Decode(bytes.NewReader(data))
+        <span class="cov3" title="29">img, err := jpeg.Decode(bytes.NewReader(data))
         if err != nil </span>{
                 <span class="cov1" title="1">return nil, nil, fmt.Errorf("decode vision JPEG: %w", err)
 </span>        }
-        <span class="cov3" title="29">bounds := img.Bounds()
+        <span class="cov3" title="28">bounds := img.Bounds()
         thumbnail := make([]byte, 160*90)
         for y := range 90 </span>{
-                <span class="cov6" title="2521">if err := ctx.Err(); err != nil </span>{
+                <span class="cov6" title="2431">if err := ctx.Err(); err != nil </span>{
                         <span class="cov1" title="1">return nil, nil, err
 </span>                }
-                <span class="cov6" title="2520">for x := range 160 </span>{
-                        <span class="cov10" title="403200">pixel := img.At(bounds.Min.X+x*bounds.Dx()/160, bounds.Min.Y+y*bounds.Dy()/90)
+                <span class="cov6" title="2430">for x := range 160 </span>{
+                        <span class="cov10" title="388800">pixel := img.At(bounds.Min.X+x*bounds.Dx()/160, bounds.Min.Y+y*bounds.Dy()/90)
                         thumbnail[y*160+x] = color.GrayModel.Convert(pixel).(color.Gray).Y
 </span>                }
         }
-        <span class="cov3" title="28">return img, thumbnail, nil</span>
+        <span class="cov3" title="27">return img, thumbnail, nil</span>
 }
 
 // Resize only selected candidates, preserving original JPEGs when possible.
@@ -4569,7 +4569,7 @@ func (owner *toolServer) observe(ctx context.Context, request *mcp.CallToolReque
         var previous []byte
         var lastCheck time.Time
         for waitCtx.Err() == nil </span>{
-                <span class="cov3" title="28">frame, err := owner.capture(waitCtx, "wait_for")
+                <span class="cov3" title="27">frame, err := owner.capture(waitCtx, "wait_for")
                 capturedAt := time.Now()
                 if err != nil </span>{
                         <span class="cov1" title="1">if waitCtx.Err() == nil </span>{
@@ -4577,20 +4577,20 @@ func (owner *toolServer) observe(ctx context.Context, request *mcp.CallToolReque
 </span>                        }
                         <span class="cov1" title="1">break</span>
                 }
-                <span class="cov3" title="27">decoded, thumbnail, err := prepareVisionFrame(waitCtx, frame.jpeg)
+                <span class="cov3" title="26">decoded, thumbnail, err := prepareVisionFrame(waitCtx, frame.jpeg)
                 if err != nil </span>{
                         <span class="cov0" title="0">if waitCtx.Err() == nil </span>{
                                 <span class="cov0" title="0">report.Observation.Status, report.Observation.Detail = "capture_error", err.Error()
 </span>                        }
                         <span class="cov0" title="0">break</span>
                 }
-                <span class="cov3" title="27">if !lastCheck.IsZero() &amp;&amp; !visualChange(previous, thumbnail) &amp;&amp; time.Since(lastCheck) &lt; 500*time.Millisecond </span>{
-                        <span class="cov2" title="10">timer := time.NewTimer(50 * time.Millisecond)
+                <span class="cov3" title="26">if !lastCheck.IsZero() &amp;&amp; !visualChange(previous, thumbnail) &amp;&amp; time.Since(lastCheck) &lt; 500*time.Millisecond </span>{
+                        <span class="cov2" title="9">timer := time.NewTimer(50 * time.Millisecond)
                         select </span>{
                         case &lt;-waitCtx.Done():<span class="cov0" title="0"></span>
-                        case &lt;-timer.C:<span class="cov2" title="10"></span>
+                        case &lt;-timer.C:<span class="cov2" title="9"></span>
                         }
-                        <span class="cov2" title="10">timer.Stop()
+                        <span class="cov2" title="9">timer.Stop()
                         continue</span>
                 }
                 <span class="cov3" title="17">prepared, err := owner.options.Vision.image(waitCtx, frame.jpeg, decoded)
@@ -4656,16 +4656,16 @@ func (owner *toolServer) observe(ctx context.Context, request *mcp.CallToolReque
 }
 
 func visualChange(previous, current []byte) bool {
-        <span class="cov3" title="16">if len(previous) != len(current) </span>{
+        <span class="cov3" title="15">if len(previous) != len(current) </span>{
                 <span class="cov1" title="1">return true
 </span>        }
-        <span class="cov3" title="15">for index, value := range current </span>{
-                <span class="cov10" title="158451">difference := int(value) - int(previous[index])
+        <span class="cov2" title="14">for index, value := range current </span>{
+                <span class="cov10" title="144051">difference := int(value) - int(previous[index])
                 if difference &gt; 12 || difference &lt; -12 </span>{
                         <span class="cov1" title="3">return true
 </span>                }
         }
-        <span class="cov2" title="12">return false</span>
+        <span class="cov2" title="11">return false</span>
 }
 </pre>
 		
@@ -5573,7 +5573,7 @@ const (
 )
 
 func (controller *Controller) isClosing() bool {
-        <span class="cov9" title="558">controller.mu.Lock()
+        <span class="cov9" title="554">controller.mu.Lock()
         defer controller.mu.Unlock()
         return controller.closing
 </span>}
@@ -5584,17 +5584,17 @@ func (controller *Controller) acquire(ctx context.Context) error {
 </span>        }
         <span class="cov9" title="691">select </span>{
         case &lt;-ctx.Done():
-                <span class="cov6" title="73">return ctx.Err()</span>
+                <span class="cov6" title="65">return ctx.Err()</span>
         case &lt;-controller.lifetime.Done():
-                <span class="cov5" title="32">return ErrClosed</span>
-        case controller.gate &lt;- struct{}{}:<span class="cov9" title="586"></span>
+                <span class="cov5" title="36">return ErrClosed</span>
+        case controller.gate &lt;- struct{}{}:<span class="cov9" title="590"></span>
         }
-        <span class="cov9" title="586">if err := ctx.Err(); err != nil </span>{
-                <span class="cov6" title="57">&lt;-controller.gate
+        <span class="cov9" title="590">if err := ctx.Err(); err != nil </span>{
+                <span class="cov6" title="65">&lt;-controller.gate
                 return err
 </span>        }
-        <span class="cov9" title="529">if controller.isClosing() </span>{
-                <span class="cov5" title="32">&lt;-controller.gate
+        <span class="cov9" title="525">if controller.isClosing() </span>{
+                <span class="cov5" title="28">&lt;-controller.gate
                 return ErrClosed
 </span>        }
         <span class="cov9" title="497">return nil</span>
@@ -6143,7 +6143,7 @@ func ListLayouts(userDirectory string) ([]LayoutInfo, error) {
                 <span class="cov3" title="26">result = append(result, info)</span>
         }
         <span class="cov2" title="4">slices.SortFunc(result, func(left, right LayoutInfo) int </span>{
-                <span class="cov4" title="36">return strings.Compare(left.Name, right.Name)
+                <span class="cov4" title="42">return strings.Compare(left.Name, right.Name)
 </span>        })
         <span class="cov2" title="4">return result, nil</span>
 }
@@ -8664,7 +8664,7 @@ func (device *Device) setup(ctx context.Context, options Options) error {
                 <span class="cov8" title="101">if mapErr != nil </span>{
                         <span class="cov2" title="3">return fmt.Errorf("mmap %d: %w", index, mapErr)
 </span>                }
-                <span class="cov7" title="98">if len(mapped) != int(descriptor.Length) </span>{
+                <span class="cov8" title="98">if len(mapped) != int(descriptor.Length) </span>{
                         <span class="cov2" title="2">return fmt.Errorf("mmap %d length: %w", index, ErrInvalidBuffer)
 </span>                }
                 <span class="cov7" title="96">device.stopStream = true // A failed QBUF/STREAMON may still own queues.
@@ -8712,13 +8712,13 @@ func (device *Device) Formats() []PixelFormat {
 </span>}
 
 func (device *Device) check(ctx context.Context) error {
-        <span class="cov10" title="364">if err := ctx.Err(); err != nil </span>{
-                <span class="cov7" title="74">return err
+        <span class="cov10" title="362">if err := ctx.Err(); err != nil </span>{
+                <span class="cov7" title="73">return err
 </span>        }
-        <span class="cov9" title="290">if device.lifetime.Err() != nil </span>{
+        <span class="cov9" title="289">if device.lifetime.Err() != nil </span>{
                 <span class="cov3" title="7">return ErrClosed
 </span>        }
-        <span class="cov9" title="283">return nil</span>
+        <span class="cov9" title="282">return nil</span>
 }
 
 func (device *Device) acquire(ctx context.Context) error {
@@ -8727,19 +8727,19 @@ func (device *Device) acquire(ctx context.Context) error {
 </span>        }
         <span class="cov8" title="163">select </span>{
         case &lt;-ctx.Done():
-                <span class="cov7" title="64">return ctx.Err()</span>
+                <span class="cov7" title="65">return ctx.Err()</span>
         case &lt;-device.lifetime.Done():
                 <span class="cov1" title="1">return ErrClosed</span>
         case &lt;-device.gate:
-                <span class="cov7" title="98">if err := device.check(ctx); err != nil </span>{
-                        <span class="cov7" title="65">device.release()
+                <span class="cov7" title="97">if err := device.check(ctx); err != nil </span>{
+                        <span class="cov7" title="64">device.release()
                         return err
 </span>                }
                 <span class="cov6" title="33">return nil</span>
         }
 }
 
-func (device *Device) release() { <span class="cov8" title="161">device.gate &lt;- struct{}{} }</span>
+func (device *Device) release() { <span class="cov8" title="160">device.gate &lt;- struct{}{} }</span>
 
 // ReadFrame waits for one descriptor-valid MJPG frame, preserving its original
 // compressed bytes. It does not decode JPEGs, apply warm-up sleeps or filter image
@@ -9076,15 +9076,15 @@ func (device *Device) dequeue(ctx context.Context) (buffer, bool, error) {
         var ioctlErr error
         var owned bool
         readErr := device.raw.Read(func(fd uintptr) bool </span>{
-                <span class="cov5" title="32">for </span>{
-                        <span class="cov5" title="34">if ioctlErr = device.check(ctx); ioctlErr != nil </span>{
+                <span class="cov5" title="31">for </span>{
+                        <span class="cov5" title="33">if ioctlErr = device.check(ctx); ioctlErr != nil </span>{
                                 <span class="cov1" title="2">return true
 </span>                        }
-                        <span class="cov5" title="32">ioctlErr = device.ops.ioctl(fd, vidiocDqbuf, unsafe.Pointer(&amp;descriptor))
+                        <span class="cov5" title="31">ioctlErr = device.ops.ioctl(fd, vidiocDqbuf, unsafe.Pointer(&amp;descriptor))
                         if errors.Is(ioctlErr, syscall.EINTR) </span>{
                                 <span class="cov1" title="2">continue</span>
                         }
-                        <span class="cov5" title="30">owned = ioctlErr == nil
+                        <span class="cov5" title="29">owned = ioctlErr == nil
                         return !errors.Is(ioctlErr, syscall.EAGAIN)</span>
                 }
         })
@@ -9285,7 +9285,7 @@ func (manager *audioManager) control() {
         <span class="cov6" title="30">defer close(manager.done)
         var attempted audioKey
         for </span>{
-                <span class="cov9" title="168">video, videoChanged := manager.video.Watch()
+                <span class="cov9" title="162">video, videoChanged := manager.video.Watch()
                 manager.mu.Lock()
                 key := audioKey{video.Generation, manager.active}
                 want := manager.ctx.Err() == nil &amp;&amp; manager.clients != 0 &amp;&amp; manager.options.Device != "off" &amp;&amp;
@@ -9294,34 +9294,34 @@ func (manager *audioManager) control() {
                         <span class="cov5" title="13">manager.run.cancel()
                         manager.notifyLocked()
 </span>                }
-                <span class="cov9" title="168">if manager.run == nil &amp;&amp; want &amp;&amp; key != attempted </span>{
+                <span class="cov9" title="162">if manager.run == nil &amp;&amp; want &amp;&amp; key != attempted </span>{
                         <span class="cov6" title="33">ctx, cancel := context.WithCancel(manager.ctx)
                         run := &amp;audioRun{key: key, ctx: ctx, cancel: cancel, done: make(chan struct{})}
                         manager.run, attempted = run, key
                         go manager.own(run, video.Device)
 </span>                }
-                <span class="cov9" title="168">run := manager.run
+                <span class="cov9" title="162">run := manager.run
                 changed := manager.changed
                 manager.mu.Unlock()
                 if manager.ctx.Err() != nil &amp;&amp; run == nil </span>{
                         <span class="cov6" title="30">return
 </span>                }
-                <span class="cov9" title="138">var ended &lt;-chan struct{}
+                <span class="cov9" title="132">var ended &lt;-chan struct{}
                 if run != nil </span>{
                         <span class="cov8" title="93">ended = run.done
 </span>                }
-                <span class="cov9" title="138">var retry &lt;-chan time.Time
+                <span class="cov9" title="132">var retry &lt;-chan time.Time
                 if run == nil &amp;&amp; want &amp;&amp; key == attempted &amp;&amp; manager.options.retryInterval &gt; 0 </span>{
                         <span class="cov3" title="4">retry = time.After(manager.options.retryInterval)
 </span>                }
-                <span class="cov9" title="138">stop := manager.ctx.Done()
+                <span class="cov9" title="132">stop := manager.ctx.Done()
                 if run != nil &amp;&amp; manager.ctx.Err() != nil </span>{
-                        <span class="cov5" title="14">stop = nil // Retain ownership without spinning on cancellation.
+                        <span class="cov5" title="13">stop = nil // Retain ownership without spinning on cancellation.
 </span>                }
-                <span class="cov9" title="138">select </span>{
-                case &lt;-stop:<span class="cov5" title="17"></span>
-                case &lt;-videoChanged:<span class="cov5" title="16"></span>
-                case &lt;-changed:<span class="cov8" title="70"></span>
+                <span class="cov9" title="132">select </span>{
+                case &lt;-stop:<span class="cov5" title="11"></span>
+                case &lt;-videoChanged:<span class="cov5" title="11"></span>
+                case &lt;-changed:<span class="cov8" title="75"></span>
                 case &lt;-retry:
                         <span class="cov2" title="2">attempted = audioKey{}</span>
                 case &lt;-ended:
@@ -9394,28 +9394,28 @@ type audioView struct {
 }
 
 func (manager *audioManager) view(video capture.Info) (audioView, &lt;-chan struct{}) {
-        <span class="cov10" title="199">view := audioView{config: audioConfig{Status: "unavailable", Generation: "0"}}
+        <span class="cov10" title="193">view := audioView{config: audioConfig{Status: "unavailable", Generation: "0"}}
         if manager == nil </span>{
                 <span class="cov7" title="46">return view, nil
 </span>        }
-        <span class="cov9" title="153">manager.mu.Lock()
+        <span class="cov9" title="147">manager.mu.Lock()
         changed := manager.changed
         run := manager.run
         if manager.options.Device == "off" </span>{
                 <span class="cov3" title="5">view.config.Status = "off"
-</span>        } else <span class="cov9" title="148">if run != nil &amp;&amp; run.key.video == video.Generation &amp;&amp; run.ctx.Err() == nil &amp;&amp;
+</span>        } else <span class="cov9" title="142">if run != nil &amp;&amp; run.key.video == video.Generation &amp;&amp; run.ctx.Err() == nil &amp;&amp;
                 !run.failed &amp;&amp; run.source != nil &amp;&amp; !errors.Is(video.Err, capture.ErrClosed) </span>{
-                <span class="cov8" title="86">view.run = run
+                <span class="cov8" title="85">view.run = run
 </span>        }
-        <span class="cov9" title="153">manager.mu.Unlock()
+        <span class="cov9" title="147">manager.mu.Unlock()
         if view.run != nil </span>{
-                <span class="cov8" title="86">view.raw = view.run.source.Config()
+                <span class="cov8" title="85">view.raw = view.run.source.Config()
                 view.config = audioConfig{
                         Status: "available", Generation: fmt.Sprint(view.raw.Generation),
                         SampleRate: view.raw.Rate, Channels: view.raw.Channels,
 </span>                }
         }
-        <span class="cov9" title="153">return view, changed</span>
+        <span class="cov9" title="147">return view, changed</span>
 }
 
 func (manager *audioManager) current(view audioView) bool {
@@ -9881,18 +9881,18 @@ func serveAsset(output http.ResponseWriter, request *http.Request) {
 }
 
 func (server *Server) writeMessage(ctx context.Context, conn socket, kind websocket.MessageType, parts ...[]byte) error {
-        <span class="cov9" title="92">ctx, cancel := context.WithTimeout(ctx, server.options.WriteTimeout)
+        <span class="cov9" title="90">ctx, cancel := context.WithTimeout(ctx, server.options.WriteTimeout)
         defer cancel()
         writer, err := conn.Writer(ctx, kind)
         if err != nil </span>{
                 <span class="cov3" title="3">return err
 </span>        }
-        <span class="cov9" title="89">for _, part := range parts </span>{
-                <span class="cov10" title="123">if _, err := writer.Write(part); err != nil </span>{
+        <span class="cov9" title="87">for _, part := range parts </span>{
+                <span class="cov10" title="121">if _, err := writer.Write(part); err != nil </span>{
                         <span class="cov2" title="2">return errors.Join(err, writer.Close())
 </span>                }
         }
-        <span class="cov9" title="87">return writer.Close()</span>
+        <span class="cov9" title="85">return writer.Close()</span>
 }
 </pre>
 		
@@ -9913,7 +9913,7 @@ import (
 
 func audioConfigMessage(config audioConfig) []byte {
         // All fields are primitive strings/uint32, so marshaling cannot fail.
-        <span class="cov7" title="54">data, _ := json.Marshal(struct {
+        <span class="cov7" title="52">data, _ := json.Marshal(struct {
                 Type  string      `json:"type"`
                 Audio audioConfig `json:"audio"`
         }{Type: "config", Audio: config})
@@ -9929,21 +9929,21 @@ func validAudioBlock(block alsa.Block) bool {
 // write is the connection's sole application writer. Audio is dequeued only
 // immediately before its write: no PCM bridge goroutine or extra queue exists.
 func (server *Server) write(ctx context.Context, conn socket, videoSubscription *capture.Subscription) error {
-        <span class="cov6" title="32">if err := ctx.Err(); err != nil </span>{
+        <span class="cov7" title="32">if err := ctx.Err(); err != nil </span>{
                 <span class="cov0" title="0">return err
 </span>        }
-        <span class="cov6" title="32">if server.audio != nil </span>{
-                <span class="cov5" title="18">server.audio.subscribe()
+        <span class="cov7" title="32">if server.audio != nil </span>{
+                <span class="cov6" title="18">server.audio.subscribe()
                 defer server.audio.unsubscribe()
 </span>        }
-        <span class="cov6" title="32">var audioSubscription AudioSubscription
+        <span class="cov7" title="32">var audioSubscription AudioSubscription
         var attached *audioRun
         defer func() </span>{
-                <span class="cov6" title="32">if audioSubscription != nil </span>{
+                <span class="cov7" title="32">if audioSubscription != nil </span>{
                         <span class="cov5" title="12">audioSubscription.Close()
 </span>                }
         }()
-        <span class="cov6" title="32">var configured bool
+        <span class="cov7" title="32">var configured bool
         var lastConfig audioConfig
         var sequence uint64
         var nextVideo time.Time
@@ -9952,10 +9952,10 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
         timer.Stop()
         defer timer.Stop()
         for </span>{
-                <span class="cov10" title="182">if err := ctx.Err(); err != nil </span>{
+                <span class="cov10" title="174">if err := ctx.Err(); err != nil </span>{
                         <span class="cov0" title="0">return err
 </span>                }
-                <span class="cov10" title="182">video, videoChanged := server.capture.Watch()
+                <span class="cov10" title="174">video, videoChanged := server.capture.Watch()
                 view, audioChanged := server.audio.view(video)
                 if view.run != attached </span>{
                         <span class="cov6" title="21">if audioSubscription != nil </span>{
@@ -9967,22 +9967,22 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
                                 <span class="cov5" title="17">audioSubscription = attached.source.Subscribe()
 </span>                        }
                 }
-                <span class="cov10" title="182">if !configured || view.config != lastConfig </span>{
-                        <span class="cov7" title="54">if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config)); err != nil </span>{
+                <span class="cov10" title="174">if !configured || view.config != lastConfig </span>{
+                        <span class="cov7" title="52">if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config)); err != nil </span>{
                                 <span class="cov1" title="1">return err
 </span>                        }
-                        <span class="cov7" title="53">lastConfig, configured = view.config, true
+                        <span class="cov7" title="51">lastConfig, configured = view.config, true
                         continue</span> // Recheck recovery/config changes after the bounded send.
                 }
-                <span class="cov9" title="128">var audioReady &lt;-chan struct{}
+                <span class="cov9" title="122">var audioReady &lt;-chan struct{}
                 if audioSubscription != nil </span>{
-                        <span class="cov8" title="59">audioReady = audioSubscription.Ready()
+                        <span class="cov8" title="58">audioReady = audioSubscription.Ready()
                         block, ok, err := audioSubscription.TryNext()
                         if err != nil </span>{
                                 <span class="cov2" title="2">server.audio.fail(attached, err)
                                 continue</span>
                         }
-                        <span class="cov7" title="57">if ok </span>{
+                        <span class="cov8" title="56">if ok </span>{
                                 <span class="cov6" title="20">if block.Config != view.raw || !server.audio.current(view) </span>{
                                         <span class="cov0" title="0">continue</span> // Drop a dequeue racing generation/recovery; never replay.
                                 }
@@ -9997,7 +9997,7 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
                                 <span class="cov5" title="17">continue</span>
                         }
                 }
-                <span class="cov9" title="106">if pendingVideo != nil &amp;&amp; !time.Now().Before(nextVideo) </span>{
+                <span class="cov9" title="100">if pendingVideo != nil &amp;&amp; !time.Now().Before(nextVideo) </span>{
                         // If audio occupied the writer, replace its held JPEG with the
                         // newest frame already waiting in the original one-slot channel.
                         <span class="cov5" title="15">select </span>{
@@ -10033,29 +10033,29 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 </span>                        }
                         <span class="cov5" title="14">continue</span>
                 }
-                <span class="cov8" title="91">videoEvents := videoSubscription.Events()
+                <span class="cov8" title="85">videoEvents := videoSubscription.Events()
                 var due &lt;-chan time.Time
                 if delay := time.Until(nextVideo); delay &gt; 0 </span>{
                         <span class="cov5" title="15">videoEvents = nil // Leave video in its latest slot until pacing permits.
                         timer.Reset(delay)
                         due = timer.C
 </span>                }
-                <span class="cov8" title="91">select </span>{
+                <span class="cov8" title="85">select </span>{
                 case &lt;-ctx.Done():
                         <span class="cov6" title="28">timer.Stop()
                         return ctx.Err()</span>
-                case &lt;-videoChanged:<span class="cov4" title="6"></span>
-                case &lt;-audioChanged:<span class="cov5" title="16"></span>
+                case &lt;-videoChanged:<span class="cov2" title="3"></span>
+                case &lt;-audioChanged:<span class="cov5" title="13"></span>
                 case &lt;-audioReady:<span class="cov6" title="20"></span>
                 case &lt;-due:<span class="cov2" title="3"></span>
                 case event, ok := &lt;-videoEvents:
-                        <span class="cov5" title="18">if !ok </span>{
+                        <span class="cov6" title="18">if !ok </span>{
                                 <span class="cov0" title="0">timer.Stop()
                                 return capture.ErrClosed
 </span>                        }
-                        <span class="cov5" title="18">pendingVideo = event.Frame</span> // Failure events keep the subscription repairable.
+                        <span class="cov6" title="18">pendingVideo = event.Frame</span> // Failure events keep the subscription repairable.
                 }
-                <span class="cov8" title="63">timer.Stop()</span>
+                <span class="cov8" title="57">timer.Stop()</span>
         }
 }
 </pre>
