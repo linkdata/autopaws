@@ -63,9 +63,9 @@ Edit `/etc/autopaws/autopaws.yaml`: set the serial path, target layout and targe
 screen size. The example's API/web listeners bind to loopback. Confirm `dialout`,
 `video` and `audio` exist; the unit grants them as supplementary groups.
 
-Optional authentication uses `token-file` in this YAML file for both API and web.
-Leave it empty to disable authentication. To enable it for a new installation,
-create a token readable by the service account:
+Optional authentication uses `token-file` in this YAML file for API, web and MCP.
+To enable it for a new installation, create a secret file readable by the
+service account:
 
 ```sh
 sudo install -o root -g autopaws -m 0640 /dev/null /etc/autopaws/token
@@ -74,9 +74,13 @@ openssl rand -hex 32 | sudo tee /etc/autopaws/token >/dev/null
 
 Set `token-file: /etc/autopaws/token` in `/etc/autopaws/autopaws.yaml`. The daemon
 reads and trims the nonempty UTF-8 secret once before creating devices or
-listeners; an unreadable or empty file prevents startup. Restart the daemon
-after changing it. Each MCP process needs the same secret in its own readable
-file and `-token-file PATH` flag. The viewer bootstraps its session cookie from
+listeners; an unreadable or empty file prevents startup. Alternatively, store
+the secret directly in YAML as `token`. Nonempty `token` and `token-file`
+together are rejected; leaving both empty disables authentication. MCP can reuse
+the configuration with `-config /etc/autopaws/autopaws.yaml` when its user can
+read both the configuration and token files, for example as a member of the
+`autopaws` group. Restart both processes after changing either file.
+The viewer bootstraps its session cookie from
 the URL fragment; see the canonical [Security instructions](../README.md#security)
 for that URL, SSH forwarding and token handling.
 

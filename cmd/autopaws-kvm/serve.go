@@ -60,7 +60,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	if cfg.API == "" && cfg.Web == "" {
 		return fmt.Errorf("%w: at least one listener must be enabled", config.ErrInvalid)
 	}
-	secret, err := token.ReadFile(cfg.TokenFile)
+	secret, err := token.Resolve(cfg.Token, cfg.TokenFile)
 	if err != nil {
 		return err
 	}

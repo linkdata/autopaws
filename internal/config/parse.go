@@ -25,6 +25,14 @@ const (
 	ListDevices
 )
 
+type argumentsError struct{ args []string }
+
+func (err *argumentsError) Error() string {
+	return ErrUsage.Error() + ": unexpected arguments: " + strings.Join(err.args, " ")
+}
+
+func (*argumentsError) Unwrap() error { return ErrUsage }
+
 // Parse resolves explicit flags over the selected YAML file over defaults.
 // Help and standalone informational actions do not load configuration files.
 // True informational selectors cannot be combined with other actions or settings.
@@ -41,7 +49,7 @@ func Parse(args []string) (Config, Action, error) {
 		return Config{}, Daemon, fmt.Errorf("%w: %w", ErrUsage, err)
 	}
 	if parsed.NArg() != 0 {
-		return Config{}, Daemon, fmt.Errorf("%w: unexpected arguments: %s", ErrUsage, strings.Join(parsed.Args(), " "))
+		return Config{}, Daemon, &argumentsError{args: parsed.Args()}
 	}
 	if version || listDevices {
 		if parsed.NFlag() != 1 {
@@ -56,28 +64,36 @@ func Parse(args []string) (Config, Action, error) {
 	resolved := Defaults()
 	var unusedPath string
 	settings := daemonFlags(&resolved, &unusedPath, io.Discard)
-	selectedFile := false
+	ignored := MCPDefaults()
+	if err := resolveSettings(parsed, path, settings, mcpFlags(&ignored, &unusedPath, io.Discard)); err != nil {
+		return Config{}, Daemon, err
+	}
+	if err := resolved.Validate(); err != nil {
+		return Config{}, Daemon, err
+	}
+	return resolved, Daemon, nil
+}
+
+func resolveSettings(parsed *flag.FlagSet, path string, settings, other *flag.FlagSet) (err error) {
+	var selectedFile bool
 	parsed.Visit(func(value *flag.Flag) {
 		if value.Name == "config" {
 			selectedFile = true
 		}
 	})
 	if selectedFile {
-		if err := loadFile(path, settings); err != nil {
-			return Config{}, Daemon, err
-		}
+		err = loadFile(path, settings, other)
 	}
-	parsed.Visit(func(value *flag.Flag) {
-		if value.Name != "config" && value.Name != "version" && value.Name != "list-devices" {
-			// Both flag sets have identical setting registrations, and the first
-			// parse already validated each value's flag syntax.
-			_ = settings.Set(value.Name, value.Value.String())
-		}
-	})
-	if err := resolved.Validate(); err != nil {
-		return Config{}, Daemon, err
+	if err == nil {
+		parsed.Visit(func(value *flag.Flag) {
+			if value.Name != "config" && settings.Lookup(value.Name) != nil {
+				// Both flag sets have identical setting registrations, and the first
+				// parse already validated each value's flag syntax.
+				_ = settings.Set(value.Name, value.Value.String())
+			}
+		})
 	}
-	return resolved, Daemon, nil
+	return
 }
 
 // WriteUsage writes the command flags with their built-in defaults.
@@ -99,6 +115,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file")
 	settings.StringVar(&cfg.API, "api", cfg.API, "API listen host:port; empty disables it (example 127.0.0.1:9329)")
 	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen host:port; empty disables it (example 127.0.0.1:9330)")
+	settings.StringVar(&cfg.Token, "token", cfg.Token, "Shared-secret UTF-8 value; use token or token-file, not both")
 	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; empty disables authentication")
 	settings.StringVar(&cfg.SerialDevice, "serial-device", cfg.SerialDevice, "Serial path or Windows COMn; empty auto-detects one CH340/CH341")
 	settings.IntVar(&cfg.SerialBaud, "serial-baud", cfg.SerialBaud, "Serial baud rate")
@@ -123,18 +140,18 @@ func actionFlags(settings *flag.FlagSet, version, listDevices *bool) {
 	settings.BoolVar(listDevices, "list-devices", false, "List devices and exit; use alone")
 }
 
-func loadFile(path string, settings *flag.FlagSet) error {
+func loadFile(path string, settings ...*flag.FlagSet) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("%w: read %q: %w", ErrInvalid, path, err)
 	}
-	if err := applyYAML(data, settings); err != nil {
+	if err := applyYAML(data, settings...); err != nil {
 		return fmt.Errorf("%w: %s: %w", ErrInvalid, path, err)
 	}
 	return nil
 }
 
-func applyYAML(data []byte, settings *flag.FlagSet) error {
+func applyYAML(data []byte, settings ...*flag.FlagSet) error {
 	decoder := yaml.NewDecoder(bytes.NewReader(data))
 	var document yaml.Node
 	if err := decoder.Decode(&document); err != nil {
@@ -164,7 +181,12 @@ func applyYAML(data []byte, settings *flag.FlagSet) error {
 			continue
 		}
 		seen[key.Value] = true
-		setting := settings.Lookup(key.Value)
+		var setting *flag.Flag
+		for _, group := range settings {
+			if setting == nil {
+				setting = group.Lookup(key.Value)
+			}
+		}
 		if setting == nil || key.Value == "config" {
 			problems = append(problems, fmt.Errorf("line %d: unknown setting %q", key.Line, key.Value))
 			continue

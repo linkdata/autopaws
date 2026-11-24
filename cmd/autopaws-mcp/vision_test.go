@@ -126,6 +126,39 @@ func TestVisionRequestOptionsAndAuthentication(t *testing.T) {
 	}
 }
 
+func TestVisionDefaultAndExplicitRequestOptions(t *testing.T) {
+	jpegData := unitJPEG(t)
+	for _, test := range []struct {
+		name, options, reasoning, temperature string
+	}{
+		{"default", "", `"none"`, "0"},
+		{"empty object", `{}`, "", "0"},
+		{"explicit reasoning", `{"reasoning_effort":"high"}`, `"high"`, "0"},
+		{"sampling replaces default", `{"temperature":0.2}`, "", "0.2"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				var body map[string]json.RawMessage
+				if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+					t.Error(err)
+				} else if string(body["reasoning_effort"]) != test.reasoning || string(body["temperature"]) != test.temperature {
+					t.Errorf("provider defaults or explicit options changed: reasoning %s, temperature %s", body["reasoning_effort"], body["temperature"])
+				}
+				writeVisionResult(t, writer, `{"satisfied":true}`)
+			}))
+			defer server.Close()
+			var client *visionClient
+			var err error
+			if client, err = newVisionClient(visionConfig{API: server.URL + "/v1", Model: "fixture-model", MaxWidth: 960, RequestJSON: test.options}); err != nil {
+				t.Fatal(err)
+			}
+			if satisfied, err := client.check(t.Context(), jpegData, "fixture condition"); err != nil || !satisfied {
+				t.Fatalf("vision check = %t, %v", satisfied, err)
+			}
+		})
+	}
+}
+
 func TestVisionStrictOutput(t *testing.T) {
 	for _, content := range []string{
 		``, `null`, `true`, `[]`, `{}`, `{"satisfied":null}`, `{"satisfied":1}`,

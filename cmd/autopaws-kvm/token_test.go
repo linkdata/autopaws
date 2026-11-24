@@ -19,6 +19,8 @@ import (
 	"github.com/coder/websocket"
 	"github.com/linkdata/autopaws/apiclient"
 	"github.com/linkdata/autopaws/apiwire"
+	"github.com/linkdata/autopaws/internal/config"
+	"github.com/linkdata/autopaws/internal/token"
 )
 
 func TestRuntimeReadsTokenBeforeHardwareAndOnlyOnce(t *testing.T) {
@@ -30,13 +32,36 @@ func TestRuntimeReadsTokenBeforeHardwareAndOnlyOnce(t *testing.T) {
 	if err := os.WriteFile(cfg.TokenFile, []byte("  a+;å% secret\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	assertRuntimeTokenAuthentication(t, cfg)
+}
+
+func TestRuntimeUsesDirectTokenBeforeHardware(t *testing.T) {
+	cfg := runtimeConfig()
+	for _, secret := range []string{" \r\n\t", "bad\xffsecret"} {
+		cfg.Token = secret
+		if err := serveWith(t.Context(), cfg, io.Discard, runtimeFactories{}); !errors.Is(err, token.ErrInvalid) || strings.Contains(err.Error(), secret) {
+			t.Fatalf("invalid token was accepted or leaked before hardware: %v", err)
+		}
+	}
+	cfg.Token, cfg.TokenFile = "not-logged", filepath.Join(t.TempDir(), "missing")
+	if err := serveWith(t.Context(), cfg, io.Discard, runtimeFactories{}); !errors.Is(err, token.ErrConflict) || strings.Contains(err.Error(), cfg.Token) {
+		t.Fatalf("conflicting token sources were accepted or leaked before hardware: %v", err)
+	}
+	cfg.TokenFile = ""
+	cfg.Token = "  a+;å% secret\n"
+	assertRuntimeTokenAuthentication(t, cfg)
+}
+
+func assertRuntimeTokenAuthentication(t *testing.T, cfg config.Config) {
+	t.Helper()
 	cfg.Web = "127.0.0.1:0"
 	port := &runtimeTransport{}
 	run := startViewerRuntime(t, cfg, port, newRuntimeVideoSource(), nil)
-	// Both options were constructed before Listen. Removing the file proves
-	// subsequent calls authenticate from that startup value rather than rereading.
-	if err := os.Remove(cfg.TokenFile); err != nil {
-		t.Fatal(err)
+	if cfg.TokenFile != "" {
+		// Removing the file proves both listeners retain the startup value.
+		if err := os.Remove(cfg.TokenFile); err != nil {
+			t.Fatal(err)
+		}
 	}
 	for _, secret := range []string{"", "wrong"} {
 		if err := runtimeCall(apiclient.NewWithToken(run.api.Addr().String(), secret), "send_key", map[string]string{"key": "a"}, nil); !errors.Is(err, apiwire.ErrUnauthorized) {

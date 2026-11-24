@@ -3,12 +3,16 @@
 # --list-devices for capture-device and audio-device. See docs/windows-setup.md.
 # Replace the serial path and target dimensions with your actual configuration.
 # Defaults shown explicitly: loopback API and relative mouse button reports.
-# To serve only the web viewer, set api: "".
+# Both binaries accept this file with -config ./autopaws.yaml.
+# To serve only the web viewer, set api: ""; MCP requires an enabled API.
 api: 127.0.0.1:9329
 web: 127.0.0.1:9330
-# Optional shared secret for both API and web, read once at daemon startup.
-# Empty disables authentication; otherwise use a readable nonempty UTF-8 file.
+# Optional shared secret for API, web and MCP, read once by each process.
+# Use a secret file to update it separately from this configuration.
 token-file: ""
+# Or store it inline, e.g. token: "REPLACE_WITH_A_RANDOM_SECRET".
+# Leaving both empty disables authentication. Set only one to a nonempty value.
+token: ""
 serial-device: /dev/serial/by-id/REPLACE_WITH_YOUR_CH340_OR_CH341
 serial-baud: 9600
 screen-width: 1920
@@ -29,3 +33,16 @@ web-fps: 20
 audio-device: ""
 log-level: info
 debug-keys: false
+
+# MCP-only settings. Empty capture-log disables screenshot logging.
+capture-log: ""
+tesseract: ""
+# Configure both vision-api and vision-model to enable wait_for.
+vision-api: ""
+vision-model: ""
+vision-token-file: ""
+vision-max-width: 960
+# Omitted provider options default to disabling reasoning when vision is enabled.
+# An explicit object replaces the default; '{}' uses provider defaults.
+# Include reasoning_effort:none when adding sampling or output options.
+vision-request-json: ""
