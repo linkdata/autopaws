@@ -5,7 +5,7 @@ distribution's device ownership and group names. Use example files from the same
 revision as your installed binary:
 
 ```sh
-gh repo clone linkdata/autopaws autopaws
+git clone https://github.com/linkdata/autopaws.git autopaws
 cd autopaws
 ```
 
