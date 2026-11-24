@@ -1,0 +1,2103 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "kind": "synthetic_caller_condition_benchmark",
+  "privacy": "Only generated fixtures were evaluated. No target captures accessed and no images retained.",
+  "host": {
+    "cpu": "Apple M3 Ultra",
+    "memory_gib": 256,
+    "macos": "26.7.3",
+    "lm_studio": "0.4.28+2",
+    "mlx_runtime": "1.14.0",
+    "context_length": 8192
+  },
+  "script_sha256": "8da7132ecf011e67e693a0da8a7881fe9a74aee6e700f5ea44b2d3e6df2d7b25",
+  "reload_seconds": 2.87,
+  "first_inference_ms": 2441.306,
+  "metadata": {
+    "started_utc": "2026-11-23T12:17:52Z",
+    "platform": "macOS-26.7.3-arm64-arm-64bit",
+    "python": "3.11.9",
+    "arguments": {
+      "base_url": "http://127.0.0.1:11434",
+      "model": "qwen3-vl-2b-instruct",
+      "width": 960,
+      "samples": 12,
+      "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "out": "/private/tmp/autopaws-predicate-bench"
+    },
+    "fixture_generator_sha256": "8f9270bd80a1ca5ec133980d35c5430fe5e163652d2487ebdb8b2e9980fee199",
+    "instructions": "Evaluate the caller's condition against this screenshot. Return only the JSON object {\"satisfied\":true} or {\"satisfied\":false}. A foreground modal is a separate floating dialog over a dimmed page; a card inside the full page is not a modal. Read visible text exactly. Do not explain or reason. Caller condition: ",
+    "response_schema": {
+      "type": "object",
+      "properties": {
+        "satisfied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "satisfied"
+      ],
+      "additionalProperties": false
+    },
+    "conditions": [
+      {
+        "id": "status_complete",
+        "prompt": "Status is Complete"
+      },
+      {
+        "id": "modal_visible",
+        "prompt": "A foreground confirmation modal with Continue and Cancel is visible"
+      },
+      {
+        "id": "count_at_least_15",
+        "prompt": "Completed count is at least 15"
+      }
+    ],
+    "temperature": 0,
+    "max_tokens": 32,
+    "notes": [
+      "All images generated in memory; no target captures or retained image files.",
+      "First request per condition reported separately; it is not necessarily cold.",
+      "Warm indices1..samples change each frame; all requests are serial.",
+      "Wall time covers HTTP request through full response; fixture/base64 creation excluded."
+    ],
+    "model_inventory": {
+      "models": [
+        {
+          "type": "llm",
+          "publisher": "mlx-community",
+          "key": "qwen3-vl-2b-instruct",
+          "display_name": "Qwen3 VL 2B Instruct",
+          "architecture": "qwen3_vl",
+          "quantization": {
+            "name": "4bit",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 1798021605,
+          "params_string": "2B",
+          "loaded_instances": [
+            {
+              "id": "qwen3-vl-2b-instruct",
+              "config": {
+                "context_length": 8192,
+                "parallel": 4
+              }
+            }
+          ],
+          "max_context_length": 262144,
+          "format": "mlx",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "pipenetwork",
+          "key": "holo-3.1-9b-mlx",
+          "display_name": "Holo 3.1 9B",
+          "architecture": "qwen3_5",
+          "quantization": {
+            "name": "8bit",
+            "bits_per_weight": 8
+          },
+          "size_bytes": 11927128159,
+          "params_string": "9B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "mlx",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "timteh673",
+          "key": "holo4-27b-abliterix-oq6e",
+          "display_name": "Holo4 27B Abliterix OQ6e",
+          "architecture": "qwen3_5",
+          "quantization": {
+            "name": "6bit",
+            "bits_per_weight": 6
+          },
+          "size_bytes": 23318582698,
+          "params_string": "27B",
+          "loaded_instances": [
+            {
+              "id": "holo4-27b-abliterix-oq6e",
+              "config": {
+                "context_length": 8192,
+                "parallel": 4
+              }
+            }
+          ],
+          "max_context_length": 262144,
+          "format": "mlx",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "mlx-community",
+          "key": "qwen3.8-27b",
+          "display_name": "Qwen3.8 27B",
+          "architecture": "qwen3_5",
+          "quantization": {
+            "name": "BF16",
+            "bits_per_weight": 16
+          },
+          "size_bytes": 41486574377,
+          "params_string": "27B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "mlx",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "incoai",
+          "key": "qwen3.8-27b-splash",
+          "display_name": "Qwen3.8 27B Splash",
+          "architecture": "qwen3_5",
+          "quantization": {
+            "name": "4bit",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 17382672684,
+          "params_string": "27B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "splash",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "embedding",
+          "publisher": "nomic-ai",
+          "key": "text-embedding-nomic-embed-text-v1.5",
+          "display_name": "Nomic Embed Text v1.5",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 84106624,
+          "params_string": null,
+          "loaded_instances": [],
+          "max_context_length": 2048,
+          "format": "gguf"
+        }
+      ]
+    }
+  },
+  "summary": [
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "n": 12,
+      "median_ms": 378.7895,
+      "min_ms": 373.537,
+      "max_ms": 407.344,
+      "expected_true": 4,
+      "correct": 11,
+      "invalid": 0,
+      "false_accept": 1,
+      "false_reject": 0
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "n": 12,
+      "median_ms": 376.9515,
+      "min_ms": 362.388,
+      "max_ms": 383.714,
+      "expected_true": 3,
+      "correct": 12,
+      "invalid": 0,
+      "false_accept": 0,
+      "false_reject": 0
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "n": 12,
+      "median_ms": 377.214,
+      "min_ms": 369.446,
+      "max_ms": 384.453,
+      "expected_true": 8,
+      "correct": 7,
+      "invalid": 0,
+      "false_accept": 0,
+      "false_reject": 5
+    }
+  ],
+  "records": [
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 0,
+      "phase": "first",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 10,
+        "primary_button": "Start"
+      },
+      "wall_ms": 2441.306,
+      "response": {
+        "id": "chatcmpl-o2ravldht2e92m1er8q5zh",
+        "object": "chat.completion",
+        "created": 1795436272,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 1,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 11,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 407.344,
+      "response": {
+        "id": "chatcmpl-9fwayw7ypd6msg5ll2v58p",
+        "object": "chat.completion",
+        "created": 1795436274,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 2,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 12,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 378.076,
+      "response": {
+        "id": "chatcmpl-1fssatk85i5cv8i4669w66",
+        "object": "chat.completion",
+        "created": 1795436275,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 3,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Ready",
+        "completed": 13,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 374.735,
+      "response": {
+        "id": "chatcmpl-gfolic75hsd7vcizw4zefp",
+        "object": "chat.completion",
+        "created": 1795436275,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": false
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 4,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 14,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 380.765,
+      "response": {
+        "id": "chatcmpl-psxjmxhqeep7raqij026p",
+        "object": "chat.completion",
+        "created": 1795436275,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 5,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 15,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 378.917,
+      "response": {
+        "id": "chatcmpl-qe3v5clwjq5ewy5dljo1v",
+        "object": "chat.completion",
+        "created": 1795436276,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 6,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 16,
+        "primary_button": "Start"
+      },
+      "wall_ms": 383.245,
+      "response": {
+        "id": "chatcmpl-fp1gbpenj0lig1a749nvt",
+        "object": "chat.completion",
+        "created": 1795436276,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 7,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Working",
+        "completed": 17,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 379.442,
+      "response": {
+        "id": "chatcmpl-zzpvsyd69vgnmaadxdd4",
+        "object": "chat.completion",
+        "created": 1795436277,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 8,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 18,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 380.548,
+      "response": {
+        "id": "chatcmpl-gehdbmcs3wf135vumd7t6t",
+        "object": "chat.completion",
+        "created": 1795436277,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 9,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 19,
+        "primary_button": "Start"
+      },
+      "wall_ms": 373.537,
+      "response": {
+        "id": "chatcmpl-y5wnhp090spow2th5hhjl",
+        "object": "chat.completion",
+        "created": 1795436278,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 10,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 20,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 378.662,
+      "response": {
+        "id": "chatcmpl-e757zhhxijq97xfi723qkv",
+        "object": "chat.completion",
+        "created": 1795436278,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 11,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Complete",
+        "completed": 21,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 375.89,
+      "response": {
+        "id": "chatcmpl-3f3fkvf8urm8a3noavoie",
+        "object": "chat.completion",
+        "created": 1795436279,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "status_complete",
+      "condition": "Status is Complete",
+      "fixture_index": 12,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 22,
+        "primary_button": "Start"
+      },
+      "wall_ms": 377.483,
+      "response": {
+        "id": "chatcmpl-h9s1rpo53m4vge2rtkven",
+        "object": "chat.completion",
+        "created": 1795436279,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 80,
+          "completion_tokens": 7,
+          "total_tokens": 87,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 0,
+      "phase": "first",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 10,
+        "primary_button": "Start"
+      },
+      "wall_ms": 377.898,
+      "response": {
+        "id": "chatcmpl-jiffspk4dhkh3awfv3edlq",
+        "object": "chat.completion",
+        "created": 1795436279,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 1,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 11,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 362.388,
+      "response": {
+        "id": "chatcmpl-wiqcphg71jsucunt596s9",
+        "object": "chat.completion",
+        "created": 1795436280,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 2,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 12,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 378.229,
+      "response": {
+        "id": "chatcmpl-cb8k6wb1vcslynkbsfxg3",
+        "object": "chat.completion",
+        "created": 1795436280,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 3,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Ready",
+        "completed": 13,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 376.359,
+      "response": {
+        "id": "chatcmpl-nhx4e1tuiyf0nska9ht1o",
+        "object": "chat.completion",
+        "created": 1795436281,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 4,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 14,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 377.714,
+      "response": {
+        "id": "chatcmpl-o52bezb3mcmi0qxqt6kflk",
+        "object": "chat.completion",
+        "created": 1795436281,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 5,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 15,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 369.607,
+      "response": {
+        "id": "chatcmpl-otdw7jhjn7m323mytsrmiy",
+        "object": "chat.completion",
+        "created": 1795436282,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 6,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 16,
+        "primary_button": "Start"
+      },
+      "wall_ms": 377.544,
+      "response": {
+        "id": "chatcmpl-riz7mco4nkaggvf0ljft",
+        "object": "chat.completion",
+        "created": 1795436282,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 7,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Working",
+        "completed": 17,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 379.04,
+      "response": {
+        "id": "chatcmpl-o4as8tjg6elxymp5ztpxwg",
+        "object": "chat.completion",
+        "created": 1795436282,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 8,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 18,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 364.846,
+      "response": {
+        "id": "chatcmpl-1qvqs7jsrvejgcpln5r21vc",
+        "object": "chat.completion",
+        "created": 1795436283,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 9,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 19,
+        "primary_button": "Start"
+      },
+      "wall_ms": 380.949,
+      "response": {
+        "id": "chatcmpl-onk1xombihrztsxkln0gw",
+        "object": "chat.completion",
+        "created": 1795436283,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 10,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 20,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 376.157,
+      "response": {
+        "id": "chatcmpl-xuw2m32or3s0d7ab3dra529",
+        "object": "chat.completion",
+        "created": 1795436284,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 11,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Complete",
+        "completed": 21,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 383.714,
+      "response": {
+        "id": "chatcmpl-ieg4t24071f6dl1f28hyt",
+        "object": "chat.completion",
+        "created": 1795436284,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "modal_visible",
+      "condition": "A foreground confirmation modal with Continue and Cancel is visible",
+      "fixture_index": 12,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 22,
+        "primary_button": "Start"
+      },
+      "wall_ms": 372.548,
+      "response": {
+        "id": "chatcmpl-hcvhienwk8vlbsy0yetgb9",
+        "object": "chat.completion",
+        "created": 1795436285,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 87,
+          "completion_tokens": 7,
+          "total_tokens": 94,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 0,
+      "phase": "first",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 10,
+        "primary_button": "Start"
+      },
+      "wall_ms": 369.341,
+      "response": {
+        "id": "chatcmpl-8s52h5odhhlkxtb8m60e",
+        "object": "chat.completion",
+        "created": 1795436285,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 1,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 11,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 379.514,
+      "response": {
+        "id": "chatcmpl-ig9ttc9oq93n0h3wqo5wy",
+        "object": "chat.completion",
+        "created": 1795436285,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 2,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 12,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 369.446,
+      "response": {
+        "id": "chatcmpl-uhoys4m3mciih3nne0030t",
+        "object": "chat.completion",
+        "created": 1795436286,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 3,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Ready",
+        "completed": 13,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 377.724,
+      "response": {
+        "id": "chatcmpl-s50d9ei8i3q3fiz105wey9",
+        "object": "chat.completion",
+        "created": 1795436286,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 4,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": false,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 14,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 379.012,
+      "response": {
+        "id": "chatcmpl-6u8u4b2kqzbuh0hg8v8nr",
+        "object": "chat.completion",
+        "created": 1795436287,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 5,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 15,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 376.704,
+      "response": {
+        "id": "chatcmpl-1dwv1lih05wm265ta9rjc",
+        "object": "chat.completion",
+        "created": 1795436287,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 6,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 16,
+        "primary_button": "Start"
+      },
+      "wall_ms": 378.605,
+      "response": {
+        "id": "chatcmpl-qg08luxfx5lx0pwjjrfskn",
+        "object": "chat.completion",
+        "created": 1795436288,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 7,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Working",
+        "completed": 17,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 371.655,
+      "response": {
+        "id": "chatcmpl-q1k5ufxkjd9kqq4zdpt3l",
+        "object": "chat.completion",
+        "created": 1795436288,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": false
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 8,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Complete",
+        "completed": 18,
+        "primary_button": "Restart"
+      },
+      "wall_ms": 373.958,
+      "response": {
+        "id": "chatcmpl-u1emyd34d3stw5znxdi1",
+        "object": "chat.completion",
+        "created": 1795436289,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": false
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 9,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 19,
+        "primary_button": "Start"
+      },
+      "wall_ms": 373.843,
+      "response": {
+        "id": "chatcmpl-p0ahwwmlepe0ygxa4nfv6zl",
+        "object": "chat.completion",
+        "created": 1795436289,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": false
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 10,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Working",
+        "completed": 20,
+        "primary_button": "Pause"
+      },
+      "wall_ms": 377.864,
+      "response": {
+        "id": "chatcmpl-wvmht8jyrpehv3j28oddb",
+        "object": "chat.completion",
+        "created": 1795436289,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": false
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 11,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dialog",
+        "status": "Complete",
+        "completed": 21,
+        "primary_button": "Continue"
+      },
+      "wall_ms": 384.453,
+      "response": {
+        "id": "chatcmpl-6582wdhzbwi7blce8ltblx",
+        "object": "chat.completion",
+        "created": 1795436290,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": true}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": true,
+      "correct": true
+    },
+    {
+      "condition_id": "count_at_least_15",
+      "condition": "Completed count is at least 15",
+      "fixture_index": 12,
+      "phase": "warm_changing",
+      "width": 960,
+      "expected": true,
+      "fixture_state": {
+        "mode": "dashboard",
+        "status": "Ready",
+        "completed": 22,
+        "primary_button": "Start"
+      },
+      "wall_ms": 375.264,
+      "response": {
+        "id": "chatcmpl-4194iuiugaclsu7d0xfj4r",
+        "object": "chat.completion",
+        "created": 1795436290,
+        "model": "qwen3-vl-2b-instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"satisfied\": false}",
+              "reasoning_content": "",
+              "tool_calls": []
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 85,
+          "completion_tokens": 7,
+          "total_tokens": 92,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "stats": {},
+        "system_fingerprint": "qwen3-vl-2b-instruct"
+      },
+      "valid": true,
+      "satisfied": false,
+      "correct": false
+    }
+  ],
+  "limits": [
+    "Small synthetic exploratory sample; no real-target predicate error rate established.",
+    "Numeric inference failed despite schema-valid responses.",
+    "Different prompts/output tasks from the state benchmark; latency difference is for these configurations.",
+    "No integrated action-to-predicate-to-controller cycle measured."
+  ],
+  "cleanup": {
+    "only_original_model_loaded": "holo4-27b-abliterix-oq6e",
+    "context_length": 8192,
+    "parallel": 4,
+    "ttl": null,
+    "status": "idle",
+    "active_requests": 0
+  }
+}

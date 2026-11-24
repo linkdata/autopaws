@@ -193,7 +193,7 @@ Capture methods share the daemon's frame pipeline:
 
 | Method | Parameters | Successful result |
 |---|---|---|
-| `capture_frame` | none | `{"jpeg_b64":"...","width":W,"height":H}` |
+| `capture_frame` | none | `{"jpeg_b64":"...","width":W,"height":H,"target_width":TW,"target_height":TH}` |
 | `list_capture_devices` | none | `{"devices":[...]}`, empty when none exist |
 | `set_capture_device` | nonempty string `device` path, not a signed/unsigned numeric index | Capture-status object after selecting a device |
 | `set_capture_resolution` | integer `width`, `height`, each 1…4294967295 | Capture-status object after updating the requested size |
@@ -223,6 +223,13 @@ Snapshots are validated JPEGs with any detected crop applied. Uncropped images
 are not re-encoded; cropped images use quality-85 encoding. Width/height describe the returned image, which can differ
 from both requested capture size and configured target coordinates. There is no
 quality parameter. Capture starts on demand and stops after ten idle seconds.
+
+`target_width` and `target_height` are the configured target coordinate dimensions,
+independent of the captured image size and crop. Reading them with a snapshot
+does not enumerate devices. Older daemons omit both fields; clients may read
+`get_device_info.config.screen_width` and `screen_height` as a compatibility
+fallback. A partially present pair or nonpositive/noninteger dimensions is an
+invalid snapshot response, rather than a signal to fall back.
 
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending

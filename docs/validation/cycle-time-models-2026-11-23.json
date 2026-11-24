@@ -1,0 +1,4142 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "kind": "synthetic_local_vision_experiment",
+  "privacy": "Every image and OCR response in these model experiments is generated from invented UI fixtures; no target captures were read.",
+  "environment": {
+    "cpu": "Apple M3 Ultra",
+    "memory_gib": 256,
+    "macos": "26.7.3",
+    "lm_studio": "0.4.28+2",
+    "cli_commit": "43d4b26",
+    "cli_matches_bundled_binary": true,
+    "cli_sha256": "8cf97829a121dd5dcc80babf39f9cfc47ab47736d3abd5284bc4664ef32e8dc5",
+    "mlx_runtime": "1.14.0",
+    "context_length": 8192,
+    "requests": "sequential; loaded instance parallel capacity4 but one client request at a time"
+  },
+  "model_inventory": {
+    "models": [
+      {
+        "type": "llm",
+        "publisher": "mlx-community",
+        "key": "qwen3-vl-2b-instruct",
+        "display_name": "Qwen3 VL 2B Instruct",
+        "architecture": "qwen3_vl",
+        "quantization": {
+          "name": "4bit",
+          "bits_per_weight": 4
+        },
+        "size_bytes": 1798021605,
+        "params_string": "2B",
+        "loaded_instances": [
+          {
+            "id": "qwen3-vl-2b-instruct",
+            "config": {
+              "context_length": 8192,
+              "parallel": 4
+            }
+          }
+        ],
+        "max_context_length": 262144,
+        "format": "mlx",
+        "capabilities": {
+          "vision": true,
+          "trained_for_tool_use": true
+        },
+        "description": null
+      },
+      {
+        "type": "llm",
+        "publisher": "pipenetwork",
+        "key": "holo-3.1-9b-mlx",
+        "display_name": "Holo 3.1 9B",
+        "architecture": "qwen3_5",
+        "quantization": {
+          "name": "8bit",
+          "bits_per_weight": 8
+        },
+        "size_bytes": 11927128159,
+        "params_string": "9B",
+        "loaded_instances": [
+          {
+            "id": "holo-3.1-9b-mlx",
+            "config": {
+              "context_length": 8192,
+              "parallel": 4
+            }
+          }
+        ],
+        "max_context_length": 262144,
+        "format": "mlx",
+        "capabilities": {
+          "vision": true,
+          "trained_for_tool_use": true
+        },
+        "description": null
+      },
+      {
+        "type": "llm",
+        "publisher": "timteh673",
+        "key": "holo4-27b-abliterix-oq6e",
+        "display_name": "Holo4 27B Abliterix OQ6e",
+        "architecture": "qwen3_5",
+        "quantization": {
+          "name": "6bit",
+          "bits_per_weight": 6
+        },
+        "size_bytes": 23318582698,
+        "params_string": "27B",
+        "loaded_instances": [
+          {
+            "id": "holo4-27b-abliterix-oq6e",
+            "config": {
+              "context_length": 8192,
+              "parallel": 4
+            }
+          }
+        ],
+        "max_context_length": 262144,
+        "format": "mlx",
+        "capabilities": {
+          "vision": true,
+          "trained_for_tool_use": true
+        },
+        "description": null
+      },
+      {
+        "type": "llm",
+        "publisher": "mlx-community",
+        "key": "qwen3.8-27b",
+        "display_name": "Qwen3.8 27B",
+        "architecture": "qwen3_5",
+        "quantization": {
+          "name": "BF16",
+          "bits_per_weight": 16
+        },
+        "size_bytes": 41486574377,
+        "params_string": "27B",
+        "loaded_instances": [],
+        "max_context_length": 262144,
+        "format": "mlx",
+        "capabilities": {
+          "vision": true,
+          "trained_for_tool_use": true
+        },
+        "description": null
+      },
+      {
+        "type": "llm",
+        "publisher": "incoai",
+        "key": "qwen3.8-27b-splash",
+        "display_name": "Qwen3.8 27B Splash",
+        "architecture": "qwen3_5",
+        "quantization": {
+          "name": "4bit",
+          "bits_per_weight": 4
+        },
+        "size_bytes": 17382672684,
+        "params_string": "27B",
+        "loaded_instances": [],
+        "max_context_length": 262144,
+        "format": "splash",
+        "capabilities": {
+          "vision": true,
+          "trained_for_tool_use": true,
+          "reasoning": {
+            "allowed_options": [
+              "off",
+              "on"
+            ],
+            "default": "on"
+          }
+        },
+        "description": null
+      },
+      {
+        "type": "embedding",
+        "publisher": "nomic-ai",
+        "key": "text-embedding-nomic-embed-text-v1.5",
+        "display_name": "Nomic Embed Text v1.5",
+        "quantization": {
+          "name": "Q4_K_M",
+          "bits_per_weight": 4
+        },
+        "size_bytes": 84106624,
+        "params_string": null,
+        "loaded_instances": [],
+        "max_context_length": 2048,
+        "format": "gguf"
+      }
+    ]
+  },
+  "script_sha256": "8f9270bd80a1ca5ec133980d35c5430fe5e163652d2487ebdb8b2e9980fee199",
+  "qwen_download": {
+    "repository": "mlx-community/Qwen3-VL-2B-Instruct-4bit",
+    "size_bytes": 1798021605,
+    "load_seconds": 3.11,
+    "first_inference_ms": 2714.539,
+    "download_retained": true
+  },
+  "primary_cells": [
+    "qwen2-explicit960",
+    "qwen2-explicit1920",
+    "qwen2-binary",
+    "holo9-state",
+    "holo27-state"
+  ],
+  "preliminary_or_diagnostic_cells": [
+    "first27",
+    "first9",
+    "native27",
+    "probe27",
+    "qwen2-explicit",
+    "qwen2-state"
+  ],
+  "interpretation": {
+    "first_is_not_always_cold": "First means first request within a cell; separate initial first-after-loading observations are identified above/in diagnostic cells.",
+    "prompt_variants": "Qwen initial dashboard/modal prompt was ambiguous. Explicit mode prompt is separately labeled; these cells do not give controlled cross-model accuracy rankings.",
+    "holo_channel": "All Holo extracted objects were in reasoning_content; ordinary final content was empty. Correct counts using parsed include this diagnostic channel adapter; final_content_correct does not.",
+    "binary": "Four changed and four identical warm image pairs at960 width; simple synthetic imagery without capture noise.",
+    "ocr": "Grayscale, 2xnearest, English PSM6/OEM3. Includes preprocessing and feeds PNG; current MCP uses PGM. Missing blue button means not equivalent state extraction.",
+    "accuracy": "Exact four-field object equality on simple generated fixtures. Does not validate general GUI parsing or coordinates.",
+    "latency": "Wall-clock HTTP requests; fixture generation, JPEG encoding and data-URL construction excluded. No controller latency or physical KVM-to-model pipeline measured."
+  },
+  "runs": {
+    "first27": {
+      "started_utc": "2026-11-23T12:04:37Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo4-27b-abliterix-oq6e",
+        "widths": [
+          960
+        ],
+        "samples": 0,
+        "binary": false,
+        "ocr": false,
+        "out": "/private/tmp/autopaws-model-first27"
+      },
+      "summary": [],
+      "records": [
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 4860.09,
+          "response": {
+            "id": "chatcmpl-yimoygszocrnnwfk9gmbwr",
+            "object": "chat.completion",
+            "created": 1795435477,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": null,
+          "correct": false
+        }
+      ]
+    },
+    "first9": {
+      "started_utc": "2026-11-23T12:06:51Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo-3.1-9b-mlx",
+        "widths": [
+          960
+        ],
+        "samples": 0,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "out": "/private/tmp/autopaws-model-first9"
+      },
+      "summary": [],
+      "records": [
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 4386.863,
+          "response": {
+            "id": "chatcmpl-v3168j67mr8cy6m2xjy6b",
+            "object": "chat.completion",
+            "created": 1795435611,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": null,
+          "correct": false
+        }
+      ]
+    },
+    "holo27-state": {
+      "started_utc": "2026-11-23T12:09:09Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo4-27b-abliterix-oq6e",
+        "widths": [
+          960,
+          1920
+        ],
+        "samples": 5,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "out": "/private/tmp/autopaws-model-holo27-state"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 5,
+          "median_ms": 3304.565,
+          "min_ms": 3268.526,
+          "max_ms": 3311.726,
+          "correct": 5,
+          "final_content_correct": 0
+        },
+        {
+          "width": 1920,
+          "n": 5,
+          "median_ms": 8734.016,
+          "min_ms": 8728.934,
+          "max_ms": 8760.161,
+          "correct": 5,
+          "final_content_correct": 0
+        }
+      ],
+      "records": [
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 3233.228,
+          "response": {
+            "id": "chatcmpl-1e25lvl62m662nz6sc4gf9",
+            "object": "chat.completion",
+            "created": 1795435749,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 3288.22,
+          "response": {
+            "id": "chatcmpl-o93u7vmr7zlp77sg106bn",
+            "object": "chat.completion",
+            "created": 1795435752,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 3311.726,
+          "response": {
+            "id": "chatcmpl-ukekvotlfhl38t2lu3rwwe",
+            "object": "chat.completion",
+            "created": 1795435756,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 3310.407,
+          "response": {
+            "id": "chatcmpl-uhkdrejt8ck5h4945in082",
+            "object": "chat.completion",
+            "created": 1795435759,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 3304.565,
+          "response": {
+            "id": "chatcmpl-kp1144ncf2k95ahbptb4u7",
+            "object": "chat.completion",
+            "created": 1795435763,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 3268.526,
+          "response": {
+            "id": "chatcmpl-c8q6izrr10ai8m23vza7en",
+            "object": "chat.completion",
+            "created": 1795435766,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 8801.387,
+          "response": {
+            "id": "chatcmpl-j2s8r7igc4ejwyudm6tk69",
+            "object": "chat.completion",
+            "created": 1795435769,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 8734.016,
+          "response": {
+            "id": "chatcmpl-yivjmf30gwd7hxc7vvdcvt",
+            "object": "chat.completion",
+            "created": 1795435778,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 8728.934,
+          "response": {
+            "id": "chatcmpl-p65ln4r5wl9bn0bfz7t2t",
+            "object": "chat.completion",
+            "created": 1795435787,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 8760.161,
+          "response": {
+            "id": "chatcmpl-ifjeshuqrgmjv2lwwyd0p",
+            "object": "chat.completion",
+            "created": 1795435796,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 8743.959,
+          "response": {
+            "id": "chatcmpl-xxdzxs1hbtgpnvim28d2c",
+            "object": "chat.completion",
+            "created": 1795435804,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        },
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 1920,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 8731.637,
+          "response": {
+            "id": "chatcmpl-qjhw9usq1jdwsl9a3tmp9n",
+            "object": "chat.completion",
+            "created": 1795435813,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false
+        }
+      ]
+    },
+    "holo9-state": {
+      "started_utc": "2026-11-23T12:08:19Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo-3.1-9b-mlx",
+        "widths": [
+          960,
+          1920
+        ],
+        "samples": 5,
+        "binary": false,
+        "ocr": true,
+        "native": false,
+        "out": "/private/tmp/autopaws-model-holo9-state"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 5,
+          "median_ms": 1345.076,
+          "min_ms": 1344.315,
+          "max_ms": 1349.129,
+          "correct": 1,
+          "final_content_correct": 0,
+          "ocr_median_ms": 186.636
+        },
+        {
+          "width": 1920,
+          "n": 5,
+          "median_ms": 3913.29,
+          "min_ms": 3896.095,
+          "max_ms": 3924.124,
+          "correct": 5,
+          "final_content_correct": 0,
+          "ocr_median_ms": 282.565
+        }
+      ],
+      "records": [
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 1240.444,
+          "response": {
+            "id": "chatcmpl-592vk2sdo8az3osouzfnj",
+            "object": "chat.completion",
+            "created": 1795435699,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "reasoning_content",
+          "correct": false,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 236.419,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Ready\n\nCompleted: 10\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1344.315,
+          "response": {
+            "id": "chatcmpl-k5hcx8g4vuelaxb0gbxgk",
+            "object": "chat.completion",
+            "created": 1795435701,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": false,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 186.462,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Working\n\nCompleted: 11\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1345.064,
+          "response": {
+            "id": "chatcmpl-p5nhy9j01pj3u1bmd9bib3",
+            "object": "chat.completion",
+            "created": 1795435702,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": false,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 186.636,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Complete\n\nCompleted: 12\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 1345.076,
+          "response": {
+            "id": "chatcmpl-4zih3vz37qa0n72a2nfli",
+            "object": "chat.completion",
+            "created": 1795435704,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 204.056,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nSEUIEE NS) Confirm action\n\nCompleted: 13 Continue processing this batch?\n\nQueue\nSynthetic job 1 Cancel ssed\nSynthetic job 2 ng\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1349.129,
+          "response": {
+            "id": "chatcmpl-la3dt7efmisvrpwn9exb6n",
+            "object": "chat.completion",
+            "created": 1795435706,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": false,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 185.014,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Working\n\nCompleted: 14\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1347.503,
+          "response": {
+            "id": "chatcmpl-j2tg4o3vc1r08rswjj22ntm",
+            "object": "chat.completion",
+            "created": 1795435707,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": false,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 186.826,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Complete\n\nCompleted: 15\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 4047.555,
+          "response": {
+            "id": "chatcmpl-3v14cjy8yz8eeiyucbjhzp",
+            "object": "chat.completion",
+            "created": 1795435709,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 277.294,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Ready\n\nCompleted: 10\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 3919.794,
+          "response": {
+            "id": "chatcmpl-iof93gc65yiwamtns887c",
+            "object": "chat.completion",
+            "created": 1795435713,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 279.365,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Working\n\nCompleted: 11\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 3924.124,
+          "response": {
+            "id": "chatcmpl-0m457e4mt3j5bdfadw6y68",
+            "object": "chat.completion",
+            "created": 1795435717,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 282.565,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Complete\n\nCompleted: 12\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 3913.29,
+          "response": {
+            "id": "chatcmpl-iavr18k6edmpxd6ws3b",
+            "object": "chat.completion",
+            "created": 1795435722,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 303.179,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Ready Confirm action\n\nCompleted: 13 Continue processing this batch?\n\nQueue\nSynthetic job 1 Cancel ssed\nSynthetic job 2 ng\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 3903.664,
+          "response": {
+            "id": "chatcmpl-06c4hn153aliehn4utd0k9g",
+            "object": "chat.completion",
+            "created": 1795435726,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 283.548,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Working\n\nCompleted: 14\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        },
+        {
+          "model": "holo-3.1-9b-mlx",
+          "width": 1920,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 3896.095,
+          "response": {
+            "id": "chatcmpl-mawe0kbyx4rr9jezkh5dli",
+            "object": "chat.completion",
+            "created": 1795435730,
+            "model": "holo-3.1-9b-mlx",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 90,
+              "completion_tokens": 27,
+              "total_tokens": 117,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo-3.1-9b-mlx"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "reasoning_content",
+          "correct": true,
+          "final_content_correct": false,
+          "ocr": {
+            "wall_ms": 281.721,
+            "returncode": 0,
+            "text": "Autopaws Synthetic Workbench\n\nBatch processing\n\nGenerated fixture - no captured screen data\n\nStatus: Complete\n\nCompleted: 15\n\nQueue\nSynthetic job 1 Processed\nSynthetic job 2 Pending\nSynthetic job 3 Pending\n"
+          }
+        }
+      ]
+    },
+    "native27": {
+      "started_utc": "2026-11-23T12:06:17Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo4-27b-abliterix-oq6e",
+        "widths": [
+          960
+        ],
+        "samples": 0,
+        "binary": false,
+        "ocr": false,
+        "native": true,
+        "out": "/private/tmp/autopaws-model-native27"
+      },
+      "summary": [],
+      "records": [
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 5.438,
+          "error": "HTTP Error 400: Bad Request",
+          "detail": "{\n  \"error\": {\n    \"message\": \"Model 'holo4-27b-abliterix-oq6e' does not expose reasoning configuration.\",\n    \"type\": \"invalid_request\",\n    \"param\": \"reasoning\",\n    \"code\": \"invalid_value\"\n  }\n}",
+          "correct": false
+        }
+      ]
+    },
+    "probe27": {
+      "started_utc": "2026-11-23T12:05:30Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "holo4-27b-abliterix-oq6e",
+        "widths": [
+          960
+        ],
+        "samples": 0,
+        "binary": false,
+        "ocr": false,
+        "out": "/private/tmp/autopaws-model-probe27"
+      },
+      "summary": [],
+      "records": [
+        {
+          "model": "holo4-27b-abliterix-oq6e",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 3278.122,
+          "response": {
+            "id": "chatcmpl-n2crjpntszid808lzgx4",
+            "object": "chat.completion",
+            "created": 1795435530,
+            "model": "holo4-27b-abliterix-oq6e",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "",
+                  "reasoning_content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 128,
+              "completion_tokens": 27,
+              "total_tokens": 155,
+              "completion_tokens_details": {
+                "reasoning_tokens": 26
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "holo4-27b-abliterix-oq6e"
+          },
+          "parsed": null,
+          "correct": false
+        }
+      ]
+    },
+    "qwen2-binary": {
+      "started_utc": "2026-11-23T12:11:41Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3-vl-2b-instruct",
+        "widths": [
+          960
+        ],
+        "samples": 8,
+        "binary": true,
+        "ocr": false,
+        "native": false,
+        "explicit_mode": false,
+        "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "out": "/private/tmp/autopaws-model-qwen2-binary"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 8,
+          "median_ms": 583.1075000000001,
+          "min_ms": 519.111,
+          "max_ms": 647.784,
+          "correct": 8,
+          "final_content_correct": 8
+        }
+      ],
+      "records": [
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": false
+          },
+          "wall_ms": 662.085,
+          "response": {
+            "id": "chatcmpl-bbi79kv20lhij53bq081a",
+            "object": "chat.completion",
+            "created": 1795435901,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": false}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": false
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": true
+          },
+          "wall_ms": 530.03,
+          "response": {
+            "id": "chatcmpl-skflic3d735eialrf56j5",
+            "object": "chat.completion",
+            "created": 1795435901,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": true}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": true
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": false
+          },
+          "wall_ms": 639.069,
+          "response": {
+            "id": "chatcmpl-rjmg4cimlg8owo7k2tjhj",
+            "object": "chat.completion",
+            "created": 1795435902,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": false}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": false
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": true
+          },
+          "wall_ms": 531.291,
+          "response": {
+            "id": "chatcmpl-nhq6zolxf2epb49qjwnoxj",
+            "object": "chat.completion",
+            "created": 1795435903,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": true}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": true
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": false
+          },
+          "wall_ms": 639.005,
+          "response": {
+            "id": "chatcmpl-opxxlmfg1jszzt78bx9sg",
+            "object": "chat.completion",
+            "created": 1795435903,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": false}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": false
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": true
+          },
+          "wall_ms": 529.367,
+          "response": {
+            "id": "chatcmpl-qi31l2vatfisrzf2qq7m2a",
+            "object": "chat.completion",
+            "created": 1795435904,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": true}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": true
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 6,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": false
+          },
+          "wall_ms": 647.784,
+          "response": {
+            "id": "chatcmpl-a6825wk2mv53558b7vecb",
+            "object": "chat.completion",
+            "created": 1795435905,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": false}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": false
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 7,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": true
+          },
+          "wall_ms": 519.111,
+          "response": {
+            "id": "chatcmpl-f5nbzu1dtg8ut0ddz6thse",
+            "object": "chat.completion",
+            "created": 1795435906,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": true}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": true
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 8,
+          "phase": "warm_changing",
+          "prompt_variant": "initial",
+          "kind": "binary_two_image",
+          "expected": {
+            "changed": false
+          },
+          "wall_ms": 634.924,
+          "response": {
+            "id": "chatcmpl-y7ou1ra0qzc8mo6yeznlp",
+            "object": "chat.completion",
+            "created": 1795435906,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"changed\": false}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 48,
+              "completion_tokens": 6,
+              "total_tokens": 54,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "changed": false
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        }
+      ]
+    },
+    "qwen2-explicit": {
+      "started_utc": "2026-11-23T12:11:37Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3-vl-2b-instruct",
+        "widths": [
+          960
+        ],
+        "samples": 5,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "explicit_mode": true,
+        "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "out": "/private/tmp/autopaws-model-qwen2-explicit"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 5,
+          "median_ms": 463.436,
+          "min_ms": 460.335,
+          "max_ms": 475.03,
+          "correct": 5,
+          "final_content_correct": 5
+        }
+      ],
+      "records": [
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 511.834,
+          "response": {
+            "id": "chatcmpl-r66k8orf5ppnbh0lcvcec",
+            "object": "chat.completion",
+            "created": 1795435897,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 471.719,
+          "response": {
+            "id": "chatcmpl-qht36dwmu4lhi63eyy5cwq",
+            "object": "chat.completion",
+            "created": 1795435898,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 460.335,
+          "response": {
+            "id": "chatcmpl-qkcim97z7gs1agq9y8hl5u",
+            "object": "chat.completion",
+            "created": 1795435898,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 475.03,
+          "response": {
+            "id": "chatcmpl-vzpsrj0hw5o8lploju99fc",
+            "object": "chat.completion",
+            "created": 1795435899,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 463.436,
+          "response": {
+            "id": "chatcmpl-74xw5vvi87emfuz6oebf3n",
+            "object": "chat.completion",
+            "created": 1795435900,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 460.606,
+          "response": {
+            "id": "chatcmpl-8ofw7ubyswxete4mthyoc5",
+            "object": "chat.completion",
+            "created": 1795435900,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        }
+      ]
+    },
+    "qwen2-explicit1920": {
+      "started_utc": "2026-11-23T12:12:25Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3-vl-2b-instruct",
+        "widths": [
+          1920
+        ],
+        "samples": 5,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "explicit_mode": true,
+        "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "out": "/private/tmp/autopaws-model-qwen2-explicit1920"
+      },
+      "summary": [
+        {
+          "width": 1920,
+          "n": 5,
+          "median_ms": 1449.964,
+          "min_ms": 1442.037,
+          "max_ms": 1456.181,
+          "correct": 5,
+          "final_content_correct": 5
+        }
+      ],
+      "records": [
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 0,
+          "phase": "first",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 1502.471,
+          "response": {
+            "id": "chatcmpl-e8jqhw8etpppro6swwgdwe",
+            "object": "chat.completion",
+            "created": 1795435945,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 1,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1449.964,
+          "response": {
+            "id": "chatcmpl-v2nfz4tg7qmvrjmgkjr9j",
+            "object": "chat.completion",
+            "created": 1795435947,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 2,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1456.181,
+          "response": {
+            "id": "chatcmpl-va4dv0zkg2nai46leqcq",
+            "object": "chat.completion",
+            "created": 1795435948,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 3,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 1445.253,
+          "response": {
+            "id": "chatcmpl-liwdi419yvh8dmcug7mpq",
+            "object": "chat.completion",
+            "created": 1795435950,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 4,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1442.037,
+          "response": {
+            "id": "chatcmpl-v44sdnlpmbf2lehhp08be",
+            "object": "chat.completion",
+            "created": 1795435951,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 5,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1456.107,
+          "response": {
+            "id": "chatcmpl-wmvp8a8ho2bo8d4spj0ilm",
+            "object": "chat.completion",
+            "created": 1795435953,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        }
+      ]
+    },
+    "qwen2-explicit960": {
+      "started_utc": "2026-11-23T12:12:20Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3-vl-2b-instruct",
+        "widths": [
+          960
+        ],
+        "samples": 8,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "explicit_mode": true,
+        "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "out": "/private/tmp/autopaws-model-qwen2-explicit960"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 8,
+          "median_ms": 466.52200000000005,
+          "min_ms": 456.874,
+          "max_ms": 477.709,
+          "correct": 8,
+          "final_content_correct": 8
+        }
+      ],
+      "records": [
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 508.962,
+          "response": {
+            "id": "chatcmpl-64fb43b0e3y0h3cymaii",
+            "object": "chat.completion",
+            "created": 1795435940,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 473.079,
+          "response": {
+            "id": "chatcmpl-xotwvdceaobpbpum7zslrd",
+            "object": "chat.completion",
+            "created": 1795435941,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 456.874,
+          "response": {
+            "id": "chatcmpl-qjg2zfnlbvzs5ix8q5zw",
+            "object": "chat.completion",
+            "created": 1795435941,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 468.97,
+          "response": {
+            "id": "chatcmpl-lyuqdy7v5hgaraw86pxnd",
+            "object": "chat.completion",
+            "created": 1795435942,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 466.081,
+          "response": {
+            "id": "chatcmpl-04tou7ohj54ad6lmdg821cw",
+            "object": "chat.completion",
+            "created": 1795435942,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 466.963,
+          "response": {
+            "id": "chatcmpl-n742pc362navjx0tlm89tc",
+            "object": "chat.completion",
+            "created": 1795435943,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 6,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 16,
+            "primary_button": "Start"
+          },
+          "wall_ms": 463.592,
+          "response": {
+            "id": "chatcmpl-9egzk4bixhs7ejxy313k1k",
+            "object": "chat.completion",
+            "created": 1795435943,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 16, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 16,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 7,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 17,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 477.709,
+          "response": {
+            "id": "chatcmpl-rge23lp3jjlqg4t88ivjj",
+            "object": "chat.completion",
+            "created": 1795435944,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 17, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 17,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 8,
+          "phase": "warm_changing",
+          "prompt_variant": "explicit_mode",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 18,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 466.002,
+          "response": {
+            "id": "chatcmpl-8n4n2bu9hrp68zndt8u7xp",
+            "object": "chat.completion",
+            "created": 1795435944,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Complete\", \"completed\": 18, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 132,
+              "completion_tokens": 27,
+              "total_tokens": 159,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 18,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        }
+      ]
+    },
+    "qwen2-state": {
+      "started_utc": "2026-11-23T12:10:43Z",
+      "arguments": {
+        "base_url": "http://127.0.0.1:11434",
+        "model": "qwen3-vl-2b-instruct",
+        "widths": [
+          960,
+          1920
+        ],
+        "samples": 5,
+        "binary": false,
+        "ocr": false,
+        "native": false,
+        "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "out": "/private/tmp/autopaws-model-qwen2-state"
+      },
+      "summary": [
+        {
+          "width": 960,
+          "n": 5,
+          "median_ms": 455.625,
+          "min_ms": 451.197,
+          "max_ms": 530.371,
+          "correct": 1,
+          "final_content_correct": 1
+        },
+        {
+          "width": 1920,
+          "n": 5,
+          "median_ms": 1435.731,
+          "min_ms": 1431.779,
+          "max_ms": 1447.988,
+          "correct": 1,
+          "final_content_correct": 1
+        }
+      ],
+      "records": [
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 2714.539,
+          "response": {
+            "id": "chatcmpl-bkwv7woafx8is8cagct1w",
+            "object": "chat.completion",
+            "created": 1795435843,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 530.371,
+          "response": {
+            "id": "chatcmpl-n9ofm8tb7sdd7yrosubx7",
+            "object": "chat.completion",
+            "created": 1795435846,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 451.197,
+          "response": {
+            "id": "chatcmpl-kt08xcghfq5dd2tu5azje",
+            "object": "chat.completion",
+            "created": 1795435846,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 454.786,
+          "response": {
+            "id": "chatcmpl-iuq75mb9qpuuvb33jg8qg",
+            "object": "chat.completion",
+            "created": 1795435847,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 455.625,
+          "response": {
+            "id": "chatcmpl-nj3rfk2aldtxac16vu71e",
+            "object": "chat.completion",
+            "created": 1795435847,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 960,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 458.142,
+          "response": {
+            "id": "chatcmpl-ukzqvwhzjn3ljn6ch5t7t",
+            "object": "chat.completion",
+            "created": 1795435848,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 0,
+          "phase": "first",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "wall_ms": 1577.01,
+          "response": {
+            "id": "chatcmpl-82d5mp5nv1p5qvot4in0jy",
+            "object": "chat.completion",
+            "created": 1795435848,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dashboard\", \"status\": \"Ready\", \"completed\": 10, \"primary_button\": \"Start\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dashboard",
+            "status": "Ready",
+            "completed": 10,
+            "primary_button": "Start"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 1,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1435.731,
+          "response": {
+            "id": "chatcmpl-fh6r5myk3qx8a668st67",
+            "object": "chat.completion",
+            "created": 1795435850,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 11, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 11,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 2,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1447.988,
+          "response": {
+            "id": "chatcmpl-nrt06tdbnohtlea7hepc",
+            "object": "chat.completion",
+            "created": 1795435851,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 12, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 12,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 3,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "wall_ms": 1435.241,
+          "response": {
+            "id": "chatcmpl-7jvcs0ena4ejoltc8xkzm",
+            "object": "chat.completion",
+            "created": 1795435853,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Ready\", \"completed\": 13, \"primary_button\": \"Continue\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Ready",
+            "completed": 13,
+            "primary_button": "Continue"
+          },
+          "json_channel": "content",
+          "correct": true,
+          "final_content_correct": true
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 4,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "wall_ms": 1431.779,
+          "response": {
+            "id": "chatcmpl-z1txidcxjqrewj430lh21",
+            "object": "chat.completion",
+            "created": 1795435854,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Working\", \"completed\": 14, \"primary_button\": \"Pause\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Working",
+            "completed": 14,
+            "primary_button": "Pause"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        },
+        {
+          "model": "qwen3-vl-2b-instruct",
+          "width": 1920,
+          "sample": 5,
+          "phase": "warm_changing",
+          "kind": "state_json",
+          "expected": {
+            "mode": "dashboard",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "wall_ms": 1442.166,
+          "response": {
+            "id": "chatcmpl-6pkigigqagwx36niuwq7eq",
+            "object": "chat.completion",
+            "created": 1795435856,
+            "model": "qwen3-vl-2b-instruct",
+            "choices": [
+              {
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "{\"mode\": \"dialog\", \"status\": \"Complete\", \"completed\": 15, \"primary_button\": \"Restart\"}",
+                  "reasoning_content": "",
+                  "tool_calls": []
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 88,
+              "completion_tokens": 27,
+              "total_tokens": 115,
+              "completion_tokens_details": {
+                "reasoning_tokens": 0
+              }
+            },
+            "stats": {},
+            "system_fingerprint": "qwen3-vl-2b-instruct"
+          },
+          "parsed": {
+            "mode": "dialog",
+            "status": "Complete",
+            "completed": 15,
+            "primary_button": "Restart"
+          },
+          "json_channel": "content",
+          "correct": false,
+          "final_content_correct": false
+        }
+      ]
+    }
+  },
+  "cleanup": {
+    "only_original_model_loaded": "holo4-27b-abliterix-oq6e",
+    "context_length": 8192,
+    "parallel": 4,
+    "ttl": null,
+    "status": "idle",
+    "active_requests": 0
+  }
+}

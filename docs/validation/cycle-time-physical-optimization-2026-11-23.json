@@ -1,0 +1,782 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "kind": "physical_snapshot_optimization",
+  "host": {
+    "cpu": "Apple M3 Ultra",
+    "memory_gib": 256,
+    "macos": "26.7.3",
+    "go": "1.27.4",
+    "ffmpeg": "9.0.2"
+  },
+  "target": "Owner-identified Windows machine; only permitted capture/host metadata retained.",
+  "privacy": {
+    "target_input_sent": false,
+    "target_files_or_settings_changed": false,
+    "target_scripts_installed": false,
+    "screenshots_retained": false,
+    "ocr_retained": false,
+    "model_access_to_target_images": false
+  },
+  "hardware": {
+    "capture": "UGREEN 15389 / AVFoundation",
+    "resolution": [
+      1920,
+      1080
+    ],
+    "autocrop": false,
+    "audio": "off"
+  },
+  "method": "Sequential baseline then optimized MCP clients against the same optimized daemon. Both use the same physical capture pipeline; old MCP still performs get_device_info discovery. No model inference ran concurrently.",
+  "binaries": {
+    "baseline_mcp": {
+      "path": "/private/tmp/autopaws-cycle-before-mcp",
+      "sha256": "50c89ab3bb5df2c6666ecabce634215d7511c338e148449d09f72f75a684c9d1"
+    },
+    "optimized_mcp": {
+      "path": "/private/tmp/autopaws-cycle-after-final-mcp",
+      "sha256": "667e92beb41b990e3d80efc9a5aac5d4554441cf02a10302098e6be2fbc9350b"
+    },
+    "daemon": {
+      "path": "/private/tmp/autopaws-cycle-after-final-kvm",
+      "sha256": "90608613b2d600029474af0985cf08df00b5882dc9c3ff4ef23d8c2ac0399614"
+    }
+  },
+  "runs": {
+    "before": {
+      "recorded_at_utc": "2026-11-23T12:49:31Z",
+      "host": {
+        "os": "Darwin",
+        "release": "25.6.0",
+        "architecture": "arm64"
+      },
+      "method": "Sequential calls; monotonic host round-trip milliseconds; no target input; images only in memory.",
+      "percentiles": "Linear interpolation between sorted samples.",
+      "benchmarks": {
+        "api_ping": {
+          "count": 10,
+          "min_ms": 0.1916250039357692,
+          "p50_ms": 0.28022899641655385,
+          "p90_ms": 4.916462479741309,
+          "p95_ms": 9.49335624318336,
+          "max_ms": 14.070250006625429,
+          "samples_ms": [
+            14.070250006625429,
+            3.8993749767541885,
+            1.8286250124219805,
+            0.2902910055126995,
+            0.21504200412891805,
+            0.25370900402776897,
+            1.1546669993549585,
+            0.2701669873204082,
+            0.1916250039357692,
+            0.22537499899044633
+          ],
+          "failures": []
+        },
+        "api_get_device_info": {
+          "count": 5,
+          "min_ms": 122.62783400365151,
+          "p50_ms": 123.33924998529255,
+          "p90_ms": 191.56514179776423,
+          "p95_ms": 212.7753834007308,
+          "max_ms": 233.98562500369735,
+          "samples_ms": [
+            233.98562500369735,
+            127.93441698886454,
+            122.62783400365151,
+            123.15658401348628,
+            123.33924998529255
+          ],
+          "failures": []
+        },
+        "api_capture_frame_warmup": {
+          "count": 1,
+          "min_ms": 673.1695829948876,
+          "p50_ms": 673.1695829948876,
+          "p90_ms": 673.1695829948876,
+          "p95_ms": 673.1695829948876,
+          "max_ms": 673.1695829948876,
+          "samples_ms": [
+            673.1695829948876
+          ],
+          "failures": []
+        },
+        "api_capture_frame_warm": {
+          "count": 20,
+          "min_ms": 43.03416598122567,
+          "p50_ms": 62.66787498316262,
+          "p90_ms": 69.36700031219516,
+          "p95_ms": 69.42524374026107,
+          "max_ms": 69.87637499696575,
+          "samples_ms": [
+            43.03416598122567,
+            47.781041997950524,
+            54.59174999850802,
+            63.262624986236915,
+            69.40149998990819,
+            55.179083021357656,
+            68.29612501314841,
+            64.55783298588358,
+            62.07312498008832,
+            55.03720900742337,
+            63.532792002661154,
+            55.018958024447784,
+            69.87637499696575,
+            55.332374991849065,
+            67.43716599885374,
+            54.96441700961441,
+            66.28016597824171,
+            66.45416698302142,
+            50.197500007925555,
+            69.36316701467149
+          ],
+          "failures": []
+        },
+        "mcp_start_and_initialize_ms": 8.303084003273398,
+        "mcp_capture_screen_warm": {
+          "count": 20,
+          "min_ms": 173.24191698571667,
+          "p50_ms": 198.4253545087995,
+          "p90_ms": 210.82317500549834,
+          "p95_ms": 211.07418334577233,
+          "max_ms": 215.27904199319892,
+          "samples_ms": [
+            181.6910000052303,
+            196.88429200323299,
+            195.16674999613315,
+            183.7795419851318,
+            210.81987500656396,
+            173.24191698571667,
+            198.85441698716022,
+            201.4950409939047,
+            190.906708012335,
+            208.13108299626037,
+            203.58470900100656,
+            208.36287501151673,
+            189.83941597980447,
+            196.29104199702851,
+            199.33112498256378,
+            215.27904199319892,
+            185.6954999966547,
+            210.85287499590777,
+            198.53283400880173,
+            198.31787500879727
+          ],
+          "failures": []
+        }
+      },
+      "device_metadata": {
+        "config": {
+          "screen_width": 1920,
+          "screen_height": 1080,
+          "serial_baud": 9600,
+          "keyboard_layout": "us104",
+          "mouse_button_mode": "relative"
+        },
+        "capture": {
+          "requested_width": 1920,
+          "requested_height": 1080,
+          "autocrop": false,
+          "running": false,
+          "generation": 1
+        },
+        "capture_device_count": 1
+      },
+      "frame_difference": {
+        "resize": [
+          480,
+          270
+        ],
+        "luma_threshold": 12,
+        "processing": "JPEG base64/decode, grayscale, bilinear resize, absolute delta; outside API timing.",
+        "cpu": {
+          "count": 20,
+          "min_ms": 4.711042012786493,
+          "p50_ms": 5.083458992885426,
+          "p90_ms": 5.316083607613109,
+          "p95_ms": 5.561728851171213,
+          "max_ms": 9.281375008868054,
+          "samples_ms": [
+            9.281375008868054,
+            4.711042012786493,
+            4.95975001831539,
+            5.365958000766113,
+            4.942582978401333,
+            4.802625015145168,
+            5.105458985781297,
+            5.235624994384125,
+            5.148917000042275,
+            5.061458999989554,
+            5.205458001000807,
+            4.973041010089219,
+            5.310542008373886,
+            5.148166994331405,
+            4.835667001316324,
+            5.023874982725829,
+            4.745958023704588,
+            5.119125009514391,
+            5.012457986595109,
+            5.219041020609438
+          ]
+        },
+        "frames": [
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          }
+        ]
+      }
+    },
+    "after": {
+      "recorded_at_utc": "2026-11-23T12:49:38Z",
+      "host": {
+        "os": "Darwin",
+        "release": "25.6.0",
+        "architecture": "arm64"
+      },
+      "method": "Sequential calls; monotonic host round-trip milliseconds; no target input; images only in memory.",
+      "percentiles": "Linear interpolation between sorted samples.",
+      "benchmarks": {
+        "api_ping": {
+          "count": 10,
+          "min_ms": 0.2310419804416597,
+          "p50_ms": 0.30366648570634425,
+          "p90_ms": 1.087771216407417,
+          "p95_ms": 2.77180261618923,
+          "max_ms": 4.45583401597105,
+          "samples_ms": [
+            4.45583401597105,
+            0.34316699020564556,
+            0.2702919882722199,
+            0.2500000118743628,
+            0.3027079801540822,
+            0.3046249912586063,
+            0.6982500199228525,
+            0.29016699409112334,
+            0.2310419804416597,
+            0.7135420164559036
+          ],
+          "failures": []
+        },
+        "api_get_device_info": {
+          "count": 5,
+          "min_ms": 125.76562497997656,
+          "p50_ms": 128.4726669837255,
+          "p90_ms": 157.233491394436,
+          "p95_ms": 166.05176619486883,
+          "max_ms": 174.87004099530168,
+          "samples_ms": [
+            174.87004099530168,
+            130.77866699313745,
+            127.5668749876786,
+            128.4726669837255,
+            125.76562497997656
+          ],
+          "failures": []
+        },
+        "api_capture_frame_warmup": {
+          "count": 1,
+          "min_ms": 74.65583400335163,
+          "p50_ms": 74.65583400335163,
+          "p90_ms": 74.65583400335163,
+          "p95_ms": 74.65583400335163,
+          "max_ms": 74.65583400335163,
+          "samples_ms": [
+            74.65583400335163
+          ],
+          "failures": []
+        },
+        "api_capture_frame_warm": {
+          "count": 20,
+          "min_ms": 49.32954197283834,
+          "p50_ms": 61.82972900569439,
+          "p90_ms": 69.25983330002055,
+          "p95_ms": 71.45150385185843,
+          "max_ms": 71.52599998516962,
+          "samples_ms": [
+            69.01674999971874,
+            61.81670801015571,
+            49.823041015770286,
+            62.5327090092469,
+            71.44758300273679,
+            61.84275000123307,
+            53.98870899807662,
+            65.73624999145977,
+            51.10308399889618,
+            65.75070900726132,
+            65.90416698600166,
+            66.12333399243653,
+            49.32954197283834,
+            71.52599998516962,
+            51.65225002565421,
+            66.22558398521505,
+            61.332125012995675,
+            60.01820802339353,
+            61.548917001346126,
+            54.8485420003999
+          ],
+          "failures": []
+        },
+        "mcp_start_and_initialize_ms": 353.8379170058761,
+        "mcp_capture_screen_warm": {
+          "count": 20,
+          "min_ms": 51.722000003792346,
+          "p50_ms": 66.94564600184094,
+          "p90_ms": 76.76791670091916,
+          "p95_ms": 77.1730586522608,
+          "max_ms": 81.65737500530668,
+          "samples_ms": [
+            61.320874985540286,
+            51.722000003792346,
+            67.24445801228285,
+            73.5277500061784,
+            58.65308301872574,
+            76.7491250007879,
+            66.64683399139903,
+            68.72554199071601,
+            57.01033299556002,
+            69.56637499388307,
+            59.76345800445415,
+            81.65737500530668,
+            56.94295800640248,
+            70.25533300475217,
+            60.15224999282509,
+            75.05379201029427,
+            59.62379102129489,
+            69.97183401836082,
+            56.64975001127459,
+            76.9370420021005
+          ],
+          "failures": []
+        }
+      },
+      "device_metadata": {
+        "config": {
+          "screen_width": 1920,
+          "screen_height": 1080,
+          "serial_baud": 9600,
+          "keyboard_layout": "us104",
+          "mouse_button_mode": "relative"
+        },
+        "capture": {
+          "requested_width": 1920,
+          "requested_height": 1080,
+          "autocrop": false,
+          "running": true,
+          "generation": 1,
+          "format": {
+            "width": 1920,
+            "height": 1080,
+            "fourcc": 1196444237,
+            "bytes_per_line": 0,
+            "size_image": 0
+          }
+        },
+        "capture_device_count": 1
+      },
+      "frame_difference": {
+        "resize": [
+          480,
+          270
+        ],
+        "luma_threshold": 12,
+        "processing": "JPEG base64/decode, grayscale, bilinear resize, absolute delta; outside API timing.",
+        "cpu": {
+          "count": 20,
+          "min_ms": 4.916541976854205,
+          "p50_ms": 5.209645998547785,
+          "p90_ms": 5.661954803508706,
+          "p95_ms": 5.962560766784011,
+          "max_ms": 9.686917008366436,
+          "samples_ms": [
+            9.686917008366436,
+            5.558665987337008,
+            5.294582981150597,
+            5.143166985362768,
+            5.766542017227039,
+            5.650334001984447,
+            5.190416006371379,
+            5.305625003529713,
+            4.916541976854205,
+            5.179917003260925,
+            5.1976669928990304,
+            5.401666974648833,
+            4.989333014236763,
+            5.28891701833345,
+            5.041333002736792,
+            5.2216250041965395,
+            5.380541988415644,
+            5.092165985843167,
+            5.156250001164153,
+            5.1593329990282655
+          ]
+        },
+        "frames": [
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          },
+          {
+            "dimensions": [
+              1920,
+              1080
+            ],
+            "jpeg_bytes": 33833,
+            "mean_absolute_luma_delta": 0.0,
+            "changed_fraction_threshold_12": 0.0
+          }
+        ]
+      }
+    }
+  },
+  "cleanup": {
+    "daemon_exit_code": 0,
+    "capture_images_or_ocr_retained": false
+  },
+  "limits": [
+    "Twenty MCP snapshot samples per client on one host/card/target session.",
+    "Medians include TCP/stdout/image delivery; exclude MCP startup.",
+    "Capture timing on macOS estimates pipe receipt; true display latency is not measured.",
+    "Model condition checks use separate synthetic data to preserve Windows target restrictions."
+  ]
+}

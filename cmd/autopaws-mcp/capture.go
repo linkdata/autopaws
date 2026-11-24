@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image/jpeg"
@@ -19,9 +20,11 @@ type capturedScreen struct {
 // coordinates. Only a tool that successfully returns an image may commit them.
 func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScreen, error) {
 	var frame struct {
-		JPEG   []byte `json:"jpeg_b64"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
+		JPEG         []byte          `json:"jpeg_b64"`
+		Width        int             `json:"width"`
+		Height       int             `json:"height"`
+		TargetWidth  json.RawMessage `json:"target_width"`
+		TargetHeight json.RawMessage `json:"target_height"`
 	}
 	if err := owner.caller.Call(ctx, "capture_frame", struct{}{}, &frame); err != nil {
 		return capturedScreen{}, err
@@ -36,17 +39,25 @@ func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScre
 	if image.Width != frame.Width || image.Height != frame.Height {
 		return capturedScreen{}, errors.New("captured JPEG dimensions do not match capture metadata")
 	}
-	var info struct {
-		Config struct {
-			ScreenWidth  int `json:"screen_width"`
-			ScreenHeight int `json:"screen_height"`
-		} `json:"config"`
-	}
-	if err := owner.caller.Call(ctx, "get_device_info", struct{}{}, &info); err != nil {
-		return capturedScreen{}, err
-	}
-	if info.Config.ScreenWidth <= 0 || info.Config.ScreenHeight <= 0 {
-		return capturedScreen{}, errors.New("device info returned invalid target screen dimensions")
+	var targetWidth, targetHeight int
+	if len(frame.TargetWidth) == 0 && len(frame.TargetHeight) == 0 {
+		// Older daemons omit both target dimensions. Keep their coordinate mapping
+		// compatible, without rediscovering capture devices on the current path.
+		var info struct {
+			Config struct {
+				ScreenWidth  int `json:"screen_width"`
+				ScreenHeight int `json:"screen_height"`
+			} `json:"config"`
+		}
+		if err := owner.caller.Call(ctx, "get_device_info", struct{}{}, &info); err != nil {
+			return capturedScreen{}, err
+		}
+		targetWidth, targetHeight = info.Config.ScreenWidth, info.Config.ScreenHeight
+		if targetWidth <= 0 || targetHeight <= 0 {
+			return capturedScreen{}, errors.New("device info returned invalid target screen dimensions")
+		}
+	} else if json.Unmarshal(frame.TargetWidth, &targetWidth) != nil || json.Unmarshal(frame.TargetHeight, &targetHeight) != nil || targetWidth <= 0 || targetHeight <= 0 {
+		return capturedScreen{}, errors.New("capture returned invalid target screen dimensions")
 	}
 	if err := ctx.Err(); err != nil {
 		return capturedScreen{}, err
@@ -56,7 +67,7 @@ func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScre
 			return capturedScreen{}, err
 		}
 	}
-	return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, info.Config.ScreenWidth, info.Config.ScreenHeight}}, nil
+	return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, targetWidth, targetHeight}}, nil
 }
 
 func (owner *toolServer) captureScreen(ctx context.Context, request *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, error) {

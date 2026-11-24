@@ -1,0 +1,2657 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "kind": "exploratory_cycle_time_benchmark",
+  "source_commit": "27cd43e0983ff461187703996a83f5e82149971d",
+  "host": {
+    "os": "macOS",
+    "version": "26.7.3",
+    "build": "25G342",
+    "architecture": "arm64",
+    "cpu": "Apple M3 Ultra",
+    "memory_gib": 256,
+    "go": "1.27.4",
+    "ffmpeg": "9.0.2"
+  },
+  "target": {
+    "os": "Windows, owner identified",
+    "version": "not recorded"
+  },
+  "privacy": {
+    "screenshots_retained": false,
+    "ocr_retained": false,
+    "screen_contents_referenced": false,
+    "target_scripts_installed": false,
+    "target_files_or_settings_changed": false,
+    "retained": "Actions, pass/fail, timing and host/capture metadata only."
+  },
+  "hardware": {
+    "capture": "UGREEN 15389 / AVFoundation",
+    "capture_dimensions": [
+      1920,
+      1080
+    ],
+    "serial": "CH340/CH9329",
+    "baud": 9600,
+    "mouse_button_mode": "relative",
+    "autocrop": false,
+    "audio": "off"
+  },
+  "binaries": {
+    "kvm": {
+      "sha256": "1c1bf158130d4fc3a6a5235cf3e89450f2335710070649bed50ddd5899d1b6f2",
+      "build_command": "CGO_ENABLED=0 go build -trimpath -o /private/tmp/autopaws-cycle-kvm ./cmd/autopaws-kvm"
+    },
+    "mcp": {
+      "sha256": "50c89ab3bb5df2c6666ecabce634215d7511c338e148449d09f72f75a684c9d1",
+      "build_command": "CGO_ENABLED=0 go build -trimpath -o /private/tmp/autopaws-cycle-mcp ./cmd/autopaws-mcp"
+    }
+  },
+  "initial_signal_not_ready": {
+    "capture_timeouts": 3,
+    "capture_unavailable": 1,
+    "excluded_from_ready_signal_samples": true,
+    "owner_confirmed_ready_before_recorded_benchmarks": true
+  },
+  "snapshot": {
+    "recorded_at_utc": "2026-11-23T11:56:49Z",
+    "host": {
+      "os": "Darwin",
+      "release": "25.6.0",
+      "architecture": "arm64"
+    },
+    "method": "Sequential calls; monotonic host round-trip milliseconds; no target input; images only in memory.",
+    "percentiles": "Linear interpolation between sorted samples.",
+    "benchmarks": {
+      "api_ping": {
+        "count": 20,
+        "min_ms": 0.17291700351051986,
+        "p50_ms": 0.22664600692223758,
+        "p90_ms": 0.582283103722148,
+        "p95_ms": 1.027481886558238,
+        "max_ms": 5.39079200825654,
+        "samples_ms": [
+          5.39079200825654,
+          0.3151660203002393,
+          0.26804200024344027,
+          0.5583330057561398,
+          0.7978339854162186,
+          0.4019170009996742,
+          0.30504202004522085,
+          0.24604200734756887,
+          0.21508400095626712,
+          0.2160829899366945,
+          0.20670899539254606,
+          0.2556249964982271,
+          0.19208301091566682,
+          0.19699998665601015,
+          0.1795839925762266,
+          0.17708400264382362,
+          0.17291700351051986,
+          0.18079200526699424,
+          0.19541700021363795,
+          0.23720902390778065
+        ],
+        "failures": []
+      },
+      "api_get_device_info": {
+        "count": 10,
+        "min_ms": 129.51537501066923,
+        "p50_ms": 132.60825000179466,
+        "p90_ms": 146.95620480342765,
+        "p95_ms": 186.86049839889156,
+        "max_ms": 226.76479199435562,
+        "samples_ms": [
+          226.76479199435562,
+          131.73012499464676,
+          130.93308301176876,
+          133.4265420155134,
+          138.0885840044357,
+          133.14033299684525,
+          130.27791600325145,
+          132.07616700674407,
+          129.51537501066923,
+          136.93954201880842
+        ],
+        "failures": []
+      },
+      "api_capture_frame_after_11s_idle": {
+        "count": 1,
+        "min_ms": 571.9171249947976,
+        "p50_ms": 571.9171249947976,
+        "p90_ms": 571.9171249947976,
+        "p95_ms": 571.9171249947976,
+        "max_ms": 571.9171249947976,
+        "samples_ms": [
+          571.9171249947976
+        ],
+        "failures": []
+      },
+      "api_capture_frame_warm": {
+        "count": 30,
+        "min_ms": 50.20016600610688,
+        "p50_ms": 57.85997900238726,
+        "p90_ms": 71.45749970222823,
+        "p95_ms": 72.33336631470593,
+        "max_ms": 77.98608299344778,
+        "samples_ms": [
+          62.52679097815417,
+          77.98608299344778,
+          55.15100000775419,
+          63.11054201796651,
+          57.347207999555394,
+          68.48241601255722,
+          57.693708018632606,
+          59.08133299089968,
+          68.87641697539948,
+          54.66220801463351,
+          72.94566600467078,
+          57.77737501193769,
+          57.88708300678991,
+          67.60329101234674,
+          56.54466699343175,
+          67.64162500621751,
+          56.734834011876956,
+          53.32866698154248,
+          70.01937500899658,
+          55.148292012745515,
+          70.37654201849364,
+          56.16766700404696,
+          57.83287499798462,
+          70.14654198428616,
+          54.9403750046622,
+          56.66329199448228,
+          71.5850000269711,
+          50.20016600610688,
+          71.44333299947903,
+          52.10304100182839
+        ],
+        "failures": []
+      },
+      "mcp_start_and_initialize_ms": 371.9778750091791,
+      "mcp_capture_screen_warm": {
+        "count": 10,
+        "min_ms": 183.9535409817472,
+        "p50_ms": 198.8488745118957,
+        "p90_ms": 207.38703298848122,
+        "p95_ms": 207.53587049548514,
+        "max_ms": 207.68470800248906,
+        "samples_ms": [
+          195.48387499526143,
+          200.06137498421595,
+          192.56420800229535,
+          207.3539579869248,
+          207.68470800248906,
+          183.9535409817472,
+          199.73016600124538,
+          201.50462500168942,
+          197.96758302254602,
+          194.1340829944238
+        ],
+        "failures": []
+      }
+    },
+    "device_metadata": {
+      "config": {
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "serial_baud": 9600,
+        "keyboard_layout": "us104",
+        "mouse_button_mode": "relative"
+      },
+      "capture": {
+        "requested_width": 1920,
+        "requested_height": 1080,
+        "autocrop": false,
+        "running": false,
+        "generation": 1
+      },
+      "capture_device_count": 1
+    },
+    "cold_capture_note": "Cold only if no other capture subscriber/request kept the source running.",
+    "frame_difference": {
+      "resize": [
+        480,
+        270
+      ],
+      "luma_threshold": 12,
+      "processing": "JPEG base64/decode, grayscale, bilinear resize, absolute delta; outside API timing.",
+      "cpu": {
+        "count": 30,
+        "min_ms": 4.681292019085959,
+        "p50_ms": 5.350438004825264,
+        "p90_ms": 5.74893310549669,
+        "p95_ms": 5.986279096396173,
+        "max_ms": 18.68812501197681,
+        "samples_ms": [
+          18.68812501197681,
+          5.5538749729748815,
+          5.182707973290235,
+          4.6894999977666885,
+          4.831833008211106,
+          4.701624973677099,
+          4.878583014942706,
+          5.235958000412211,
+          5.782458989415318,
+          4.681292019085959,
+          5.077249981695786,
+          5.08716597687453,
+          5.323833000147715,
+          5.674459011061117,
+          5.5459580034948885,
+          5.346667021512985,
+          6.153041002107784,
+          5.196375015657395,
+          5.354208988137543,
+          5.376916989916936,
+          5.666542012477294,
+          5.222458014031872,
+          5.370083992602304,
+          5.564374994719401,
+          5.54383298731409,
+          5.3138749790377915,
+          5.745208007283509,
+          5.261416983557865,
+          5.5248749849852175,
+          5.429790995549411
+        ]
+      },
+      "frames": [
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        },
+        {
+          "dimensions": [
+            1920,
+            1080
+          ],
+          "jpeg_bytes": 33761,
+          "mean_absolute_luma_delta": 0.0,
+          "changed_fraction_threshold_12": 0.0
+        }
+      ]
+    }
+  },
+  "actions": {
+    "api": {
+      "recorded_at_utc": "2026-11-23T12:01:59Z",
+      "backend": "api",
+      "method": "Fresh baseline before input; sequential fresh-frame polling until threshold or timeout; 480x270 bilinear grayscale; luma delta>12.",
+      "thresholds": {
+        "idle_keyboard": 0.001,
+        "idle_pointer": 2e-05,
+        "keyboard": 0.001,
+        "pointer": 2e-05
+      },
+      "timeout_seconds": 1,
+      "limits": [
+        "Pixel change does not establish causality, semantic completion, or true HDMI capture time.",
+        "macOS upstream video buffering is included but unmeasured; polling adds quantization.",
+        "Detection includes client JPEG decode and pixel comparison, excludes baseline acquisition and controller LLM latency.",
+        "Idle controls calibrate both thresholds on this scene, not all possible UI activity.",
+        "Input acknowledgement means input-call completion and host serial pacing; it proves neither UART completion nor target acknowledgement."
+      ],
+      "groups": {
+        "idle_keyboard": {
+          "attempts": 10,
+          "changes": 0,
+          "detection": {
+            "count": 0
+          },
+          "baseline_plus_detection": {
+            "count": 0
+          },
+          "input_ack": {
+            "count": 0
+          },
+          "rows": [
+            {
+              "action": null,
+              "baseline_ms": 691.2676249921788,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1072.3592909926083,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 56.72349999076687,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1075.300917000277,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 58.40733298100531,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1009.3771670071874,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 56.51933400076814,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1006.6220000153407,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 60.88870798703283,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1072.0479169976898,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 61.752500012516975,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1075.4502499767113,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 62.372832995606586,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1067.5041249778587,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 59.42862498341128,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1012.3217920190655,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 51.46066698944196,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1006.9654580147471,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 70.77804100117646,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1056.8908340064809,
+              "polls": 16
+            }
+          ]
+        },
+        "idle_pointer": {
+          "attempts": 10,
+          "changes": 0,
+          "detection": {
+            "count": 0
+          },
+          "baseline_plus_detection": {
+            "count": 0
+          },
+          "input_ack": {
+            "count": 0
+          },
+          "rows": [
+            {
+              "action": null,
+              "baseline_ms": 76.19137500296347,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1068.3935419947375,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 55.3879159851931,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1006.3990000053309,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 74.73629197920673,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1057.1747079957277,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 75.17108399770223,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1057.509750011377,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 73.41633300529793,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1055.2723339933436,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 76.84541700291447,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1004.2941249848809,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 65.46408298891038,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1066.1479590053204,
+              "polls": 16
+            },
+            {
+              "action": null,
+              "baseline_ms": 52.00879101175815,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1002.6705839845818,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 69.63625000207685,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1000.1406660012435,
+              "polls": 15
+            },
+            {
+              "action": null,
+              "baseline_ms": 60.08937500882894,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1014.906541997334,
+              "polls": 15
+            }
+          ]
+        },
+        "keyboard": {
+          "attempts": 20,
+          "changes": 20,
+          "detection": {
+            "count": 20,
+            "min_ms": 226.90108401002362,
+            "p50_ms": 326.5709794941358,
+            "p90_ms": 404.4069788069464,
+            "p95_ms": 406.66499519284116,
+            "max_ms": 433.4683750057593,
+            "samples_ms": [
+              294.07291699317284,
+              400.14683300978504,
+              243.00958300591446,
+              388.188832992455,
+              266.43341698218137,
+              405.25429099216126,
+              240.36691698711365,
+              380.95020898617804,
+              261.445709009422,
+              359.0690419950988,
+              248.61829198198393,
+              394.66741698561236,
+              250.18820801051334,
+              404.3128330085892,
+              240.21120800171047,
+              389.17837498593144,
+              226.90108401002362,
+              402.5614999991376,
+              257.6387079898268,
+              433.4683750057593
+            ]
+          },
+          "baseline_plus_detection": {
+            "count": 20,
+            "min_ms": 306.1382090090774,
+            "p50_ms": 395.4026874998817,
+            "p90_ms": 483.37313299125526,
+            "p95_ms": 492.7957372041419,
+            "max_ms": 513.4279170015361,
+            "samples_ms": [
+              352.56058399681933,
+              491.70983300427906,
+              318.9834159857128,
+              465.83070800988935,
+              353.53137500351295,
+              472.5352079840377,
+              306.1382090090774,
+              461.17958397371694,
+              348.71816699160263,
+              437.2739999962505,
+              343.91545900143683,
+              447.32404200476594,
+              341.72416699584574,
+              482.4468329898082,
+              317.1287910081446,
+              458.40462498017587,
+              306.2080840172712,
+              464.0309590031393,
+              331.0725000046659,
+              513.4279170015361
+            ]
+          },
+          "input_ack": {
+            "count": 20,
+            "min_ms": 44.13220801507123,
+            "p50_ms": 47.11687499366235,
+            "p90_ms": 48.30613749218173,
+            "p95_ms": 48.3653854142176,
+            "max_ms": 48.97595799411647,
+            "samples_ms": [
+              46.72595800366253,
+              44.13220801507123,
+              46.08204201213084,
+              48.30312498961575,
+              47.50779198366217,
+              46.54795798705891,
+              48.97595799411647,
+              48.20541699882597,
+              48.33325001527555,
+              46.31979201803915,
+              44.796082976972684,
+              47.612166992621496,
+              48.02075002226047,
+              44.42595801083371,
+              48.04199998034164,
+              47.7518750121817,
+              46.05974999140017,
+              45.13358298572712,
+              48.11754100956023,
+              46.16945798625238
+            ]
+          },
+          "rows": [
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 58.48766700364649,
+              "input_ack_ms": 46.72595800366253,
+              "changed": true,
+              "action_to_detection_ms": 294.07291699317284,
+              "observed_elapsed_ms": 294.07291699317284,
+              "polls": 4
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 91.56299999449402,
+              "input_ack_ms": 44.13220801507123,
+              "changed": true,
+              "action_to_detection_ms": 400.14683300978504,
+              "observed_elapsed_ms": 400.14683300978504,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 75.97383297979832,
+              "input_ack_ms": 46.08204201213084,
+              "changed": true,
+              "action_to_detection_ms": 243.00958300591446,
+              "observed_elapsed_ms": 243.00958300591446,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 77.64187501743436,
+              "input_ack_ms": 48.30312498961575,
+              "changed": true,
+              "action_to_detection_ms": 388.188832992455,
+              "observed_elapsed_ms": 388.188832992455,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 87.09795802133158,
+              "input_ack_ms": 47.50779198366217,
+              "changed": true,
+              "action_to_detection_ms": 266.43341698218137,
+              "observed_elapsed_ms": 266.43341698218137,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 67.28091699187644,
+              "input_ack_ms": 46.54795798705891,
+              "changed": true,
+              "action_to_detection_ms": 405.25429099216126,
+              "observed_elapsed_ms": 405.25429099216126,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 65.77129202196375,
+              "input_ack_ms": 48.97595799411647,
+              "changed": true,
+              "action_to_detection_ms": 240.36691698711365,
+              "observed_elapsed_ms": 240.36691698711365,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 80.2293749875389,
+              "input_ack_ms": 48.20541699882597,
+              "changed": true,
+              "action_to_detection_ms": 380.95020898617804,
+              "observed_elapsed_ms": 380.95020898617804,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 87.27245798218064,
+              "input_ack_ms": 48.33325001527555,
+              "changed": true,
+              "action_to_detection_ms": 261.445709009422,
+              "observed_elapsed_ms": 261.445709009422,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 78.20495800115168,
+              "input_ack_ms": 46.31979201803915,
+              "changed": true,
+              "action_to_detection_ms": 359.0690419950988,
+              "observed_elapsed_ms": 359.0690419950988,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 95.2971670194529,
+              "input_ack_ms": 44.796082976972684,
+              "changed": true,
+              "action_to_detection_ms": 248.61829198198393,
+              "observed_elapsed_ms": 248.61829198198393,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 52.65662501915358,
+              "input_ack_ms": 47.612166992621496,
+              "changed": true,
+              "action_to_detection_ms": 394.66741698561236,
+              "observed_elapsed_ms": 394.66741698561236,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 91.5359589853324,
+              "input_ack_ms": 48.02075002226047,
+              "changed": true,
+              "action_to_detection_ms": 250.18820801051334,
+              "observed_elapsed_ms": 250.18820801051334,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 78.13399998121895,
+              "input_ack_ms": 44.42595801083371,
+              "changed": true,
+              "action_to_detection_ms": 404.3128330085892,
+              "observed_elapsed_ms": 404.3128330085892,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 76.91758300643414,
+              "input_ack_ms": 48.04199998034164,
+              "changed": true,
+              "action_to_detection_ms": 240.21120800171047,
+              "observed_elapsed_ms": 240.21120800171047,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 69.22624999424443,
+              "input_ack_ms": 47.7518750121817,
+              "changed": true,
+              "action_to_detection_ms": 389.17837498593144,
+              "observed_elapsed_ms": 389.17837498593144,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 79.30700000724755,
+              "input_ack_ms": 46.05974999140017,
+              "changed": true,
+              "action_to_detection_ms": 226.90108401002362,
+              "observed_elapsed_ms": 226.90108401002362,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 61.46945900400169,
+              "input_ack_ms": 45.13358298572712,
+              "changed": true,
+              "action_to_detection_ms": 402.5614999991376,
+              "observed_elapsed_ms": 402.5614999991376,
+              "polls": 5
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 73.43379201483913,
+              "input_ack_ms": 48.11754100956023,
+              "changed": true,
+              "action_to_detection_ms": 257.6387079898268,
+              "observed_elapsed_ms": 257.6387079898268,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 79.95954199577682,
+              "input_ack_ms": 46.16945798625238,
+              "changed": true,
+              "action_to_detection_ms": 433.4683750057593,
+              "observed_elapsed_ms": 433.4683750057593,
+              "polls": 6
+            }
+          ]
+        },
+        "pointer": {
+          "attempts": 20,
+          "changes": 20,
+          "detection": {
+            "count": 20,
+            "min_ms": 124.60433298838325,
+            "p50_ms": 141.2789169989992,
+            "p90_ms": 167.45070389588363,
+            "p95_ms": 171.62185864290223,
+            "max_ms": 171.97937500895932,
+            "samples_ms": [
+              171.97937500895932,
+              145.26037499308586,
+              145.220167003572,
+              154.36279098503292,
+              157.25779099739157,
+              152.94858400011435,
+              164.83649998554029,
+              158.02904198062606,
+              124.60433298838325,
+              130.56445799884386,
+              131.75412500277162,
+              136.53216700186022,
+              134.9504169775173,
+              137.3376669944264,
+              136.28791700466536,
+              166.9893329963088,
+              130.80816599540412,
+              171.60304199205711,
+              136.5745840012096,
+              133.96254199324176
+            ]
+          },
+          "baseline_plus_detection": {
+            "count": 20,
+            "min_ms": 185.62208299408667,
+            "p50_ms": 204.16743800160475,
+            "p90_ms": 238.48978779569734,
+            "p95_ms": 242.74841664591804,
+            "max_ms": 247.46120799682103,
+            "samples_ms": [
+              231.13812500378117,
+              200.7517089950852,
+              198.05570799508132,
+              225.30774999177083,
+              228.35229101474397,
+              238.0441669956781,
+              237.08116699708626,
+              232.14466698118486,
+              193.11687498702668,
+              205.5603750050068,
+              197.8677920124028,
+              205.04879200598225,
+              196.05949998367578,
+              203.28608399722725,
+              196.20687499991618,
+              242.50037499587052,
+              185.62208299408667,
+              247.46120799682103,
+              191.78870899486355,
+              201.25954199465923
+            ]
+          },
+          "input_ack": {
+            "count": 20,
+            "min_ms": 13.166667020414025,
+            "p50_ms": 14.778374999877997,
+            "p90_ms": 15.222437487682328,
+            "p95_ms": 15.326445807295386,
+            "max_ms": 15.881166007602587,
+            "samples_ms": [
+              14.463333005551249,
+              13.2447499781847,
+              14.996292011346668,
+              15.297250007279217,
+              14.676833001431078,
+              13.166667020414025,
+              13.39633300085552,
+              14.879916998324916,
+              15.214124985504895,
+              14.980917010689154,
+              15.881166007602587,
+              14.638374996138737,
+              15.10441699065268,
+              15.052375005325302,
+              15.150291990721598,
+              14.358290995005518,
+              15.002583008026704,
+              13.407541991909966,
+              14.598167006624863,
+              14.65749999624677
+            ]
+          },
+          "rows": [
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 59.15874999482185,
+              "input_ack_ms": 14.463333005551249,
+              "changed": true,
+              "action_to_detection_ms": 171.97937500895932,
+              "observed_elapsed_ms": 171.97937500895932,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 55.49133400199935,
+              "input_ack_ms": 13.2447499781847,
+              "changed": true,
+              "action_to_detection_ms": 145.26037499308586,
+              "observed_elapsed_ms": 145.26037499308586,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 52.83554099150933,
+              "input_ack_ms": 14.996292011346668,
+              "changed": true,
+              "action_to_detection_ms": 145.220167003572,
+              "observed_elapsed_ms": 145.220167003572,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 70.94495900673792,
+              "input_ack_ms": 15.297250007279217,
+              "changed": true,
+              "action_to_detection_ms": 154.36279098503292,
+              "observed_elapsed_ms": 154.36279098503292,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 71.0945000173524,
+              "input_ack_ms": 14.676833001431078,
+              "changed": true,
+              "action_to_detection_ms": 157.25779099739157,
+              "observed_elapsed_ms": 157.25779099739157,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 85.09558299556375,
+              "input_ack_ms": 13.166667020414025,
+              "changed": true,
+              "action_to_detection_ms": 152.94858400011435,
+              "observed_elapsed_ms": 152.94858400011435,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 72.24466701154597,
+              "input_ack_ms": 13.39633300085552,
+              "changed": true,
+              "action_to_detection_ms": 164.83649998554029,
+              "observed_elapsed_ms": 164.83649998554029,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 74.1156250005588,
+              "input_ack_ms": 14.879916998324916,
+              "changed": true,
+              "action_to_detection_ms": 158.02904198062606,
+              "observed_elapsed_ms": 158.02904198062606,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 68.51254199864343,
+              "input_ack_ms": 15.214124985504895,
+              "changed": true,
+              "action_to_detection_ms": 124.60433298838325,
+              "observed_elapsed_ms": 124.60433298838325,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 74.99591700616293,
+              "input_ack_ms": 14.980917010689154,
+              "changed": true,
+              "action_to_detection_ms": 130.56445799884386,
+              "observed_elapsed_ms": 130.56445799884386,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 66.11366700963117,
+              "input_ack_ms": 15.881166007602587,
+              "changed": true,
+              "action_to_detection_ms": 131.75412500277162,
+              "observed_elapsed_ms": 131.75412500277162,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 68.51662500412203,
+              "input_ack_ms": 14.638374996138737,
+              "changed": true,
+              "action_to_detection_ms": 136.53216700186022,
+              "observed_elapsed_ms": 136.53216700186022,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 61.10908300615847,
+              "input_ack_ms": 15.10441699065268,
+              "changed": true,
+              "action_to_detection_ms": 134.9504169775173,
+              "observed_elapsed_ms": 134.9504169775173,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 65.94841700280085,
+              "input_ack_ms": 15.052375005325302,
+              "changed": true,
+              "action_to_detection_ms": 137.3376669944264,
+              "observed_elapsed_ms": 137.3376669944264,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 59.91895799525082,
+              "input_ack_ms": 15.150291990721598,
+              "changed": true,
+              "action_to_detection_ms": 136.28791700466536,
+              "observed_elapsed_ms": 136.28791700466536,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 75.51104199956171,
+              "input_ack_ms": 14.358290995005518,
+              "changed": true,
+              "action_to_detection_ms": 166.9893329963088,
+              "observed_elapsed_ms": 166.9893329963088,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 54.813916998682544,
+              "input_ack_ms": 15.002583008026704,
+              "changed": true,
+              "action_to_detection_ms": 130.80816599540412,
+              "observed_elapsed_ms": 130.80816599540412,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 75.85816600476392,
+              "input_ack_ms": 13.407541991909966,
+              "changed": true,
+              "action_to_detection_ms": 171.60304199205711,
+              "observed_elapsed_ms": 171.60304199205711,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 55.21412499365397,
+              "input_ack_ms": 14.598167006624863,
+              "changed": true,
+              "action_to_detection_ms": 136.5745840012096,
+              "observed_elapsed_ms": 136.5745840012096,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 67.29700000141747,
+              "input_ack_ms": 14.65749999624677,
+              "changed": true,
+              "action_to_detection_ms": 133.96254199324176,
+              "observed_elapsed_ms": 133.96254199324176,
+              "polls": 2
+            }
+          ]
+        }
+      }
+    },
+    "mcp": {
+      "recorded_at_utc": "2026-11-23T12:02:59Z",
+      "backend": "mcp",
+      "method": "Fresh baseline before input; sequential fresh-frame polling until threshold or timeout; 480x270 bilinear grayscale; luma delta>12.",
+      "thresholds": {
+        "idle_keyboard": 0.001,
+        "idle_pointer": 2e-05,
+        "keyboard": 0.001,
+        "pointer": 2e-05
+      },
+      "timeout_seconds": 1,
+      "limits": [
+        "Pixel change does not establish causality, semantic completion, or true HDMI capture time.",
+        "macOS upstream video buffering is included but unmeasured; polling adds quantization.",
+        "Detection includes client JPEG decode and pixel comparison, excludes baseline acquisition and controller LLM latency.",
+        "Idle controls calibrate both thresholds on this scene, not all possible UI activity.",
+        "Input acknowledgement means input-call completion and host serial pacing; it proves neither UART completion nor target acknowledgement."
+      ],
+      "groups": {
+        "idle_keyboard": {
+          "attempts": 10,
+          "changes": 0,
+          "detection": {
+            "count": 0
+          },
+          "baseline_plus_detection": {
+            "count": 0
+          },
+          "input_ack": {
+            "count": 0
+          },
+          "rows": [
+            {
+              "action": null,
+              "baseline_ms": 176.703750010347,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1013.4139169822447,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 194.9500420014374,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1193.9179580076598,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 200.5077500070911,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1199.100541009102,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 212.51616699737497,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1192.7689580188598,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 194.769791996805,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1000.7111250015441,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 202.94604200171307,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1197.7808749943506,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 200.37245799903758,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1195.3975000069477,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 204.08412502729334,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1165.980416990351,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 201.64562499849126,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1190.0929159892257,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 202.22487501450814,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1018.4415419935249,
+              "polls": 5
+            }
+          ]
+        },
+        "idle_pointer": {
+          "attempts": 10,
+          "changes": 0,
+          "detection": {
+            "count": 0
+          },
+          "baseline_plus_detection": {
+            "count": 0
+          },
+          "input_ack": {
+            "count": 0
+          },
+          "rows": [
+            {
+              "action": null,
+              "baseline_ms": 184.90562500664964,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1037.7532920101658,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 210.26712498860434,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1001.075292006135,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 184.88987497403286,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1202.5597080064472,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 209.31804098654538,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1202.442500012694,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 180.75825000414625,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1016.6612500033807,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 190.77258298057131,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1195.038834004663,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 201.87695900676772,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1007.0675000024494,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 192.79908301541582,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1003.9068749756552,
+              "polls": 5
+            },
+            {
+              "action": null,
+              "baseline_ms": 208.63133401144296,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1157.6789999962784,
+              "polls": 6
+            },
+            {
+              "action": null,
+              "baseline_ms": 198.5377079981845,
+              "input_ack_ms": null,
+              "changed": false,
+              "action_to_detection_ms": null,
+              "observed_elapsed_ms": 1202.0849170221481,
+              "polls": 6
+            }
+          ]
+        },
+        "keyboard": {
+          "attempts": 20,
+          "changes": 20,
+          "detection": {
+            "count": 20,
+            "min_ms": 425.3204580163583,
+            "p50_ms": 494.9135619972367,
+            "p90_ms": 663.199854188133,
+            "p95_ms": 666.3842502850457,
+            "max_ms": 687.2193330200389,
+            "samples_ms": [
+              469.35587501502596,
+              665.287666983204,
+              437.09175000549294,
+              654.432250012178,
+              491.6180830041412,
+              652.4797499878332,
+              464.63262499310076,
+              646.0078749805689,
+              459.69716701074503,
+              654.8827909864485,
+              425.3204580163583,
+              687.2193330200389,
+              453.2965420221444,
+              654.2658749967813,
+              490.20029199891724,
+              659.275207988685,
+              443.78770800540224,
+              498.20904099033214,
+              447.2316660103388,
+              662.9678749886807
+            ]
+          },
+          "baseline_plus_detection": {
+            "count": 20,
+            "min_ms": 630.7254169951193,
+            "p50_ms": 716.0869579965947,
+            "p90_ms": 879.5171038829722,
+            "p95_ms": 882.7337044916931,
+            "max_ms": 908.1920419994276,
+            "samples_ms": [
+              675.4129579931032,
+              875.0647499982733,
+              640.0658749917056,
+              870.6809589930344,
+              709.6983329975046,
+              879.3085829820484,
+              681.8836249876767,
+              863.523540989263,
+              680.2491249982268,
+              876.7308329988737,
+              630.7254169951193,
+              908.1920419994276,
+              679.6543750097044,
+              871.4669999899343,
+              690.8712919976097,
+              869.9823749775533,
+              666.8580000114162,
+              722.4755829956848,
+              680.7789580198005,
+              881.393791991286
+            ]
+          },
+          "input_ack": {
+            "count": 20,
+            "min_ms": 44.98070801491849,
+            "p50_ms": 47.731708516948856,
+            "p90_ms": 48.40477050165646,
+            "p95_ms": 48.56272048491519,
+            "max_ms": 48.79570798948407,
+            "samples_ms": [
+              46.274624997749925,
+              47.7634169801604,
+              47.90137501549907,
+              47.333916008938104,
+              48.33824999514036,
+              48.38858300354332,
+              47.8008329810109,
+              47.43624999537133,
+              47.75008402066305,
+              48.55045798467472,
+              44.98070801491849,
+              47.85641600028612,
+              47.43533302098513,
+              45.640084019396454,
+              48.1573749857489,
+              47.71333301323466,
+              47.21099999733269,
+              48.79570798948407,
+              45.47650000313297,
+              47.0272499951534
+            ]
+          },
+          "rows": [
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 206.05708297807723,
+              "input_ack_ms": 46.274624997749925,
+              "changed": true,
+              "action_to_detection_ms": 469.35587501502596,
+              "observed_elapsed_ms": 469.35587501502596,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 209.77708301506937,
+              "input_ack_ms": 47.7634169801604,
+              "changed": true,
+              "action_to_detection_ms": 665.287666983204,
+              "observed_elapsed_ms": 665.287666983204,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 202.9741249862127,
+              "input_ack_ms": 47.90137501549907,
+              "changed": true,
+              "action_to_detection_ms": 437.09175000549294,
+              "observed_elapsed_ms": 437.09175000549294,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 216.24870898085646,
+              "input_ack_ms": 47.333916008938104,
+              "changed": true,
+              "action_to_detection_ms": 654.432250012178,
+              "observed_elapsed_ms": 654.432250012178,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 218.0802499933634,
+              "input_ack_ms": 48.33824999514036,
+              "changed": true,
+              "action_to_detection_ms": 491.6180830041412,
+              "observed_elapsed_ms": 491.6180830041412,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 226.8288329942152,
+              "input_ack_ms": 48.38858300354332,
+              "changed": true,
+              "action_to_detection_ms": 652.4797499878332,
+              "observed_elapsed_ms": 652.4797499878332,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 217.25099999457598,
+              "input_ack_ms": 47.8008329810109,
+              "changed": true,
+              "action_to_detection_ms": 464.63262499310076,
+              "observed_elapsed_ms": 464.63262499310076,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 217.5156660086941,
+              "input_ack_ms": 47.43624999537133,
+              "changed": true,
+              "action_to_detection_ms": 646.0078749805689,
+              "observed_elapsed_ms": 646.0078749805689,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 220.55195798748173,
+              "input_ack_ms": 47.75008402066305,
+              "changed": true,
+              "action_to_detection_ms": 459.69716701074503,
+              "observed_elapsed_ms": 459.69716701074503,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 221.84804201242514,
+              "input_ack_ms": 48.55045798467472,
+              "changed": true,
+              "action_to_detection_ms": 654.8827909864485,
+              "observed_elapsed_ms": 654.8827909864485,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 205.404958978761,
+              "input_ack_ms": 44.98070801491849,
+              "changed": true,
+              "action_to_detection_ms": 425.3204580163583,
+              "observed_elapsed_ms": 425.3204580163583,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 220.9727089793887,
+              "input_ack_ms": 47.85641600028612,
+              "changed": true,
+              "action_to_detection_ms": 687.2193330200389,
+              "observed_elapsed_ms": 687.2193330200389,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 226.35783298755996,
+              "input_ack_ms": 47.43533302098513,
+              "changed": true,
+              "action_to_detection_ms": 453.2965420221444,
+              "observed_elapsed_ms": 453.2965420221444,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 217.20112499315292,
+              "input_ack_ms": 45.640084019396454,
+              "changed": true,
+              "action_to_detection_ms": 654.2658749967813,
+              "observed_elapsed_ms": 654.2658749967813,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 200.67099999869242,
+              "input_ack_ms": 48.1573749857489,
+              "changed": true,
+              "action_to_detection_ms": 490.20029199891724,
+              "observed_elapsed_ms": 490.20029199891724,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 210.70716698886827,
+              "input_ack_ms": 47.71333301323466,
+              "changed": true,
+              "action_to_detection_ms": 659.275207988685,
+              "observed_elapsed_ms": 659.275207988685,
+              "polls": 3
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 223.07029200601391,
+              "input_ack_ms": 47.21099999733269,
+              "changed": true,
+              "action_to_detection_ms": 443.78770800540224,
+              "observed_elapsed_ms": 443.78770800540224,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 224.26654200535268,
+              "input_ack_ms": 48.79570798948407,
+              "changed": true,
+              "action_to_detection_ms": 498.20904099033214,
+              "observed_elapsed_ms": 498.20904099033214,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape",
+                  "modifiers": [
+                    "ctrl"
+                  ]
+                }
+              },
+              "baseline_ms": 233.54729200946167,
+              "input_ack_ms": 45.47650000313297,
+              "changed": true,
+              "action_to_detection_ms": 447.2316660103388,
+              "observed_elapsed_ms": 447.2316660103388,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "send_key",
+                "params": {
+                  "key": "escape"
+                }
+              },
+              "baseline_ms": 218.42591700260527,
+              "input_ack_ms": 47.0272499951534,
+              "changed": true,
+              "action_to_detection_ms": 662.9678749886807,
+              "observed_elapsed_ms": 662.9678749886807,
+              "polls": 3
+            }
+          ]
+        },
+        "pointer": {
+          "attempts": 20,
+          "changes": 20,
+          "detection": {
+            "count": 20,
+            "min_ms": 409.4612080079969,
+            "p50_ms": 428.55702149972785,
+            "p90_ms": 436.3515588862356,
+            "p95_ms": 439.7535205047461,
+            "max_ms": 476.39383299974725,
+            "samples_ms": [
+              433.371667022584,
+              436.1878339841496,
+              428.758584021125,
+              433.3415419969242,
+              476.39383299974725,
+              409.4612080079969,
+              429.91437498130836,
+              419.4310829916503,
+              429.9670420004986,
+              435.37437499617226,
+              428.3554589783307,
+              424.6595840086229,
+              431.18420799146406,
+              423.97708297357894,
+              437.8250830050092,
+              424.9311249877792,
+              411.4477499970235,
+              410.19424999831244,
+              423.4845830069389,
+              425.46849997597747
+            ]
+          },
+          "baseline_plus_detection": {
+            "count": 20,
+            "min_ms": 598.3432499924675,
+            "p50_ms": 632.7148749987828,
+            "p90_ms": 647.1167913958197,
+            "p95_ms": 658.309504497447,
+            "max_ms": 668.5355420049746,
+            "samples_ms": [
+              625.2803330135066,
+              631.6458339861128,
+              627.8077920142096,
+              634.7794999892358,
+              668.5355420049746,
+              633.7839160114527,
+              624.9688339885324,
+              626.2897919805255,
+              641.8652499851305,
+              642.737499991199,
+              657.7712919970509,
+              637.4295840214472,
+              633.847582997987,
+              623.4919159905985,
+              645.932957995683,
+              629.1349160019308,
+              598.3432499924675,
+              600.830290990416,
+              624.5584579883143,
+              635.6972499925178
+            ]
+          },
+          "input_ack": {
+            "count": 20,
+            "min_ms": 13.233624980784953,
+            "p50_ms": 14.959082996938378,
+            "p90_ms": 15.282717320951633,
+            "p95_ms": 15.304112796729896,
+            "max_ms": 15.452708001248538,
+            "samples_ms": [
+              15.281209023669362,
+              14.83433399698697,
+              15.254249999998137,
+              14.334667008370161,
+              15.206915995804593,
+              15.22408300661482,
+              14.526874991133809,
+              14.710874995216727,
+              14.99487500404939,
+              15.452708001248538,
+              13.355458999285474,
+              15.296291996492073,
+              14.923290989827365,
+              14.613291976274922,
+              14.846416015643626,
+              14.171583985444158,
+              15.192582999588922,
+              15.276708989404142,
+              15.203249990008771,
+              13.233624980784953
+            ]
+          },
+          "rows": [
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 191.9086659909226,
+              "input_ack_ms": 15.281209023669362,
+              "changed": true,
+              "action_to_detection_ms": 433.371667022584,
+              "observed_elapsed_ms": 433.371667022584,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 195.45800000196323,
+              "input_ack_ms": 14.83433399698697,
+              "changed": true,
+              "action_to_detection_ms": 436.1878339841496,
+              "observed_elapsed_ms": 436.1878339841496,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 199.04920799308456,
+              "input_ack_ms": 15.254249999998137,
+              "changed": true,
+              "action_to_detection_ms": 428.758584021125,
+              "observed_elapsed_ms": 428.758584021125,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 201.43795799231157,
+              "input_ack_ms": 14.334667008370161,
+              "changed": true,
+              "action_to_detection_ms": 433.3415419969242,
+              "observed_elapsed_ms": 433.3415419969242,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 192.1417090052273,
+              "input_ack_ms": 15.206915995804593,
+              "changed": true,
+              "action_to_detection_ms": 476.39383299974725,
+              "observed_elapsed_ms": 476.39383299974725,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 224.32270800345577,
+              "input_ack_ms": 15.22408300661482,
+              "changed": true,
+              "action_to_detection_ms": 409.4612080079969,
+              "observed_elapsed_ms": 409.4612080079969,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 195.05445900722407,
+              "input_ack_ms": 14.526874991133809,
+              "changed": true,
+              "action_to_detection_ms": 429.91437498130836,
+              "observed_elapsed_ms": 429.91437498130836,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 206.85870898887515,
+              "input_ack_ms": 14.710874995216727,
+              "changed": true,
+              "action_to_detection_ms": 419.4310829916503,
+              "observed_elapsed_ms": 419.4310829916503,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 211.89820798463188,
+              "input_ack_ms": 14.99487500404939,
+              "changed": true,
+              "action_to_detection_ms": 429.9670420004986,
+              "observed_elapsed_ms": 429.9670420004986,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 207.36312499502674,
+              "input_ack_ms": 15.452708001248538,
+              "changed": true,
+              "action_to_detection_ms": 435.37437499617226,
+              "observed_elapsed_ms": 435.37437499617226,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 229.41583301872015,
+              "input_ack_ms": 13.355458999285474,
+              "changed": true,
+              "action_to_detection_ms": 428.3554589783307,
+              "observed_elapsed_ms": 428.3554589783307,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 212.7700000128243,
+              "input_ack_ms": 15.296291996492073,
+              "changed": true,
+              "action_to_detection_ms": 424.6595840086229,
+              "observed_elapsed_ms": 424.6595840086229,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 202.66337500652298,
+              "input_ack_ms": 14.923290989827365,
+              "changed": true,
+              "action_to_detection_ms": 431.18420799146406,
+              "observed_elapsed_ms": 431.18420799146406,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 199.51483301701955,
+              "input_ack_ms": 14.613291976274922,
+              "changed": true,
+              "action_to_detection_ms": 423.97708297357894,
+              "observed_elapsed_ms": 423.97708297357894,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 208.10787499067374,
+              "input_ack_ms": 14.846416015643626,
+              "changed": true,
+              "action_to_detection_ms": 437.8250830050092,
+              "observed_elapsed_ms": 437.8250830050092,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 204.20379101415165,
+              "input_ack_ms": 14.171583985444158,
+              "changed": true,
+              "action_to_detection_ms": 424.9311249877792,
+              "observed_elapsed_ms": 424.9311249877792,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 186.89549999544397,
+              "input_ack_ms": 15.192582999588922,
+              "changed": true,
+              "action_to_detection_ms": 411.4477499970235,
+              "observed_elapsed_ms": 411.4477499970235,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 190.63604099210352,
+              "input_ack_ms": 15.276708989404142,
+              "changed": true,
+              "action_to_detection_ms": 410.19424999831244,
+              "observed_elapsed_ms": 410.19424999831244,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": 100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 201.0738749813754,
+              "input_ack_ms": 15.203249990008771,
+              "changed": true,
+              "action_to_detection_ms": 423.4845830069389,
+              "observed_elapsed_ms": 423.4845830069389,
+              "polls": 2
+            },
+            {
+              "action": {
+                "method": "mouse_move",
+                "params": {
+                  "x": -100,
+                  "y": 0,
+                  "relative": true
+                }
+              },
+              "baseline_ms": 210.2287500165403,
+              "input_ack_ms": 13.233624980784953,
+              "changed": true,
+              "action_to_detection_ms": 425.46849997597747,
+              "observed_elapsed_ms": 425.46849997597747,
+              "polls": 2
+            }
+          ]
+        }
+      }
+    }
+  },
+  "outcomes": {
+    "all_capture_benchmark_calls_passed": true,
+    "all_action_trial_calls_passed": true,
+    "changes_per_action_backend": "20/20 keyboard and 20/20 pointer",
+    "idle_changes_per_threshold_backend": "0/10 at each threshold",
+    "target_semantic_completion_verified": false
+  },
+  "limits": [
+    "One target, host and capture card; one ready-signal session.",
+    "Host call and pixel-change timings exclude controller inference, network and scheduling.",
+    "Physical measurements used the connected Windows target; Linux-target semantic/completion validation was not performed.",
+    "No product implementation changed; timing opportunity estimates are not patched performance results."
+  ],
+  "cleanup": {
+    "temporary_kvm_daemon_exit_code": 0,
+    "target_input_release_attempted_on_shutdown": true,
+    "target_images_or_ocr_retained": false
+  }
+}

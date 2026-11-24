@@ -116,10 +116,12 @@ func (server *Server) captureFrame(ctx context.Context, data json.RawMessage) (a
 		return nil, err
 	}
 	return struct {
-		JPEG   []byte `json:"jpeg_b64"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-	}{frame.JPEG, frame.Width, frame.Height}, nil
+		JPEG         []byte `json:"jpeg_b64"`
+		Width        int    `json:"width"`
+		Height       int    `json:"height"`
+		TargetWidth  int    `json:"target_width"`
+		TargetHeight int    `json:"target_height"`
+	}{frame.JPEG, frame.Width, frame.Height, server.options.ScreenWidth, server.options.ScreenHeight}, nil
 }
 
 func (server *Server) listCaptureDevices(ctx context.Context, data json.RawMessage) (any, error) {

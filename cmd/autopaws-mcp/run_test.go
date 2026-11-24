@@ -38,6 +38,10 @@ func TestCommandHelpAndArguments(t *testing.T) {
 		{[]string{"-api", "localhost:0"}, 2, "1..65535"},
 		{[]string{"-api", "localhost:65536"}, 2, "1..65535"},
 		{[]string{"-api", "localhost:http"}, 2, "1..65535"},
+		{[]string{"-vision-api", "http://localhost:11434/v1"}, 2, "configured together"},
+		{[]string{"-vision-model", "model"}, 2, "configured together"},
+		{[]string{"-vision-api", "file:///tmp/vision", "-vision-model", "model"}, 2, "http(s) URL"},
+		{[]string{"-vision-api", "http://localhost:11434/v1", "-vision-model", "model", "-vision-request-json", "{\"stream\":true}"}, 2, "cannot override stream"},
 	} {
 		t.Run(strings.Join(vector.args, " "), func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
