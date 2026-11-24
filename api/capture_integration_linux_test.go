@@ -112,7 +112,7 @@ func captureAPI(t *testing.T, manager *capture.Manager, discover func(context.Co
 	if err != nil {
 		t.Fatal(err)
 	}
-	server := api.New(hid.NewKeyboard(controller, layout), mouse, api.Options{Capture: manager, DiscoverCapture: discover})
+	server := api.New(hid.NewKeyboard(controller, layout), mouse, api.Options{Capture: manager, DiscoverCapture: discover, ScreenWidth: 1920, ScreenHeight: 1080})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -282,6 +282,8 @@ func TestCaptureAPIFreshCroppedSnapshot(t *testing.T) {
 	var frame struct {
 		JPEG          []byte `json:"jpeg_b64"`
 		Width, Height int
+		TargetWidth   int `json:"target_width"`
+		TargetHeight  int `json:"target_height"`
 	}
 	if err := client.Call(captureContext(t), "capture_frame", nil, &frame); err != nil {
 		t.Fatal(err)
@@ -289,6 +291,9 @@ func TestCaptureAPIFreshCroppedSnapshot(t *testing.T) {
 	decoded, err := jpeg.DecodeConfig(bytes.NewReader(frame.JPEG))
 	if err != nil || frame.Width != 160 || frame.Height != 88 || decoded.Width != frame.Width || decoded.Height != frame.Height {
 		t.Fatalf("cropped frame = %dx%d, decoded %+v, %v", frame.Width, frame.Height, decoded, err)
+	}
+	if frame.TargetWidth != 1920 || frame.TargetHeight != 1080 {
+		t.Fatalf("cropped snapshot changed configured target dimensions: %+v", frame)
 	}
 	var info captureInfoWire
 	if err := client.Call(captureContext(t), "get_device_info", nil, &info); err != nil || info.Capture.Format == nil || info.Capture.Format.Width != 160 || info.Capture.Width != 1920 || info.Capture.Height != 1080 {

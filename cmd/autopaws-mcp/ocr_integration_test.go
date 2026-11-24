@@ -89,11 +89,11 @@ func TestOCRToolsUseFreshCaptureAndOneRawCommand(t *testing.T) {
 	for _, request := range requests {
 		methods = append(methods, request.Method)
 	}
-	wantMethods := []string{"capture_frame", "get_device_info", "type_text", "capture_frame", "get_device_info"}
+	wantMethods := []string{"capture_frame", "type_text", "capture_frame"}
 	if !slices.Equal(methods, wantMethods) {
 		t.Fatalf("OCR API sequence=%v", methods)
 	}
-	sdkEqualParams(t, requests[2], map[string]any{"text": "printf '{literal}'\n", "raw": true})
+	sdkEqualParams(t, requests[1], map[string]any{"text": "printf '{literal}'\n", "raw": true})
 	for _, part := range result.Content {
 		if _, ok := part.(*mcp.ImageContent); ok {
 			t.Fatal("OCR returned an image")

@@ -9,6 +9,7 @@ import (
 	"image/jpeg"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -91,6 +92,98 @@ func TestCaptureValidatesBeforeCommitting(t *testing.T) {
 				t.Fatal("invalid/canceled capture succeeded")
 			}
 		})
+	}
+}
+
+func TestCaptureUsesSnapshotTargetDimensionsAndLegacyFallback(t *testing.T) {
+	jpegData := unitJPEG(t)
+	for _, legacy := range []bool{false, true} {
+		name := "snapshot dimensions"
+		if legacy {
+			name = "legacy fallback"
+		}
+		t.Run(name, func(t *testing.T) {
+			var calls []string
+			owner := &toolServer{caller: unitCaller(func(_ context.Context, method string, _, output any) error {
+				calls = append(calls, method)
+				if method == "capture_frame" {
+					frame := map[string]any{"jpeg_b64": jpegData, "width": 5, "height": 3}
+					if !legacy {
+						frame["target_width"], frame["target_height"] = 1920, 1080
+					}
+					return unitAssign(output, frame)
+				}
+				if method != "get_device_info" {
+					t.Fatalf("unexpected API method %q", method)
+				}
+				return unitAssign(output, map[string]any{"config": map[string]int{"screen_width": 1920, "screen_height": 1080}})
+			})}
+			frame, err := owner.capture(t.Context(), "capture_screen")
+			if err != nil || !bytes.Equal(frame.jpeg, jpegData) || frame.dimensions != (screenDimensions{5, 3, 1920, 1080}) {
+				t.Fatalf("capture = %+v, %v", frame, err)
+			}
+			want := []string{"capture_frame"}
+			if legacy {
+				want = append(want, "get_device_info")
+			}
+			if !slices.Equal(calls, want) {
+				t.Fatalf("capture API calls = %v, want %v", calls, want)
+			}
+		})
+	}
+}
+
+func TestCaptureRejectsMalformedSnapshotTargetDimensionsWithoutFallback(t *testing.T) {
+	jpegData := unitJPEG(t)
+	for _, test := range []struct {
+		name   string
+		fields map[string]any
+	}{
+		{"missing width", map[string]any{"target_height": 1080}},
+		{"missing height", map[string]any{"target_width": 1920}},
+		{"zero width", map[string]any{"target_width": 0, "target_height": 1080}},
+		{"negative height", map[string]any{"target_width": 1920, "target_height": -1}},
+		{"null dimensions", map[string]any{"target_width": nil, "target_height": nil}},
+		{"null width", map[string]any{"target_width": nil, "target_height": 1080}},
+		{"string width", map[string]any{"target_width": "1920", "target_height": 1080}},
+		{"fractional height", map[string]any{"target_width": 1920, "target_height": 1080.5}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			calls := 0
+			owner := &toolServer{caller: unitCaller(func(_ context.Context, method string, _, output any) error {
+				calls++
+				if method != "capture_frame" {
+					t.Fatalf("malformed snapshot triggered %q", method)
+				}
+				frame := map[string]any{"jpeg_b64": jpegData, "width": 5, "height": 3}
+				for field, value := range test.fields {
+					frame[field] = value
+				}
+				return unitAssign(output, frame)
+			})}
+			if _, err := owner.capture(t.Context(), "capture_screen"); err == nil {
+				t.Fatal("malformed target dimensions accepted")
+			}
+			if calls != 1 {
+				t.Fatalf("capture API calls = %d, want 1", calls)
+			}
+		})
+	}
+}
+
+func TestCaptureSnapshotDimensionsPreserveCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	jpegData := unitJPEG(t)
+	owner := &toolServer{caller: unitCaller(func(_ context.Context, method string, _, output any) error {
+		if method != "capture_frame" {
+			t.Fatalf("unexpected API method %q", method)
+		}
+		cancel()
+		return unitAssign(output, map[string]any{"jpeg_b64": jpegData, "width": 5, "height": 3, "target_width": 1920, "target_height": 1080})
+	})}
+	if _, err := owner.capture(ctx, "capture_screen"); !errors.Is(err, context.Canceled) {
+		t.Fatalf("capture cancellation = %v", err)
 	}
 }
 

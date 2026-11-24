@@ -19,6 +19,28 @@ type screenState struct {
 	mu         sync.Mutex
 	epoch      uint64
 	dimensions screenDimensions
+	action     chan struct{}
+}
+
+// Serialize this session's input through observation without blocking capture
+// configuration changes, which must still invalidate an in-flight image.
+func (state *screenState) lockAction(ctx context.Context) (func(), error) {
+	state.mu.Lock()
+	if state.action == nil {
+		state.action = make(chan struct{}, 1)
+	}
+	gate := state.action
+	state.mu.Unlock()
+	select {
+	case gate <- struct{}{}:
+		if err := ctx.Err(); err != nil {
+			<-gate
+			return nil, err
+		}
+		return func() { <-gate }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
 }
 
 func (state *screenState) invalidate() {
