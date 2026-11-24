@@ -10,7 +10,8 @@ connections do not merge independent held states.
 
 ## Optional shared token
 
-When `autopaws-kvm -token-file PATH` is configured, `/ws` requires the
+When a nonempty `token-file` or `token` is configured in YAML or with the
+matching daemon flag, `/ws` requires the
 `autopaws_token` cookie; missing or wrong values receive HTTP 403 before upgrade
 or subscription.
 All bootstrap assets remain public. Open

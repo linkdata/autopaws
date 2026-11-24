@@ -9,9 +9,9 @@ import (
 	"log/slog"
 	"net"
 	"strconv"
-	"strings"
 
 	"github.com/linkdata/autopaws/apiclient"
+	"github.com/linkdata/autopaws/internal/config"
 	"github.com/linkdata/autopaws/internal/token"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -29,41 +29,20 @@ type mcpOptions struct {
 }
 
 func run(ctx context.Context, args []string, transport mcp.Transport, stdout, stderr io.Writer) int {
-	options := mcpOptions{Version: version}
-	flags := flag.NewFlagSet("autopaws-mcp", flag.ContinueOnError)
-	flags.SetOutput(io.Discard)
-	flags.StringVar(&options.APIAddress, "api", "127.0.0.1:9329", "KVM API host:port (numeric port 1..65535)")
-	flags.StringVar(&options.CaptureLogDir, "capture-log", "", "Save unchanged screenshot JPEGs in DIR; empty disables logging")
-	var tokenFile string
-	flags.StringVar(&tokenFile, "token-file", "", "Shared-secret UTF-8 file for the KVM API; empty disables authentication")
-	var requestedTesseract string
-	flags.StringVar(&requestedTesseract, "tesseract", "", "Tesseract executable; empty searches PATH and Windows install directories")
-	var vision visionConfig
-	var visionTokenFile string
-	flags.StringVar(&vision.API, "vision-api", "", "OpenAI-compatible base URL or chat/completions endpoint for wait_for; empty disables vision")
-	flags.StringVar(&vision.Model, "vision-model", "", "Vision model name for wait_for")
-	flags.StringVar(&visionTokenFile, "vision-token-file", "", "Bearer-token UTF-8 file for the vision endpoint; empty sends no Authorization header")
-	flags.IntVar(&vision.MaxWidth, "vision-max-width", 960, "Maximum screenshot width sent to the vision model, 64..4096; returned screenshots keep their original size")
-	flags.StringVar(&vision.RequestJSON, "vision-request-json", "", "Extra OpenAI request JSON options, e.g. {\"reasoning_effort\":\"none\"}; model, messages and stream cannot be overridden")
-	usage := func(output io.Writer) {
-		fmt.Fprintln(output, "Usage: autopaws-mcp [flags]")
-		flags.SetOutput(output)
-		flags.PrintDefaults()
-	}
-	if err := flags.Parse(args); err != nil {
+	var cfg config.MCP
+	var err error
+	if cfg, err = config.ParseMCP(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			usage(stdout)
+			config.WriteMCPUsage(stdout)
 			return 0
 		}
 		fmt.Fprintln(stderr, err)
-		usage(stderr)
+		if errors.Is(err, config.ErrUsage) {
+			config.WriteMCPUsage(stderr)
+		}
 		return 2
 	}
-	if flags.NArg() != 0 {
-		fmt.Fprintln(stderr, "unexpected arguments:", strings.Join(flags.Args(), " "))
-		usage(stderr)
-		return 2
-	}
+	options := mcpOptions{Version: version, APIAddress: cfg.API, CaptureLogDir: cfg.CaptureLog}
 	if err := validateAPIAddress(options.APIAddress); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 2
@@ -71,17 +50,19 @@ func run(ctx context.Context, args []string, transport mcp.Transport, stdout, st
 	if ctx.Err() != nil {
 		return 0
 	}
-	secret, err := token.ReadFile(tokenFile)
+	var secret string
+	secret, err = token.Resolve(cfg.Token, cfg.TokenFile)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
 	options.Logger = slog.New(slog.NewTextHandler(stderr, nil))
-	options.TesseractPath, err = resolveTesseract(requestedTesseract)
+	options.TesseractPath, err = resolveTesseract(cfg.Tesseract)
 	if err != nil {
 		options.Logger.Warn("OCR tools disabled: Tesseract unavailable", "error", err)
 	}
-	vision.Token, err = token.ReadFile(visionTokenFile)
+	vision := visionConfig{API: cfg.VisionAPI, Model: cfg.VisionModel, MaxWidth: cfg.VisionMaxWidth, RequestJSON: cfg.VisionRequestJSON}
+	vision.Token, err = token.ReadFile(cfg.VisionTokenFile)
 	if err != nil {
 		fmt.Fprintln(stderr, "vision token:", err)
 		return 1

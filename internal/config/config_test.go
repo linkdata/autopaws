@@ -162,12 +162,20 @@ func TestStrictYAML(t *testing.T) {
 		"merge":               "<<: {api: ':9329'}",
 		"second document":     "api: ':9329'\n---\nweb: ':9330'",
 		"bad second document": "api: ':9329'\n---\n[",
+		"null MCP width":      "vision-max-width: null", "MCP width string": "vision-max-width: '960'",
+		"MCP JSON mapping": "vision-request-json: {reasoning_effort: none}",
+		"MCP duplicate":    "vision-model: one\nvision-model: two",
+		"null token":       "token: null", "numeric token": "token: 1234",
 	} {
 		t.Run(name, func(t *testing.T) {
 			path := writeConfig(t, contents)
 			cfg, _, err := Parse([]string{"-config", path, "-api", ":9329"})
 			if cfg != (Config{}) || !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), path) {
 				t.Fatalf("Parse = %+v, %v; want invalid file with path", cfg, err)
+			}
+			var mcp MCP
+			if mcp, err = ParseMCP([]string{"-config", path}); mcp != (MCP{}) || !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), path) {
+				t.Fatalf("ParseMCP = %+v, %v; want invalid file with path", mcp, err)
 			}
 		})
 	}
