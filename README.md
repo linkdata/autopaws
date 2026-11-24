@@ -119,8 +119,10 @@ autopaws-kvm --list-devices
 ```
 
 With no arguments, the daemon serves the API at `127.0.0.1:9329` with relative
-mouse button reports. Enable the viewer with `-web 127.0.0.1:9330`; for a viewer
-without the API, add `-api ''`. At least one listener must be enabled.
+mouse button reports. The viewer is disabled by default. Enable it with `-web`
+to listen on `localhost:9330`, or `-web host:port` to choose an address.
+Use `-web=` to disable it, including when enabled in a configuration file.
+For a viewer without the API, add `-api ''`. At least one listener must be enabled.
 Use `--version` and `--list-devices` separately from daemon flags.
 
 `--list-devices` marks automatic defaults with `*`. It probes video formats on
