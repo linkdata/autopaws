@@ -72,6 +72,6 @@ func mcpFlags(cfg *MCP, path *string, output io.Writer) (settings *flag.FlagSet)
 	settings.StringVar(&cfg.VisionModel, "vision-model", cfg.VisionModel, "Vision model name for wait_for")
 	settings.StringVar(&cfg.VisionTokenFile, "vision-token-file", cfg.VisionTokenFile, "Bearer-token UTF-8 file for the vision endpoint; empty sends no Authorization header")
 	settings.IntVar(&cfg.VisionMaxWidth, "vision-max-width", cfg.VisionMaxWidth, "Maximum screenshot width sent to the vision model, 64..4096; returned screenshots keep their original size")
-	settings.StringVar(&cfg.VisionRequestJSON, "vision-request-json", cfg.VisionRequestJSON, "Extra OpenAI request JSON options, e.g. {\"reasoning_effort\":\"none\"}; model, messages and stream cannot be overridden")
+	settings.StringVar(&cfg.VisionRequestJSON, "vision-request-json", cfg.VisionRequestJSON, "OpenAI request JSON options (default reasoning_effort=none); an explicit object replaces defaults, {} omits reasoning control; model, messages and stream cannot be overridden")
 	return
 }

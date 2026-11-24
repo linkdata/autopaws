@@ -241,7 +241,7 @@ With no `-config`, MCP uses defaults and explicit flags only.
 | `-vision-model NAME` | off | Model used to evaluate visual conditions; configure with `-vision-api` |
 | `-vision-token-file PATH` | off | UTF-8 bearer-token file for the vision endpoint; separate from the KVM token |
 | `-vision-max-width N` | `960` | Maximum width sent to vision, 64–4096; returned screenshots keep their original size |
-| `-vision-request-json JSON` | off | Extra provider options; may override sampling/output settings, but not `model`, `messages` or `stream` |
+| `-vision-request-json JSON` | `{"reasoning_effort":"none"}` | Provider options; may override sampling/output settings, but not `model`, `messages` or `stream` |
 
 | Tools | Purpose |
 |---|---|
@@ -283,13 +283,15 @@ LM Studio server (use its actual port and installed model name):
 ```sh
 autopaws-mcp -api 127.0.0.1:9329 \
   -vision-api http://127.0.0.1:11434/v1 \
-  -vision-model qwen3-vl-2b-instruct \
-  -vision-request-json '{"reasoning_effort":"none"}'
+  -vision-model qwen3-vl-2b-instruct
 ```
 
 For an authenticated service, add `-vision-token-file /path/to/vision.token`.
-The client sends `Authorization: Bearer TOKEN`. Provider options are a JSON
-object; for example, a service without JSON-schema support can override
+The client sends `Authorization: Bearer TOKEN`. When vision is enabled, omitted
+`vision-request-json` sends `{"reasoning_effort":"none"}`. An explicit JSON object
+replaces that default: use `'{}'` to omit `reasoning_effort` and let the provider
+choose. Include `"reasoning_effort":"none"` when adding sampling or output options
+to keep reasoning disabled. A service without JSON-schema support can override
 `response_format` while MCP still validates the returned boolean object.
 
 With vision disabled, `wait_for` and `wait_timeout_ms` are absent from tool

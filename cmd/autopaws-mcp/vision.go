@@ -54,6 +54,9 @@ func newVisionClient(config visionConfig) (*visionClient, error) {
 		return nil, errors.New("vision bearer token must not contain line breaks")
 	}
 	options := make(map[string]json.RawMessage)
+	if config.RequestJSON == "" {
+		options["reasoning_effort"] = json.RawMessage(`"none"`)
+	}
 	if config.RequestJSON != "" {
 		if err := json.Unmarshal([]byte(config.RequestJSON), &options); err != nil || options == nil {
 			return nil, errors.New("-vision-request-json must be a JSON object")

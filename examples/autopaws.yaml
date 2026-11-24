@@ -42,6 +42,7 @@ vision-api: ""
 vision-model: ""
 vision-token-file: ""
 vision-max-width: 960
+# Omitted provider options default to disabling reasoning when vision is enabled.
+# An explicit object replaces the default; '{}' uses provider defaults.
+# Include reasoning_effort:none when adding sampling or output options.
 vision-request-json: ""
-# Provider options must be a quoted JSON string, for example:
-# vision-request-json: '{"reasoning_effort":"none"}'
