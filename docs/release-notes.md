@@ -1,17 +1,7 @@
-# v0.4.0
+# v0.4.1
 
-- MCP keyboard and mouse tools support optional `wait_for` conditions and
-  `wait_timeout_ms`, returning the screenshot checked by an OpenAI-compatible
-  vision service.
-- Reduced MCP screenshot capture and transfer overhead.
-- `autopaws-kvm` and `autopaws-mcp` can read the same YAML file with `-config`,
-  sharing the API address and either a `token-file` or inline `token`.
-- Enabled vision checks default to `reasoning_effort: "none"`. An explicit
-  `vision-request-json` object replaces that default; `{}` lets the provider
-  choose.
+`autopaws-kvm -web` enables the viewer at `localhost:9330` when no address is
+given. The viewer remains disabled by default when `-web` is omitted.
+Explicit addresses and `-web=` to disable the viewer continue to work.
 
-Verify the returned screenshot before continuing. A failed or timed-out wait
-preserves successful input; do not replay it automatically.
-
-See [configuration](https://github.com/linkdata/autopaws/blob/v0.4.0/README.md#configuration-file)
-and [visual waits](https://github.com/linkdata/autopaws/blob/v0.4.0/README.md#input-with-a-visual-condition).
+See [commands and configuration](https://github.com/linkdata/autopaws/blob/v0.4.1/README.md#commands-and-configuration).

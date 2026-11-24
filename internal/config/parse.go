@@ -42,7 +42,7 @@ func Parse(args []string) (Config, Action, error) {
 	parsed := daemonFlags(&flags, &path, io.Discard)
 	var version, listDevices bool
 	actionFlags(parsed, &version, &listDevices)
-	if err := parsed.Parse(args); err != nil {
+	if err := parsed.Parse(webArguments(args, parsed)); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return Config{}, Daemon, flag.ErrHelp
 		}
@@ -72,6 +72,31 @@ func Parse(args []string) (Config, Action, error) {
 		return Config{}, Daemon, err
 	}
 	return resolved, Daemon, nil
+}
+
+// Expand optional web addresses without changing flag values or positional arguments.
+func webArguments(args []string, settings *flag.FlagSet) []string {
+	args = append([]string(nil), args...)
+	for i := 0; i < len(args); i++ {
+		argument := args[i]
+		if argument == "--" || argument == "-" || !strings.HasPrefix(argument, "-") {
+			break
+		}
+		name, _, assigned := strings.Cut(strings.TrimPrefix(argument[1:], "-"), "=")
+		setting := settings.Lookup(name)
+		if setting == nil {
+			break
+		}
+		if name == "web" && !assigned && (i+1 == len(args) || strings.HasPrefix(args[i+1], "-")) {
+			args[i] = argument + "=localhost:9330"
+		} else if !assigned {
+			boolean, ok := setting.Value.(interface{ IsBoolFlag() bool })
+			if !ok || !boolean.IsBoolFlag() {
+				i++
+			}
+		}
+	}
+	return args
 }
 
 func resolveSettings(parsed *flag.FlagSet, path string, settings, other *flag.FlagSet) (err error) {
@@ -114,7 +139,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.SetOutput(output)
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file")
 	settings.StringVar(&cfg.API, "api", cfg.API, "API listen host:port; empty disables it (example 127.0.0.1:9329)")
-	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen host:port; empty disables it (example 127.0.0.1:9330)")
+	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen `[host:port]`; no address uses localhost:9330; empty disables it")
 	settings.StringVar(&cfg.Token, "token", cfg.Token, "Shared-secret UTF-8 value; use token or token-file, not both")
 	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; empty disables authentication")
 	settings.StringVar(&cfg.SerialDevice, "serial-device", cfg.SerialDevice, "Serial path or Windows COMn; empty auto-detects one CH340/CH341")

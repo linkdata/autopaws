@@ -78,18 +78,25 @@ func TestVersion(t *testing.T) {
 	}
 }
 
-func TestBareCommandUsesAPIRelativeDefaults(t *testing.T) {
-	var stdout, stderr bytes.Buffer
-	called := false
-	hooks := commandHooks{serve: func(_ context.Context, cfg config.Config) error {
-		called = true
-		if cfg.API != "127.0.0.1:9329" || cfg.Web != "" || cfg.MouseButtonMode != "relative" {
-			t.Fatalf("bare command configuration = %+v", cfg)
-		}
-		return nil
-	}}
-	if code := run(t.Context(), nil, &stdout, &stderr, hooks); code != 0 || !called || stdout.Len() != 0 || stderr.Len() != 0 {
-		t.Fatalf("bare command: exit %d, called %v, stdout %q, stderr %q", code, called, stdout.String(), stderr.String())
+func TestCommandListenerDefaults(t *testing.T) {
+	for _, vector := range []struct {
+		args []string
+		web  string
+	}{{nil, ""}, {[]string{"-web"}, "localhost:9330"}} {
+		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			called := false
+			hooks := commandHooks{serve: func(_ context.Context, cfg config.Config) error {
+				called = true
+				if cfg.API != "127.0.0.1:9329" || cfg.Web != vector.web || cfg.MouseButtonMode != "relative" {
+					t.Fatalf("command configuration = %+v", cfg)
+				}
+				return nil
+			}}
+			if code := run(t.Context(), vector.args, &stdout, &stderr, hooks); code != 0 || !called || stdout.Len() != 0 || stderr.Len() != 0 {
+				t.Fatalf("command: exit %d, called %v, stdout %q, stderr %q", code, called, stdout.String(), stderr.String())
+			}
+		})
 	}
 }
 
