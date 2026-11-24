@@ -23,44 +23,30 @@ Follow the board's pinout if its UART components are separate.
 
 ## Installation
 
-Authenticate before using the GitHub CLI commands below:
+Download the ZIP for your host from the [latest release](https://github.com/linkdata/autopaws/releases/latest)
+and extract it. Each `autopaws_TAG_OS_ARCH.zip` contains both `autopaws-kvm` and
+`autopaws-mcp` (`.exe` files on Windows).
+
+| Host | OS/architecture |
+|---|---|
+| Linux | `linux_amd64` or `linux_arm64` |
+| macOS (Apple silicon) | `darwin_arm64` |
+| Windows | `windows_amd64` or `windows_arm64` |
+
+Intel Macs have standalone `autopaws-kvm_TAG_darwin_amd64` and
+`autopaws-mcp_TAG_darwin_amd64` downloads; rename them to `autopaws-kvm` and
+`autopaws-mcp`. Checksums for all downloads are in the release's `SHA256SUMS` file.
+
+On Linux/macOS, run this from the folder containing the extracted binaries:
 
 ```sh
-gh auth login
-```
-
-### Published binaries
-
-List releases, then download and verify the matching asset. For a Linux amd64 host:
-
-```bash
-gh release list --repo linkdata/autopaws
-read -r -p "Release tag: " autopaws_version
-autopaws_asset="autopaws-kvm_${autopaws_version}_linux_amd64"
-autopaws_download=$(mktemp -d)
-gh release download "$autopaws_version" --repo linkdata/autopaws \
-  --pattern "$autopaws_asset" --pattern SHA256SUMS --dir "$autopaws_download"
-(
-  cd "$autopaws_download"
-  awk -v file="$autopaws_asset" '$2 == file' SHA256SUMS | sha256sum --check - &&
-    sudo install -m 0755 "$autopaws_asset" /usr/local/bin/autopaws-kvm
-)
+sudo install -d /usr/local/bin
+sudo install -m 0755 autopaws-kvm autopaws-mcp /usr/local/bin/
 autopaws-kvm --version
 ```
 
-| Command | OS/architecture pairs |
-|---|---|
-| `autopaws-kvm` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
-| `autopaws-mcp` | `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, `windows_amd64`, `windows_arm64` |
-
-Assets are named `COMMAND_TAG_OS_ARCH`, with `.exe` on Windows. Install the MCP
-asset as `autopaws-mcp` or `autopaws-mcp.exe`. Use its absolute path in GUI clients.
-ZIP bundles named `autopaws_TAG_OS_ARCH.zip` contain both `autopaws-kvm` and
-`autopaws-mcp` for `linux_amd64`, `linux_arm64`, `darwin_arm64`, `windows_amd64`
-and `windows_arm64`. Windows bundles contain both `.exe` files.
-`SHA256SUMS` covers standalone binaries and ZIPs.
-On macOS, verify with `shasum -a 256 --check -`; on Windows, compare `SHA256SUMS`
-with `Get-FileHash -Algorithm SHA256 PATH`.
+On Windows, keep the extracted files in a permanent folder and add it to `PATH`.
+Use the MCP executable's absolute path in GUI clients.
 
 macOS and Windows require FFmpeg on the daemon's `PATH`; see
 [macOS setup](docs/macos-setup.md) or [Windows setup](docs/windows-setup.md) for
@@ -72,18 +58,14 @@ device selectors and permissions. macOS binaries are not notarized; if quarantin
 With Go 1.27.4 or newer:
 
 ```sh
-gh repo clone linkdata/autopaws
+git clone https://github.com/linkdata/autopaws.git
 cd autopaws
 CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
 ```
 
 On Windows PowerShell, use `$env:CGO_ENABLED = "0"` before `go build`.
 All supported hosts build both commands. Source builds report version `devel`.
-On Linux/macOS, install with:
-
-```sh
-sudo install -m 0755 dist/autopaws-kvm dist/autopaws-mcp /usr/local/bin/
-```
+On Linux/macOS, run the installation commands above from `dist/`.
 
 ## Quick start
 
