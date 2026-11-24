@@ -38,16 +38,19 @@ before hardware preparation or input emission.
 
 ## Optional shared token
 
-With `autopaws-kvm -token-file PATH`, each request must include the matching
+With a nonempty `token-file` or `token` in the shared YAML file (or via the
+matching daemon flag), each request must include the matching
 secret as an envelope string field, for example `"token":"your-secret"`. It is
 checked before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
 receive `{"id":1,"ok":false,"error":"unauthorized"}` (with the request's ID).
 The token is never logged. Without a configured token, the token field is ignored.
 
-The file is read once at daemon startup. Its contents must be nonempty UTF-8;
-surrounding whitespace is trimmed. Restart to load a changed secret. The portable
-Go client uses `apiclient.NewWithToken(address, secret)`; `New(address)` omits it.
-MCP reads the same secret with its own `-token-file PATH` flag.
+The configuration and optional token file are read once at daemon startup.
+Token values must be nonempty UTF-8; surrounding whitespace is trimmed.
+Restart to load a changed secret. Nonempty `token` and `token-file` together
+are rejected. The portable Go client uses `apiclient.NewWithToken(address, secret)`;
+`New(address)` omits it. MCP reads the same secret from the shared YAML file
+or its own `-token-file PATH` or `-token SECRET` flag.
 Use loopback addresses and the SSH tunnel in the README: the token does not encrypt
 plain TCP traffic.
 

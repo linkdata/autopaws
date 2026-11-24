@@ -32,3 +32,25 @@ func TestTokenFileSettingPrecedenceAndHelp(t *testing.T) {
 		t.Fatal("token file omitted from usage")
 	}
 }
+
+func TestInlineTokenSharedSettingAndOverrides(t *testing.T) {
+	path := writeConfig(t, "token: '  a+;å% secret  '\n")
+	for _, vector := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"-config", path}, "  a+;å% secret  "},
+		{[]string{"-config", path, "-token", "another"}, "another"},
+		{[]string{"-config", path, "-token="}, ""},
+	} {
+		var cfg Config
+		var mcp MCP
+		var err error
+		if cfg, _, err = Parse(vector.args); err != nil || cfg.Token != vector.want {
+			t.Fatalf("KVM direct token setting failed: %v", err)
+		}
+		if mcp, err = ParseMCP(vector.args); err != nil || mcp.Token != vector.want {
+			t.Fatalf("MCP direct token setting failed: %v", err)
+		}
+	}
+}

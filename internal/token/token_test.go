@@ -9,6 +9,34 @@ import (
 	"testing"
 )
 
+func TestResolve(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "token")
+	if err := os.WriteFile(path, []byte(" file secret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, vector := range []struct {
+		value, path, want string
+		failure           error
+	}{
+		{"", "", "", nil},
+		{"secret", "", "secret", nil},
+		{" direct secret\n", "", "direct secret", nil},
+		{" \tå+; percent% secret\r\n", "", "å+; percent% secret", nil},
+		{"", path, "file secret", nil},
+		{"private-value", "private-path", "", ErrConflict},
+		{" \t\n", "", "", ErrInvalid},
+		{"bad\xffsecret", "", "", ErrInvalid},
+	} {
+		got, err := Resolve(vector.value, vector.path)
+		if got != vector.want || !errors.Is(err, vector.failure) {
+			t.Fatalf("Resolve = %q, %v; want %q, %v", got, err, vector.want, vector.failure)
+		}
+		if err != nil && (strings.Contains(err.Error(), "private-value") || strings.Contains(err.Error(), "private-path") || strings.Contains(err.Error(), "bad")) {
+			t.Fatalf("Resolve leaked a secret source: %v", err)
+		}
+	}
+}
+
 func TestReadFile(t *testing.T) {
 	if value, err := ReadFile(""); value != "" || err != nil {
 		t.Fatalf("disabled token = %q, %v", value, err)

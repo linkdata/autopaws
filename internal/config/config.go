@@ -1,4 +1,4 @@
-// Package config parses and validates the KVM server's portable configuration.
+// Package config parses the KVM and MCP servers' shared portable configuration.
 package config
 
 import (
@@ -27,6 +27,7 @@ var (
 type Config struct {
 	API             string
 	Web             string
+	Token           string
 	TokenFile       string
 	SerialDevice    string
 	SerialBaud      int

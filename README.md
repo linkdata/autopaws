@@ -136,18 +136,27 @@ There are no environment overrides, automatic file searches or live reloads:
 
 ```sh
 autopaws-kvm -config ./autopaws.yaml -web-fps 30
+autopaws-mcp -config ./autopaws.yaml
 ```
 
 See [the example configuration](examples/autopaws.yaml). Flag names and YAML keys
-match. Explicit false, empty and zero values override the file. Use `=false` for
-boolean flags, such as `-autocrop=false`. YAML must be one scalar-valued mapping;
-unknown/duplicate keys, nulls, aliases and extra documents are rejected.
+match. Both binaries accept the same file, sharing `api`, `token` and `token-file`.
+Each uses its own remaining settings. Relative file paths resolve from the
+process's working directory. Explicit false, empty and zero values override the
+file. Use `=false` for boolean flags, such as `-autocrop=false`. YAML must be one
+scalar-valued mapping; unknown/duplicate keys, nulls, aliases and extra documents
+are rejected.
+
+Use a connectable `api` address for MCP. If KVM binds a wildcard address or runs
+on another host, override it for MCP, for example
+`autopaws-mcp -config ./autopaws.yaml -api kvm-host:9329`.
 
 | Setting | Default | Meaning |
 |---|---|---|
 | `api` | `127.0.0.1:9329` | JSON Lines API `host:port`; empty disables it |
 | `web` | empty | Viewer `host:port`; empty disables it |
-| `token-file` | empty | Shared-secret file for API and web; empty disables authentication |
+| `token` | empty | Inline shared secret for API, web and MCP; alternative to `token-file` |
+| `token-file` | empty | Read the shared secret from a UTF-8 file instead |
 | `serial-device` | empty | Serial path or Windows `COMn`; empty auto-detects CH340/CH341 |
 | `serial-baud` | `9600` | Supported baud rate below |
 | `screen-width` | `1920` | Positive target coordinate width |
@@ -213,14 +222,20 @@ For wire formats and input rules, see the [API reference](api/PROTOCOL.md) and
 Configure each MCP client to start its own local stdio process against the daemon:
 
 ```sh
-autopaws-mcp -api 127.0.0.1:9329
+autopaws-mcp -config ./autopaws.yaml
 ```
+
+MCP settings in the [shared configuration file](#configuration-file) use the
+flag name without its leading `-`; `config` itself is command-line only.
+With no `-config`, MCP uses defaults and explicit flags only.
 
 | Flag | Default | Meaning |
 |---|---|---|
+| `-config PATH` | off | Read the shared KVM/MCP YAML file |
 | `-api host:port` | `127.0.0.1:9329` | KVM JSON Lines address, port 1–65535 |
 | `-capture-log DIR` | off | Save screenshot JPEGs; no retention limit |
-| `-token-file PATH` | off | Read the API secret at startup |
+| `-token SECRET` | off | API secret; alternative to `-token-file` |
+| `-token-file PATH` | off | Read the API secret from a UTF-8 file instead |
 | `-tesseract PATH` | automatic | Optional OCR engine; an invalid explicit path disables OCR |
 | `-vision-api URL` | off | OpenAI-compatible base URL or full `chat/completions` endpoint for `wait_for` |
 | `-vision-model NAME` | off | Model used to evaluate visual conditions; configure with `-vision-api` |
@@ -329,7 +344,7 @@ For Claude Code:
 
 ```sh
 claude mcp add --transport stdio --scope user autopaws -- \
-  /absolute/path/to/autopaws-mcp -api 127.0.0.1:9329
+  /absolute/path/to/autopaws-mcp -config /absolute/path/to/autopaws.yaml
 ```
 
 For Claude Desktop, add this to its MCP configuration:
@@ -339,14 +354,14 @@ For Claude Desktop, add this to its MCP configuration:
   "mcpServers": {
     "autopaws": {
       "command": "/absolute/path/to/autopaws-mcp",
-      "args": ["-api", "127.0.0.1:9329"]
+      "args": ["-config", "/absolute/path/to/autopaws.yaml"]
     }
   }
 }
 ```
 
-On Windows, use an absolute path such as `C:\\Tools\\autopaws\\autopaws-mcp.exe` in
-JSON. Add `-token-file` and its local path when authentication is enabled.
+On Windows, use absolute paths such as `C:\\Tools\\autopaws\\autopaws-mcp.exe` in
+JSON. Set `token-file` or `token` in the shared YAML when authentication is enabled.
 Restart the client after configuration changes. The API address is a JSON Lines
 TCP service; see [local MCP client setup](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
 
@@ -356,16 +371,19 @@ API and viewer access allow keyboard/mouse control of the target. Bind to loopba
 and leave `debug-keys` disabled unless diagnosing input. Browser view-only mode
 only affects that viewer.
 
-Generate a private shared-secret file:
+Keep the shared secret in a private file so it can be updated separately:
 
 ```sh
 umask 077
 openssl rand -hex 32 > ./autopaws.token
 ```
 
-Pass `-token-file ./autopaws.token` to the daemon and a file containing the same
-secret to MCP. Files must be readable, nonempty UTF-8; surrounding whitespace is
-trimmed. Both processes read the secret once at startup.
+Set `token-file: /absolute/path/to/autopaws.token` in the shared YAML file.
+Alternatively, store the secret directly as `token: "REPLACE_WITH_A_RANDOM_SECRET"`.
+Token values must be nonempty UTF-8; surrounding whitespace is trimmed.
+Both processes read the configuration and secret once at startup; restart them
+after changing either. Nonempty `token` and `token-file` together are rejected.
+Leaving both empty disables authentication.
 
 Open `http://localhost:9330/#token=ENCODED_SECRET`, using `encodeURIComponent(secret)`.
 The viewer removes the fragment and stores the token in a session cookie for its
