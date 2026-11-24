@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-24",
+  "scope": "Real Tesseract models through the built MCP binary against a local API fixture serving the earlier controlled physical Mac capture. execute_and_read keyboard output is fixture-only; no target input sent.",
+  "binary_sha256": "328bae60a86c45ba8b387d807c2fa63eafd38788007d0bbdbe14695bc21237a5",
+  "image_sha256": "0a53e7dd0e15affa4afacf2ee98837c12fd4ba9c56cd6816fb88b776d0ba2d2b",
+  "models": {
+    "eng": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+    "swe": "f7304988d41f833efebcc2d529df54b1903ecebbc3da1faabd19a0fddd4fe586"
+  },
+  "swedish_model_source": "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/swe.traineddata",
+  "reports": [
+    {
+      "tool": "get_screen_text",
+      "arguments": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        }
+      },
+      "is_error": false,
+      "elapsed_ms": 205.46,
+      "text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\n\nBuild: PASS 42 / 100\n\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1le/+#:;_-+=l=[]\nSvenska: raksmérgas AAO aad\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\n\nEND AUTOPAWS BENCHMARK"
+    },
+    {
+      "tool": "get_screen_text",
+      "arguments": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        },
+        "language": "eng"
+      },
+      "is_error": false,
+      "elapsed_ms": 187.04,
+      "text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\n\nBuild: PASS 42 / 100\n\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1le/+#:;_-+=l=[]\nSvenska: raksmérgas AAO aad\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\n\nEND AUTOPAWS BENCHMARK"
+    },
+    {
+      "tool": "get_screen_text",
+      "arguments": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        },
+        "language": "eng+swe"
+      },
+      "is_error": false,
+      "elapsed_ms": 379.8,
+      "text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\n\nBuild: PASS 42 / 100\n\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1le/+#:;_-+=l=[]\nSvenska: räksmörgås AAO åäö\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\n\nEND AUTOPAWS BENCHMARK"
+    },
+    {
+      "tool": "execute_and_read",
+      "arguments": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        },
+        "language": "eng+swe",
+        "command": "fixture-only command",
+        "wait_seconds": 0
+      },
+      "is_error": false,
+      "elapsed_ms": 378.52,
+      "text": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\n\nBuild: PASS 42 / 100\n\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race J/...\nSymbols: 00 1le/+#:;_-+=l=[]\nSvenska: räksmörgås AAO åäö\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\n\nEND AUTOPAWS BENCHMARK"
+    },
+    {
+      "tool": "get_screen_text",
+      "arguments": {
+        "region": {
+          "x": 216,
+          "y": 176,
+          "width": 582,
+          "height": 145
+        },
+        "language": "eng+autopaws_missing_model"
+      },
+      "is_error": true,
+      "elapsed_ms": 189.47,
+      "text": "tesseract: Error opening data file /opt/homebrew/share/tessdata/autopaws_missing_model.traineddata\nPlease make sure the TESSDATA_PREFIX environment variable is set to your \"tessdata\" directory.\nFailed loading language 'autopaws_missing_model'"
+    },
+    {
+      "tool": "execute_and_read",
+      "arguments": {
+        "language": "eng++swe",
+        "command": "must not type"
+      },
+      "is_error": true,
+      "elapsed_ms": 0.21,
+      "text": "language must contain Tesseract model names separated by +, for example eng+swe"
+    }
+  ],
+  "fixture_methods": [
+    "capture_frame",
+    "capture_frame",
+    "capture_frame",
+    "type_text",
+    "capture_frame",
+    "capture_frame"
+  ],
+  "tesseract_version": "tesseract 5.5.4",
+  "base_commit": "2d673eee509c7ed39db695c994770e176863e639",
+  "source_sha256": {
+    "cmd/autopaws-mcp/ocr.go": "9eee521c6e8f303fa743eeeafcdefe97bf21c50db2a5914230855ad250886cbe",
+    "cmd/autopaws-mcp/ocr_region.go": "380c45a6445dc1be08330d4d7e91b371fd6352535dcee60bb76d5ec378837763",
+    "cmd/autopaws-mcp/ocr_tools.go": "c1725729c1178252980af4a2063e39dcaa598a7afa3c4bfb9c3ebaf2faaa0de9"
+  },
+  "model_installation": "Swedish traineddata installed in the MCP host active directory /opt/homebrew/share/tessdata. Final smoke uses that default directory without TESSDATA_PREFIX; no model data is committed."
+}

@@ -10,26 +10,30 @@ import (
 )
 
 type executeInput struct {
+	ocrInput
 	Command     string   `json:"command" jsonschema:"Command to type literally and execute with Enter."`
 	WaitSeconds *float64 `json:"wait_seconds,omitempty" jsonschema:"Seconds to wait before a fresh capture. Finite 0 through 60, default 1. A fixed wait does not guarantee command completion."`
 }
 
-func (owner *toolServer) screenText(ctx context.Context, tool string) (*mcp.CallToolResult, error) {
+func (owner *toolServer) screenText(ctx context.Context, tool string, input ocrInput) (*mcp.CallToolResult, error) {
+	if err := input.validate(); err != nil {
+		return nil, err
+	}
 	// The shared capture helper validates/logs bytes without committing mouse
 	// coordinates: OCR returns text, so no screenshot was shown to this session.
 	frame, err := owner.capture(ctx, tool)
 	if err != nil {
 		return nil, err
 	}
-	text, err := extractOCR(ctx, owner.options.TesseractPath, frame.jpeg)
+	text, err := extractOCR(ctx, owner.options.TesseractPath, frame.jpeg, input)
 	if err != nil {
 		return nil, err
 	}
 	return textResult(text), nil
 }
 
-func (owner *toolServer) getScreenText(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, error) {
-	return owner.screenText(ctx, "get_screen_text")
+func (owner *toolServer) getScreenText(ctx context.Context, _ *mcp.CallToolRequest, input ocrInput) (*mcp.CallToolResult, error) {
+	return owner.screenText(ctx, "get_screen_text", input)
 }
 
 func executionWait(seconds *float64) (time.Duration, error) {
@@ -43,6 +47,9 @@ func executionWait(seconds *float64) (time.Duration, error) {
 }
 
 func (owner *toolServer) executeAndRead(ctx context.Context, _ *mcp.CallToolRequest, input executeInput) (*mcp.CallToolResult, error) {
+	if err := input.validate(); err != nil {
+		return nil, err
+	}
 	wait, err := executionWait(input.WaitSeconds)
 	if err != nil {
 		return nil, err
@@ -57,5 +64,5 @@ func (owner *toolServer) executeAndRead(ctx context.Context, _ *mcp.CallToolRequ
 		return nil, ctx.Err()
 	case <-timer.C:
 	}
-	return owner.screenText(ctx, "execute_and_read")
+	return owner.screenText(ctx, "execute_and_read", input.ocrInput)
 }
