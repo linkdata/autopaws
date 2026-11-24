@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"regexp"
 )
 
 type screenRegion struct {
@@ -14,7 +15,20 @@ type screenRegion struct {
 }
 
 type ocrInput struct {
-	Region *screenRegion `json:"region,omitempty" jsonschema:"Optional OCR region in original screenshot pixels. Must fit entirely inside the captured image; omission analyzes the full screenshot."`
+	Region   *screenRegion `json:"region,omitempty" jsonschema:"Optional OCR region in original screenshot pixels. Must fit entirely inside the captured image; omission analyzes the full screenshot."`
+	Language string        `json:"language,omitempty" jsonschema:"Tesseract language model names, for example eng or eng+swe. Default eng. All requested traineddata files must be installed on the MCP host."`
+}
+
+var ocrLanguagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+([+/][A-Za-z0-9_]+)*$`)
+
+func (input ocrInput) validate() error {
+	if err := input.Region.validate(); err != nil {
+		return err
+	}
+	if input.Language != "" && !ocrLanguagePattern.MatchString(input.Language) {
+		return errors.New("language must contain Tesseract model names separated by +, for example eng+swe")
+	}
+	return nil
 }
 
 func (region *screenRegion) validate() error {

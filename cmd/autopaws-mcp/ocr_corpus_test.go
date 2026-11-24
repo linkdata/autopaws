@@ -63,7 +63,7 @@ func TestOCRCorpus(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			actual, err := extractOCR(t.Context(), executable, jpeg, nil)
+			actual, err := extractOCR(t.Context(), executable, jpeg, ocrInput{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -71,7 +71,7 @@ func TestOCRCorpus(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			text, err := runTesseract(t.Context(), executable, baseline, ocrTimeout)
+			text, err := runTesseract(t.Context(), executable, baseline, "", ocrTimeout)
 			if err != nil {
 				t.Fatal(err)
 			}

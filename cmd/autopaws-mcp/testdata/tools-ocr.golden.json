@@ -12,12 +12,16 @@
     "name": "capture_screen"
   },
   {
-    "description": "Type command plus Enter in one raw keyboard action, wait for output, then capture a fresh frame and extract English text with local Tesseract OCR, optionally limited to a region in screenshot pixels. The wait is cancellable, defaults to 1 second and accepts 0 through 60 seconds; a fresh frame does not prove the command has completed. Does not establish screenshot coordinates.",
+    "description": "Type command plus Enter in one raw keyboard action, wait for output, then capture a fresh frame and extract text with local Tesseract OCR, optionally limited to a region in screenshot pixels. Language defaults to eng; combinations such as eng+swe require matching traineddata on the MCP host. The wait is cancellable, defaults to 1 second and accepts 0 through 60 seconds; a fresh frame does not prove the command has completed. Does not establish screenshot coordinates.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
         "command": {
           "description": "Command to type literally and execute with Enter.",
+          "type": "string"
+        },
+        "language": {
+          "description": "Tesseract language model names, for example eng or eng+swe. Default eng. All requested traineddata files must be installed on the MCP host.",
           "type": "string"
         },
         "region": {
@@ -84,10 +88,14 @@
       "idempotentHint": false,
       "readOnlyHint": true
     },
-    "description": "Capture the current target screen and extract English text with local Tesseract OCR, optionally limited to a region in screenshot pixels. Prefer this to an image for terminal text. Does not establish screenshot coordinates for mouse actions.",
+    "description": "Capture the current target screen and extract text with local Tesseract OCR, optionally limited to a region in screenshot pixels. Language defaults to eng; combinations such as eng+swe require matching traineddata on the MCP host. Prefer this to an image for terminal text. Does not establish screenshot coordinates for mouse actions.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "language": {
+          "description": "Tesseract language model names, for example eng or eng+swe. Default eng. All requested traineddata files must be installed on the MCP host.",
+          "type": "string"
+        },
         "region": {
           "additionalProperties": false,
           "description": "Optional OCR region in original screenshot pixels. Must fit entirely inside the captured image; omission analyzes the full screenshot.",

@@ -3210,7 +3210,7 @@
       }
     }
   ],
-  "shipping_scope": "Only optional region on existing Tesseract get_screen_text and execute_and_read. Vision was an experimental prototype and is not part of this change.",
+  "shipping_scope": "This comparison covers Tesseract region OCR using the English default alongside an experimental macOS Vision prototype. The prototype is not shipped; the OCR tools now also accept a language parameter.",
   "host_cpu": "Apple M3 Ultra",
   "ground_truth_notes": {
     "body": "AUTOPAWS OCR BENCHMARK\nStatus: Ready\nBuild: PASS 42 / 100\nPath: /Users/test/Autopaws/main.go\nCommand: go test -race ./...\nSymbols: 0O 1Il | / \\ : ; _ - + = { } [ ]\nSvenska: räksmörgås ÅÄÖ åäö\nButton labels: Connect Save Cancel\nVersion: v0.4.0 1920x1080\nEND AUTOPAWS BENCHMARK",

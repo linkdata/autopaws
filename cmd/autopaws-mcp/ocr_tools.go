@@ -15,8 +15,8 @@ type executeInput struct {
 	WaitSeconds *float64 `json:"wait_seconds,omitempty" jsonschema:"Seconds to wait before a fresh capture. Finite 0 through 60, default 1. A fixed wait does not guarantee command completion."`
 }
 
-func (owner *toolServer) screenText(ctx context.Context, tool string, region *screenRegion) (*mcp.CallToolResult, error) {
-	if err := region.validate(); err != nil {
+func (owner *toolServer) screenText(ctx context.Context, tool string, input ocrInput) (*mcp.CallToolResult, error) {
+	if err := input.validate(); err != nil {
 		return nil, err
 	}
 	// The shared capture helper validates/logs bytes without committing mouse
@@ -25,7 +25,7 @@ func (owner *toolServer) screenText(ctx context.Context, tool string, region *sc
 	if err != nil {
 		return nil, err
 	}
-	text, err := extractOCR(ctx, owner.options.TesseractPath, frame.jpeg, region)
+	text, err := extractOCR(ctx, owner.options.TesseractPath, frame.jpeg, input)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (owner *toolServer) screenText(ctx context.Context, tool string, region *sc
 }
 
 func (owner *toolServer) getScreenText(ctx context.Context, _ *mcp.CallToolRequest, input ocrInput) (*mcp.CallToolResult, error) {
-	return owner.screenText(ctx, "get_screen_text", input.Region)
+	return owner.screenText(ctx, "get_screen_text", input)
 }
 
 func executionWait(seconds *float64) (time.Duration, error) {
@@ -47,7 +47,7 @@ func executionWait(seconds *float64) (time.Duration, error) {
 }
 
 func (owner *toolServer) executeAndRead(ctx context.Context, _ *mcp.CallToolRequest, input executeInput) (*mcp.CallToolResult, error) {
-	if err := input.Region.validate(); err != nil {
+	if err := input.validate(); err != nil {
 		return nil, err
 	}
 	wait, err := executionWait(input.WaitSeconds)
@@ -64,5 +64,5 @@ func (owner *toolServer) executeAndRead(ctx context.Context, _ *mcp.CallToolRequ
 		return nil, ctx.Err()
 	case <-timer.C:
 	}
-	return owner.screenText(ctx, "execute_and_read", input.Region)
+	return owner.screenText(ctx, "execute_and_read", input.ocrInput)
 }

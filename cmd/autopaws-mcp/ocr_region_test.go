@@ -133,7 +133,7 @@ func TestOCRRegionKeepsCMYKUnsupported(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := extractOCR(t.Context(), "must-not-run", data, &screenRegion{Width: 1, Height: 1}); err == nil || !strings.Contains(err.Error(), "color model") {
+	if _, err := extractOCR(t.Context(), "must-not-run", data, ocrInput{Region: &screenRegion{Width: 1, Height: 1}}); err == nil || !strings.Contains(err.Error(), "color model") {
 		t.Fatalf("cropping changed CMYK handling: %v", err)
 	}
 }
