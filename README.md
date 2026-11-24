@@ -23,11 +23,10 @@ Follow the board's pinout if its UART components are separate.
 
 ## Installation
 
-Repository and release access require an authenticated GitHub account with access:
+Authenticate before using the GitHub CLI commands below:
 
 ```sh
 gh auth login
-gh auth setup-git
 ```
 
 ### Published binaries
