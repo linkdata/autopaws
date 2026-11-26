@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-26",
+  "result": "PARTIAL: capture metadata passes at 1080p; native 4K capture unsupported; extended-display absolute pointer routing failed",
+  "privacy": "Actions, pass/fail and host/capture metadata only. No screen contents, labels, identifiers, screenshots or OCR retained or referenced.",
+  "source_commit": "143997c41297632201fe401dfeb915b3d6383717",
+  "host": {
+    "os": "macOS 27.2.1",
+    "architecture": "arm64",
+    "ffmpeg_version": "9.1"
+  },
+  "target": {
+    "os": "Windows, as identified by owner",
+    "display_mode": "extended",
+    "setup_source": "owner",
+    "scripts_placed": false,
+    "files_or_settings_changed": false,
+    "clicks_or_keys_sent": false,
+    "reported_resolution": "4K",
+    "host_coordinate_test_dimensions": [
+      3840,
+      2160
+    ]
+  },
+  "capture": {
+    "name": "USB Video",
+    "usb_vid": "345f",
+    "usb_pid": "2109",
+    "usb_bcd_version": 512,
+    "autocrop": false,
+    "largest_advertised_frame_by_pixel_count": [
+      1920,
+      1080
+    ],
+    "advertised_1080p_fps_rounded": [
+      5,
+      10,
+      20,
+      30,
+      50,
+      60
+    ]
+  },
+  "checks": [
+    {
+      "action": "Three fresh API snapshots and three WebSocket frames with 3840x2160 target coordinates and default capture settings",
+      "result": "pass, metadata only",
+      "snapshot_count": 3,
+      "snapshot_size": [
+        1920,
+        1080
+      ],
+      "target_coordinate_size": [
+        3840,
+        2160
+      ],
+      "web_frame_count": 3,
+      "web_source_size": [
+        1920,
+        1080
+      ],
+      "web_crop_rectangle": [
+        0,
+        0,
+        1920,
+        1080
+      ]
+    },
+    {
+      "action": "Request 3840x2160 capture at 30 fps through daemon; restore working 1920x1080 mode",
+      "result": "unsupported",
+      "observation": "Device rejected selected video size; restored 1920x1080 snapshots successfully"
+    },
+    {
+      "action": "Enumerate AVFoundation formats and all frame-rate ranges directly",
+      "result": "pass",
+      "observation": "No 3840x2160 mode advertised, including at lower frame rates"
+    },
+    {
+      "action": "Explicit FFmpeg 3840x2160 capture probe at 5 fps, output discarded",
+      "result": "unsupported",
+      "metadata": {
+        "width": 3840,
+        "height": 2160,
+        "requested_fps": 5,
+        "exit_code": 251,
+        "error": "Selected video size (3840x2160) is not supported by the device.",
+        "frame_count_requested": 1
+      }
+    },
+    {
+      "action": "Enumerate AVFoundation still-photo dimensions separately from video modes",
+      "result": "pass; no 4K still-photo mode advertised",
+      "largest_advertised_photo_by_pixel_count": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "action": "Two absolute and two relative pointer moves, without clicks or typing",
+      "transport_result": "acknowledged",
+      "target_routing_result": "fail",
+      "owner_confirmation": "Owner reported the cursor on the primary display rather than the captured extended display",
+      "actions": [
+        {
+          "utc": "2026-11-26T10:01:39.191Z",
+          "params": {
+            "x": 960,
+            "y": 540
+          },
+          "result": "acknowledged",
+          "elapsed_ms": 24
+        },
+        {
+          "utc": "2026-11-26T10:01:41.714Z",
+          "params": {
+            "x": 2880,
+            "y": 1620
+          },
+          "result": "acknowledged",
+          "elapsed_ms": 17
+        },
+        {
+          "utc": "2026-11-26T10:01:44.230Z",
+          "params": {
+            "x": 64,
+            "y": 0,
+            "relative": true
+          },
+          "result": "acknowledged",
+          "elapsed_ms": 15
+        },
+        {
+          "utc": "2026-11-26T10:01:46.743Z",
+          "params": {
+            "x": -64,
+            "y": 0,
+            "relative": true
+          },
+          "result": "acknowledged",
+          "elapsed_ms": 13
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Capture metadata validates fresh decodable frames, not visual screen contents.",
+    "No target settings were changed to redirect input; extended-display absolute mapping is not supported by this setup.",
+    "Card mode enumeration describes what this macOS capture interface exposes, not every possible driver or host."
+  ],
+  "cleanup": "Test daemon stopped; working capture mode restored before shutdown; Windows settings unchanged."
+}
