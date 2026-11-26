@@ -83,6 +83,11 @@ The [macOS record](validation/macos-host-2026-11-20.json) separates each tested
 build and probe. Browser/acoustic playback and latency were not measured on
 macOS. Timestamps estimate FFmpeg pipe receipt; upstream buffering is unmeasured.
 
+A [replacement-card check](validation/macos-capture-2026-11-26.json) with FFmpeg
+9.1 and USB Video (`345f:2109`) reproduced a device-name parsing failure and
+verified the fix by opening capture and reading three 1920×1080 frames; audio
+and browser playback were not checked.
+
 ## Windows host
 
 Windows 11 Pro build 26300 on amd64 used a CH340/CH9329 (`1a86:7523`) and UGREEN
