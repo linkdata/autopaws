@@ -82,7 +82,7 @@ func TestCommandListenerDefaults(t *testing.T) {
 	for _, vector := range []struct {
 		args []string
 		web  string
-	}{{nil, ""}, {[]string{"-web"}, "localhost:9330"}} {
+	}{{nil, ""}, {[]string{"-web"}, "127.0.0.1:9330"}} {
 		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			called := false

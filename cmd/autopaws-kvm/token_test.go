@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"io"
 	"log/slog"
@@ -88,7 +89,7 @@ func assertRuntimeTokenAuthentication(t *testing.T, cfg config.Config) {
 	if err == nil || response == nil || response.StatusCode != http.StatusForbidden {
 		t.Fatalf("missing web token = %v, %v", response, err)
 	}
-	conn, _, err = websocket.Dial(ctx, address, &websocket.DialOptions{HTTPHeader: http.Header{"Cookie": {"autopaws_token=a%2B%3B%C3%A5%25%20secret"}}})
+	conn, _, err = websocket.Dial(ctx, address, &websocket.DialOptions{Subprotocols: []string{"autopaws", "autopaws-token." + hex.EncodeToString([]byte("a+;å% secret"))}})
 	if err != nil {
 		t.Fatal(err)
 	}

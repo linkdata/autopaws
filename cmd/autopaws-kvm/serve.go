@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/linkdata/autopaws/api"
 	"github.com/linkdata/autopaws/capture"
@@ -135,7 +136,13 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		if err != nil {
 			return errors.Join(fmt.Errorf("create web viewer: %w", err), closeOwners())
 		}
-		httpServer = &http.Server{Handler: viewer}
+		httpServer = &http.Server{
+			Handler:        viewer,
+			ReadTimeout:    10 * time.Second,
+			WriteTimeout:   10 * time.Second,
+			IdleTimeout:    60 * time.Second,
+			MaxHeaderBytes: 64 << 10,
+		}
 	}
 	var bound []net.Listener
 	shutdown := func() error {

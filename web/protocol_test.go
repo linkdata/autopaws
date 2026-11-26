@@ -159,6 +159,9 @@ func TestStaticAssetsAndAdmission(t *testing.T) {
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
 			output := httptest.NewRecorder()
 			fixture.server.ServeHTTP(output, httptest.NewRequest(method, asset.path, nil))
+			if output.Header().Get("Content-Security-Policy") != "frame-ancestors 'none'" || output.Header().Get("X-Frame-Options") != "DENY" {
+				t.Fatal("viewer permits framing")
+			}
 			if output.Code != 200 || output.Header().Get("Cache-Control") != "no-cache" || output.Header().Get("Content-Type") != asset.contentType || method == http.MethodGet && !bytes.Equal(output.Body.Bytes(), want) || method == http.MethodHead && output.Body.Len() != 0 {
 				t.Fatalf("asset%s%s:%+v", method, asset.path, output)
 			}
@@ -170,13 +173,13 @@ func TestStaticAssetsAndAdmission(t *testing.T) {
 		t.Fatal("asset method not validated")
 	}
 	output = httptest.NewRecorder()
-	fixture.server.ServeHTTP(output, httptest.NewRequest(http.MethodGet, "/ws", nil))
+	fixture.server.ServeHTTP(output, httptest.NewRequest(http.MethodGet, "http://localhost/ws", nil))
 	if output.Code != http.StatusUpgradeRequired {
 		t.Fatal("invalid upgrade accepted")
 	}
 	fixture.server.Close()
 	output = httptest.NewRecorder()
-	fixture.server.ServeHTTP(output, httptest.NewRequest(http.MethodGet, "/ws", nil))
+	fixture.server.ServeHTTP(output, httptest.NewRequest(http.MethodGet, "http://localhost/ws", nil))
 	if output.Code != http.StatusServiceUnavailable {
 		t.Fatal("web shutdown admitted a new connection")
 	}

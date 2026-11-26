@@ -106,7 +106,7 @@ autopaws-kvm \
   -web 127.0.0.1:9330
 ```
 
-Open `http://localhost:9330` and click the image to focus input. Use one operator
+Open `http://127.0.0.1:9330` and click the image to focus input. Use one operator
 at a time. For remote access and authentication, see [Security](#security).
 If capture audio is busy, follow the [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).
 
@@ -120,7 +120,7 @@ autopaws-kvm --list-devices
 
 With no arguments, the daemon serves the API at `127.0.0.1:9329` with relative
 mouse button reports. The viewer is disabled by default. Enable it with `-web`
-to listen on `localhost:9330`, or `-web host:port` to choose an address.
+to listen on `127.0.0.1:9330`, or `-web host:port` to choose an address.
 Use `-web=` to disable it, including when enabled in a configuration file.
 For a viewer without the API, add `-api ''`. At least one listener must be enabled.
 Use `--version` and `--list-devices` separately from daemon flags.
@@ -413,9 +413,13 @@ Both processes read the configuration and secret once at startup; restart them
 after changing either. Nonempty `token` and `token-file` together are rejected.
 Leaving both empty disables authentication.
 
-Open `http://localhost:9330/#token=ENCODED_SECRET`, using `encodeURIComponent(secret)`.
-The viewer removes the fragment and stores the token in a session cookie for its
-WebSocket. API clients send the `token` field or use `apiclient.NewWithToken`.
+Open `http://127.0.0.1:9330/#token=ENCODED_SECRET`, using `encodeURIComponent(secret)`.
+The viewer removes the fragment and stores the token in origin-scoped
+`sessionStorage` for that tab. New tabs and installed-app launches may need the
+token URL again; open it in a browser tab, then use the browser's Open in app
+action where available. The viewer sends the token in a WebSocket subprotocol
+offer, which the daemon verifies before opening capture or accepting input.
+API clients send the `token` field or use `apiclient.NewWithToken`.
 
 Tokens do not encrypt traffic. For a remote daemon bound to loopback, forward
 both ports:
@@ -424,9 +428,15 @@ both ports:
 ssh -L 9329:127.0.0.1:9329 -L 9330:127.0.0.1:9330 kvmhost
 ```
 
-Connect MCP to local port 9329 and open `http://localhost:9330` for the viewer.
-Localhost provides a secure context for AudioWorklet. Plain HTTP to a LAN address
-does not; built-in HTTPS and reverse-proxy deployments are unsupported.
+Connect MCP to local port 9329 and open `http://127.0.0.1:9330` for the viewer.
+The loopback IP provides a secure context for AudioWorklet. Plain HTTP to a LAN
+address does not; built-in HTTPS and reverse-proxy deployments are unsupported.
+
+Without a token, the viewer accepts WebSocket requests only for `localhost` or
+IP-literal hosts. Configure a token when accessing it by another hostname.
+Viewer responses deny framing by other pages. HTTP requests have 10-second
+header/read/write deadlines and a 60-second idle timeout, with a 64 KiB header
+limit. Upgraded WebSockets use the viewer's own write deadlines.
 
 ## Tested configurations
 
