@@ -137,7 +137,11 @@ func TestCommandSDKRunAndShutdown(t *testing.T) {
 				}
 				return sdkReply{result: map[string]bool{"fixture": true}}
 			})
-			args := []string{"-api", fake.listener.Addr().String(), "-tesseract", missingTesseract, "-token", "a+;å% secret"}
+			tokenPath := filepath.Join(t.TempDir(), "token")
+			if err := os.WriteFile(tokenPath, []byte("a+;å% secret\n"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			args := []string{"-api", fake.listener.Addr().String(), "-tesseract", missingTesseract, "-token-file", tokenPath}
 			if signal {
 				path := filepath.Join(t.TempDir(), "autopaws.yaml")
 				contents := []byte("api: " + fake.listener.Addr().String() + "\ntoken: '  a+;å% secret  '\nvision-api: http://localhost:11434/v1\nvision-model: model\n")
