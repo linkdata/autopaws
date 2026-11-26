@@ -98,7 +98,7 @@ func fakeOperations() (*fakeCapture, operations) {
 	}
 	ops := operations{
 		open: func(path string, flags int) (file, error) {
-			if path != "/fake/video" || flags != os.O_RDWR|syscall.O_NONBLOCK {
+			if path != "/fake/video" || flags != os.O_RDWR|syscall.O_NONBLOCK|syscall.O_NOCTTY {
 				panic(fmt.Sprintf("unexpected open: %s/%#x", path, flags))
 			}
 			fake.event("open")

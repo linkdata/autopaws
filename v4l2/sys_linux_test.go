@@ -333,7 +333,7 @@ func sysTestOpenPipe(t *testing.T) (*Device, *sysTestPipeBackend) {
 	backend.file = &sysTestPipeFile{File: reader, onClose: func() { backend.event("close") }}
 	device, err := open(context.Background(), "pipe-backed-capture", Options{Width: 2, Height: 2}, operations{
 		open: func(_ string, flags int) (file, error) {
-			if flags != os.O_RDWR|syscall.O_NONBLOCK {
+			if flags != os.O_RDWR|syscall.O_NONBLOCK|syscall.O_NOCTTY {
 				t.Errorf("open flags = %#x", flags)
 			}
 			return backend.file, nil

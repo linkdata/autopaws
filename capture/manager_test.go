@@ -269,6 +269,7 @@ func TestManagerLatestFrameWins(t *testing.T) {
 				t.Fatalf("fast reader sequence=%v,%v", frame, err)
 			}
 		}
+		synctest.Wait() // Fast delivery does not guarantee the slow slot is updated.
 		if frame, err := slow.Next(context.Background()); err != nil || frame.Metadata().Sequence != 3 {
 			t.Fatalf("slow subscriber blocked publication or kept old frame: %v,%v", frame, err)
 		}

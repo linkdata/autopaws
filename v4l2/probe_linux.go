@@ -28,10 +28,13 @@ type Info struct {
 	Formats      []PixelFormat
 }
 
-// Probe uses a read-only, nonblocking file and QUERYCAP/ENUM_FMT only. It does
-// not require MJPG, streaming, read deadlines or an idle capture device, and
-// never changes format, allocates buffers or starts a stream. It retains fd
-// ownership until synchronous kernel calls and close finish normally.
+// Probe queries capture capabilities without acquiring a controlling terminal.
+//
+// It uses a read-only, nonblocking file and QUERYCAP/ENUM_FMT only. It does not
+// require MJPG, streaming, read deadlines or an idle capture device, and never
+// changes format, allocates buffers or starts a stream. It retains fd ownership
+// until synchronous kernel calls and close finish normally.
+//
 // Formats are enumerated only when CapDeviceCaps is present and DeviceCaps
 // includes CapVideoCapture, matching discovery's modern-driver selection policy.
 func Probe(ctx context.Context, path string) (Info, error) {
@@ -42,7 +45,7 @@ func probe(ctx context.Context, path string, ops operations) (info Info, err err
 	if err = ctx.Err(); err != nil {
 		return info, err
 	}
-	file, err := ops.open(path, os.O_RDONLY|syscall.O_NONBLOCK)
+	file, err := ops.open(path, os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOCTTY)
 	if err != nil {
 		return info, operationError("probe open", path, err)
 	}
