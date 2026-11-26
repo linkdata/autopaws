@@ -54,7 +54,7 @@ type Server struct {
 	keyboard   *hid.Keyboard
 	mouse      *hid.Mouse
 	options    Options
-	layoutName string
+	layoutName string // guarded by mu
 	handlers   map[string]handler
 
 	mu        sync.Mutex
