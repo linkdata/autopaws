@@ -490,18 +490,18 @@ test("malformed local events are ignored before input or pending movement is sen
 });
 
 
-test("token fragment becomes an encoded session cookie and is removed from the URL", async () => {
+test("token fragment is decoded and removed from the URL", async () => {
   const {tokenBootstrap} = await import("./assets/viewer-helpers.mjs");
   assert.equal(tokenBootstrap("http://localhost:9330/"), null);
   assert.equal(tokenBootstrap("http://localhost:9330/#screen"), null);
   assert.deepEqual(tokenBootstrap("http://localhost:9330/?view=1#token=a%2B%3B%20%C3%A5%25"), {
-    cookie: "autopaws_token=a%2B%3B%20%C3%A5%25; Path=/; SameSite=Strict",
+    token: "a+; å%",
     url: "http://localhost:9330/?view=1",
   });
   assert.deepEqual(tokenBootstrap("https://localhost:9330/#token=next"), {
-    cookie: "autopaws_token=next; Path=/; SameSite=Strict; Secure", url: "https://localhost:9330/",
+    token: "next", url: "https://localhost:9330/",
   });
   assert.deepEqual(tokenBootstrap("http://localhost:9330/#token="), {
-    cookie: "autopaws_token=; Path=/; SameSite=Strict", url: "http://localhost:9330/",
+    token: "", url: "http://localhost:9330/",
   });
 });

@@ -55,7 +55,7 @@ func TestListenerAndButtonDefaultsCanBeOverridden(t *testing.T) {
 		{"flags", "api: 127.0.0.1:1234\nmouse-button-mode: relative\n", []string{"-api", "", "-web", "127.0.0.1:9330", "-mouse-button-mode", "absolute"}, "", "127.0.0.1:9330", "absolute"},
 		{"disable default API", "{}", []string{"-api=", "-web", ":0"}, "", ":0", "relative"},
 		{"restore file-disabled API", "api: ''\nmouse-button-mode: absolute\n", []string{"-api", "127.0.0.1:9329", "-mouse-button-mode", "relative"}, "127.0.0.1:9329", "", "relative"},
-		{"bare web overrides file", "web: ':1234'\n", []string{"-web"}, "127.0.0.1:9329", "localhost:9330", "relative"},
+		{"bare web overrides file", "web: ':1234'\n", []string{"-web"}, "127.0.0.1:9329", "127.0.0.1:9330", "relative"},
 		{"empty web disables file", "web: ':1234'\n", []string{"-web="}, "127.0.0.1:9329", "", "relative"},
 	} {
 		t.Run(vector.name, func(t *testing.T) {
@@ -79,21 +79,21 @@ func TestOptionalWebAddress(t *testing.T) {
 		args []string
 		web  string
 	}{
-		{[]string{"-web"}, "localhost:9330"},
-		{[]string{"--web"}, "localhost:9330"},
-		{[]string{"-web", "-web-fps", "30"}, "localhost:9330"},
-		{[]string{"-web", "-autocrop=false"}, "localhost:9330"},
-		{[]string{"-autocrop", "-web"}, "localhost:9330"},
-		{[]string{"-web", "--"}, "localhost:9330"},
+		{[]string{"-web"}, "127.0.0.1:9330"},
+		{[]string{"--web"}, "127.0.0.1:9330"},
+		{[]string{"-web", "-web-fps", "30"}, "127.0.0.1:9330"},
+		{[]string{"-web", "-autocrop=false"}, "127.0.0.1:9330"},
+		{[]string{"-autocrop", "-web"}, "127.0.0.1:9330"},
+		{[]string{"-web", "--"}, "127.0.0.1:9330"},
 		{[]string{"-web", "127.0.0.1:1234"}, "127.0.0.1:1234"},
 		{[]string{"--web=[::1]:1234"}, "[::1]:1234"},
 		{[]string{"-web", ""}, ""},
 		{[]string{"-web="}, ""},
 		{[]string{"-web", "-web", ":1234"}, ":1234"},
-		{[]string{"-web=:1234", "-web"}, "localhost:9330"},
+		{[]string{"-web=:1234", "-web"}, "127.0.0.1:9330"},
 		{[]string{"-token", "-web"}, ""},
 		{[]string{"-serial-device", "--web"}, ""},
-		{[]string{"-token=-web", "-web"}, "localhost:9330"},
+		{[]string{"-token=-web", "-web"}, "127.0.0.1:9330"},
 	} {
 		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
 			original := append([]string(nil), vector.args...)

@@ -3,7 +3,9 @@
 The viewer uses HTTP for embedded assets and one WebSocket at `/ws`. Assets have
 `Cache-Control: no-cache`. Unknown page routes return the index page. WebSocket
 upgrades permit the request's own host and reject cross-origin browser requests.
-WebSocket compression is disabled.
+Without a configured token, the Host must be `localhost` or an IP literal.
+Custom hostnames require a token. Responses include `Content-Security-Policy:
+frame-ancestors 'none'` and `X-Frame-Options: DENY`. WebSocket compression is disabled.
 
 Input actions are serialized with API actions. Use one operator at a time;
 connections do not merge independent held states.
@@ -11,22 +13,26 @@ connections do not merge independent held states.
 ## Optional shared token
 
 When a nonempty `token-file` or `token` is configured in YAML or with the
-matching daemon flag, `/ws` requires the
-`autopaws_token` cookie; missing or wrong values receive HTTP 403 before upgrade
-or subscription.
+matching daemon flag, `/ws` requires a `Sec-WebSocket-Protocol` offer of
+`autopaws-token.HEX`, where HEX is the hex encoding of the secret's UTF-8 bytes.
+Missing or wrong values receive HTTP 403 before upgrade or subscription.
+The browser also offers `autopaws`; the server selects that fixed protocol and
+never echoes the credential. Cookies do not authorize WebSockets; a received
+`autopaws_token` cookie is expired.
+
 All bootstrap assets remain public. Open
-`http://localhost:9330/#token=ENCODED_SECRET`, where ENCODED_SECRET is the result
+`http://127.0.0.1:9330/#token=ENCODED_SECRET`, where ENCODED_SECRET is the result
 of JavaScript `encodeURIComponent(secret)`. The page removes the recognized
-fragment with `history.replaceState` and writes the URI-encoded secret into a
-session cookie before opening its first WebSocket. The cookie uses `Path=/` and
-`SameSite=Strict`, plus `Secure` on HTTPS. No Domain or persistent expiry is set.
-The server URI-decodes the cookie value without treating `+` as a space. Reconnects
-reuse the cookie; tokens never appear in WebSocket URLs or application logs.
+fragment with `history.replaceState` before opening its first WebSocket and
+stores the secret in `sessionStorage` under `autopaws_token`. Storage is scoped
+to the page's origin, including its port, and lasts for that tab's session.
+Reconnects and reloads reuse the stored token; an empty `#token=` clears it.
+When session storage is unavailable, the token remains usable for that page's
+lifetime. Tokens never appear in WebSocket URLs or application logs.
 The fragment is processed locally and is not sent in HTTP requests.
 
-Without a configured token, no token is required. Cookies are scoped to a host
-rather than a TCP port; use one token for this viewer host.
-Use localhost through the documented SSH tunnel for remote access. Authentication
+Without a configured token, no token is required. Use the literal loopback
+address through the documented SSH tunnel for remote access. Authentication
 does not add TLS or a supported reverse-proxy deployment.
 
 ## Configuration and media

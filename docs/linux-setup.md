@@ -80,7 +80,7 @@ together are rejected; leaving both empty disables authentication. MCP can reuse
 the configuration with `-config /etc/autopaws/autopaws.yaml` when its user can
 read both the configuration and token files, for example as a member of the
 `autopaws` group. Restart both processes after changing either file.
-The viewer bootstraps its session cookie from
+The viewer bootstraps its tab's origin-scoped session storage from
 the URL fragment; see the canonical [Security instructions](../README.md#security)
 for that URL, SSH forwarding and token handling.
 
