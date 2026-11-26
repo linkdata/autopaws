@@ -29,7 +29,7 @@ func TestDefaults(t *testing.T) {
 		API:        "127.0.0.1:9329",
 		SerialBaud: 9600, ScreenWidth: 1920, ScreenHeight: 1080,
 		TargetLayout: "us104", MouseButtonMode: "relative",
-		CaptureWidth: 1920, CaptureHeight: 1080, Autocrop: true,
+		CaptureWidth: 1920, CaptureHeight: 1080,
 		WebFPS: 20, LogLevel: "info",
 	}
 	if got := Defaults(); got != want {
@@ -126,7 +126,7 @@ mouse-button-mode: relative
 capture-device: /dev/video7
 capture-width: 640
 capture-height: 480
-autocrop: false
+autocrop: true
 web-fps: 30
 audio-device: off
 log-level: WARN
@@ -136,17 +136,17 @@ debug-keys: true
 		API: "127.0.0.1:1001", Web: "[::1]:1002", SerialDevice: "/dev/serial/by-id/testing",
 		SerialBaud: 19200, ScreenWidth: 1280, ScreenHeight: 720, TargetLayout: "se105",
 		MouseButtonMode: "relative", CaptureDevice: "/dev/video7", CaptureWidth: 640,
-		CaptureHeight: 480, WebFPS: 30, AudioDevice: "off", LogLevel: "WARN", DebugKeys: true,
+		CaptureHeight: 480, Autocrop: true, WebFPS: 30, AudioDevice: "off", LogLevel: "WARN", DebugKeys: true,
 	}
 	got, _, err := Parse([]string{"-config", path})
 	if err != nil || got != want {
 		t.Fatalf("YAML settings = %+v, %v; want %+v", got, err, want)
 	}
 
-	want.API, want.Web, want.Autocrop, want.DebugKeys = "", ":0", true, false
+	want.API, want.Web, want.Autocrop, want.DebugKeys = "", ":0", false, false
 	want.SerialDevice, want.AudioDevice, want.WebFPS = "", "", 1
 	got, _, err = Parse([]string{
-		"-config", path, "-api=", "-web", ":0", "-autocrop", "-debug-keys=false",
+		"-config", path, "-api=", "-web", ":0", "-autocrop=false", "-debug-keys=false",
 		"-serial-device=", "-audio-device=", "-web-fps", "1",
 	})
 	if err != nil || got != want {
@@ -169,14 +169,14 @@ func TestEveryFlagOverridesFile(t *testing.T) {
 		"-screen-width", "1", "-screen-height", "2", "-target-layout", "custom",
 		"-layouts-dir", directory, "-mouse-button-mode", "relative",
 		"-capture-device", "/dev/video2", "-capture-width", "3", "-capture-height", "4",
-		"-autocrop=false", "-web-fps", "120", "-audio-device", "/dev/snd/pcmC1D0c",
+		"-autocrop", "-web-fps", "120", "-audio-device", "/dev/snd/pcmC1D0c",
 		"-log-level", "debug", "-debug-keys",
 	}
 	want := Config{
 		API: "localhost:22", Web: "[::]:9330", SerialDevice: "/dev/ttyUSB4", SerialBaud: 115200,
 		ScreenWidth: 1, ScreenHeight: 2, TargetLayout: "custom", LayoutsDir: directory,
 		MouseButtonMode: "relative", CaptureDevice: "/dev/video2", CaptureWidth: 3,
-		CaptureHeight: 4, WebFPS: 120, AudioDevice: "/dev/snd/pcmC1D0c", LogLevel: "debug", DebugKeys: true,
+		CaptureHeight: 4, Autocrop: true, WebFPS: 120, AudioDevice: "/dev/snd/pcmC1D0c", LogLevel: "debug", DebugKeys: true,
 	}
 	got, _, err := Parse(args)
 	if err != nil || got != want {
@@ -220,9 +220,9 @@ func TestStrictYAML(t *testing.T) {
 			}
 		})
 	}
-	path := writeConfig(t, "api: ':9329'\nweb-fps: 044\nautocrop: FALSE\n")
+	path := writeConfig(t, "api: ':9329'\nweb-fps: 044\nautocrop: TRUE\n")
 	cfg, _, err := Parse([]string{"-config", path})
-	if err != nil || cfg.WebFPS != 36 || cfg.Autocrop {
+	if err != nil || cfg.WebFPS != 36 || !cfg.Autocrop {
 		t.Fatalf("typed YAML values = %+v, %v", cfg, err)
 	}
 	path = writeConfig(t, "{}")

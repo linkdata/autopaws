@@ -195,7 +195,7 @@ runtime selection, initially the CLI/YAML startup layout:
   },
   "capture":{
     "device":"","requested_width":1920,"requested_height":1080,
-    "autocrop":true,"running":false,"generation":1,
+    "autocrop":false,"running":false,"generation":1,
     "available_devices":[],"error":"unavailable"
   }
 }
@@ -231,7 +231,9 @@ FFmpeg video uses estimated pipe read-start timestamps on that clock. The
 snapshot still waits for a read started after the request, but
 FFmpeg/OS buffering means this does not establish camera capture freshness.
 
-Snapshots are validated JPEGs with any detected crop applied. Uncropped images
+Snapshots are validated JPEGs. Cropping is disabled by default. Opt-in autocrop
+uses the configured target aspect ratio to validate a centered, aspect-preserving target
+area; matching capture/target aspects are never cropped. Uncropped images
 are not re-encoded; cropped images use quality-85 encoding. Width/height describe the returned image, which can differ
 from both requested capture size and configured target coordinates. There is no
 quality parameter. Capture starts on demand and stops after ten idle seconds.

@@ -151,7 +151,7 @@ on another host, override it for MCP, for example
 | `capture-device` | empty | Linux video path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; empty auto-selects |
 | `capture-width` | `1920` | Requested width, 1–4294967295 |
 | `capture-height` | `1080` | Requested height, 1–4294967295 |
-| `autocrop` | `true` | Detect and crop black borders |
+| `autocrop` | `false` | Opt in to cropping verified bars matching the configured target output aspect |
 | `web-fps` | `20` | Viewer frame rate, 1–120 |
 | `audio-device` | empty | Linux PCM path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; `off` disables audio |
 | `log-level` | `info` | `debug`, `info`, `warn` or `error` |
@@ -174,10 +174,20 @@ automatic audio matches the selected video's USB device. An explicit PCM path
 stays fixed. macOS uses FFmpeg/AVFoundation; Windows uses FFmpeg/DirectShow.
 Both share one FFmpeg media pipeline and require explicit audio selection.
 
+Cropping is disabled by default: the full capture frame is preserved without
+requiring the target's aspect ratio. Capture cards do not universally report
+the incoming target geometry, and dark screen content can resemble black bars.
+
+Optional `-autocrop` uses `screen-width` and `screen-height` to find the centered
+target area, then verifies the surrounding bars are black. When opting in,
+these dimensions must match the target's output aspect. Dark content within
+that area does not change the crop. Keep cropping disabled for captures that
+do not use centered, aspect-preserving scaling.
+
 Capture starts on demand and stops after ten seconds without video demand.
 Snapshots wait up to five seconds for a fresh decodable frame and optionally crop
-black borders. Linux timestamps reflect device capture; macOS/Windows timing estimates
-pipe receipt and cannot account for FFmpeg/OS buffering. A fresh frame does not
+validated black bars. Linux timestamps reflect device capture; macOS/Windows
+timing estimates pipe receipt and cannot account for FFmpeg/OS buffering. A fresh frame does not
 prove the target finished processing input. Missing capture hardware leaves input
 usable. Device/resolution changes invalidate pending snapshots with `capture changed`.
 

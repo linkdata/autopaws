@@ -102,7 +102,7 @@ func TestCommandListenerDefaults(t *testing.T) {
 
 func TestCommandHooks(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "serve.yaml")
-	if err := os.WriteFile(path, []byte("api: ':0'\nserial-baud: 19200\nautocrop: false\n"), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte("api: ':0'\nserial-baud: 19200\nautocrop: true\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	type contextKey struct{}
@@ -120,7 +120,7 @@ func TestCommandHooks(t *testing.T) {
 					serve: func(gotCtx context.Context, cfg config.Config) error {
 						called = true
 						want := config.Defaults()
-						want.API, want.SerialBaud, want.Autocrop = ":0", 19200, false
+						want.API, want.SerialBaud, want.Autocrop = ":0", 19200, true
 						if gotCtx.Value(contextKey{}) != "passed" || cfg != want {
 							t.Fatalf("serve received ctx %v, cfg %+v; want %+v", gotCtx, cfg, want)
 						}

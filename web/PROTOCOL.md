@@ -108,7 +108,8 @@ source-block sequence identifies dropped blocks; audio configuration generation
 distinguishes stream restarts.
 
 Video payload is the normalized source JPEG. Crop metadata gives the
-visible target area; a full-frame crop represents no border removal. Source
+visible target area, validated against the configured target aspect ratio;
+a full-frame crop represents no border removal. Source
 dimensions describe the JPEG, not the browser canvas or the configured target's
 pixel dimensions.
 

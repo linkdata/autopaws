@@ -21,7 +21,7 @@ func TestMCPDefaultsAndSharedFile(t *testing.T) {
 token-file: api.token
 serial-device: /dev/test
 target-layout: us104
-autocrop: false
+autocrop: true
 capture-log: captures
 tesseract: /test/tesseract
 vision-api: http://localhost:11434/v1
@@ -39,7 +39,7 @@ vision-request-json: '{"reasoning_effort":"none"}'
 		t.Fatalf("MCP YAML = %+v, %v; want %+v", got, err, want)
 	}
 	var kvm Config
-	if kvm, _, err = Parse([]string{"-config", path}); err != nil || kvm.API != want.API || kvm.TokenFile != want.TokenFile || kvm.SerialDevice != "/dev/test" || kvm.Autocrop {
+	if kvm, _, err = Parse([]string{"-config", path}); err != nil || kvm.API != want.API || kvm.TokenFile != want.TokenFile || kvm.SerialDevice != "/dev/test" || !kvm.Autocrop {
 		t.Fatalf("KVM shared YAML = %+v, %v", kvm, err)
 	}
 	if got, err = ParseMCP([]string{
