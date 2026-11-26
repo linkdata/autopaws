@@ -27,6 +27,8 @@ func MCPDefaults() MCP {
 }
 
 // ParseMCP resolves explicit MCP flags over the shared YAML file over defaults.
+//
+// Inline tokens are YAML-only.
 // KVM-only settings are type-checked but do not configure or validate hardware.
 func ParseMCP(args []string) (cfg MCP, err error) {
 	flags := MCPDefaults()
@@ -42,6 +44,8 @@ func ParseMCP(args []string) (cfg MCP, err error) {
 		cfg = MCPDefaults()
 		var unusedPath string
 		settings := mcpFlags(&cfg, &unusedPath, io.Discard)
+		// Inline tokens are accepted only from YAML, never from process arguments.
+		settings.StringVar(&cfg.Token, "token", cfg.Token, "")
 		ignored := Defaults()
 		if err = resolveSettings(parsed, path, settings, daemonFlags(&ignored, &unusedPath, io.Discard)); err != nil {
 			cfg = MCP{}
@@ -64,9 +68,8 @@ func mcpFlags(cfg *MCP, path *string, output io.Writer) (settings *flag.FlagSet)
 	settings.SetOutput(output)
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file (shared with autopaws-kvm)")
 	settings.StringVar(&cfg.API, "api", cfg.API, "KVM API host:port (numeric port 1..65535)")
-	settings.StringVar(&cfg.Token, "token", cfg.Token, "Shared-secret UTF-8 value for the KVM API; use token or token-file, not both")
 	settings.StringVar(&cfg.CaptureLog, "capture-log", cfg.CaptureLog, "Save unchanged screenshot JPEGs in DIR; empty disables logging")
-	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file for the KVM API; empty disables authentication")
+	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file for the KVM API; alternative to YAML token")
 	settings.StringVar(&cfg.Tesseract, "tesseract", cfg.Tesseract, "Tesseract executable; empty searches PATH and Windows install directories")
 	settings.StringVar(&cfg.VisionAPI, "vision-api", cfg.VisionAPI, "OpenAI-compatible base URL or chat/completions endpoint for wait_for; empty disables vision")
 	settings.StringVar(&cfg.VisionModel, "vision-model", cfg.VisionModel, "Vision model name for wait_for")

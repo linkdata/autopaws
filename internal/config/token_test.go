@@ -31,26 +31,51 @@ func TestTokenFileSettingPrecedenceAndHelp(t *testing.T) {
 	if !strings.Contains(usage.String(), "-token-file") {
 		t.Fatal("token file omitted from usage")
 	}
+	if strings.Contains(usage.String(), "\n  -token ") {
+		t.Fatal("inline token flag advertised in usage")
+	}
 }
 
-func TestInlineTokenSharedSettingAndOverrides(t *testing.T) {
-	path := writeConfig(t, "token: '  a+;å% secret  '\n")
+func TestInlineTokenSharedYAMLSetting(t *testing.T) {
 	for _, vector := range []struct {
-		args []string
+		yaml string
 		want string
 	}{
-		{[]string{"-config", path}, "  a+;å% secret  "},
-		{[]string{"-config", path, "-token", "another"}, "another"},
-		{[]string{"-config", path, "-token="}, ""},
+		{"token: '  a+;å% secret  '\n", "  a+;å% secret  "},
+		{"token: ''\n", ""},
 	} {
+		args := []string{"-config", writeConfig(t, vector.yaml)}
 		var cfg Config
 		var mcp MCP
 		var err error
-		if cfg, _, err = Parse(vector.args); err != nil || cfg.Token != vector.want {
+		if cfg, _, err = Parse(args); err != nil || cfg.Token != vector.want {
 			t.Fatalf("KVM direct token setting failed: %v", err)
 		}
-		if mcp, err = ParseMCP(vector.args); err != nil || mcp.Token != vector.want {
+		if mcp, err = ParseMCP(args); err != nil || mcp.Token != vector.want {
 			t.Fatalf("MCP direct token setting failed: %v", err)
 		}
+	}
+}
+
+func TestInlineTokenFlagRejected(t *testing.T) {
+	path := writeConfig(t, "token: yaml-secret\n")
+	for _, args := range [][]string{
+		{"-token", "cli-secret"},
+		{"--token", "cli-secret"},
+		{"-token=cli-secret"},
+		{"--token=cli-secret"},
+		{"-token="},
+		{"--token="},
+		{"-token"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			args := append([]string{"-config", path}, args...)
+			if _, _, err := Parse(args); !errors.Is(err, ErrUsage) || strings.Contains(err.Error(), "cli-secret") {
+				t.Fatalf("KVM inline token flag: %v; want ErrUsage without secret", err)
+			}
+			if _, err := ParseMCP(args); !errors.Is(err, ErrUsage) || strings.Contains(err.Error(), "cli-secret") {
+				t.Fatalf("MCP inline token flag: %v; want ErrUsage without secret", err)
+			}
+		})
 	}
 }
