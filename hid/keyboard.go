@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -39,29 +40,37 @@ type KeyStep struct {
 	Delay     *time.Duration
 }
 
-// Keyboard resolves text through its currently selected immutable layout.
+// Keyboard resolves text using its currently selected [Layout].
+//
+// Methods may be called concurrently. Each text, key or sequence call uses one
+// layout snapshot. A Keyboard must not be copied after first use.
 type Keyboard struct {
 	controller *Controller
-	layout     *Layout
+	layout     atomic.Pointer[Layout]
 }
 
-// NewKeyboard creates a keyboard sharing controller's action gate. Nil
-// dependencies are programming errors and panic; a zero Layout is valid.
+// NewKeyboard creates a keyboard sharing controller's action gate.
+//
+// Nil dependencies are programming errors and panic; a zero [Layout] is valid.
 func NewKeyboard(controller *Controller, layout *Layout) *Keyboard {
 	if controller == nil || layout == nil {
 		panic("hid: nil keyboard dependency")
 	}
-	return &Keyboard{controller: controller, layout: layout}
+	keyboard := &Keyboard{controller: controller}
+	keyboard.layout.Store(layout)
+	return keyboard
 }
 
-// SetLayout selects an immutable text map without preparing or sending to the
-// transport. Call it between keyboard operations; concurrent changes are not
-// supported. A nil layout is a programming error and panics.
+// SetLayout selects an immutable [Layout].
+//
+// It does not prepare or send to the transport and may run concurrently with
+// keyboard operations. Each operation snapshots its layout before resolving
+// input. A nil layout is a programming error and panics.
 func (keyboard *Keyboard) SetLayout(layout *Layout) {
 	if layout == nil {
 		panic("hid: nil keyboard layout")
 	}
-	keyboard.layout = layout
+	keyboard.layout.Store(layout)
 }
 
 type keyGroup struct {
@@ -87,6 +96,7 @@ func (keyboard *Keyboard) TypeText(ctx context.Context, text string, options Typ
 	if err != nil {
 		return err
 	}
+	layout := keyboard.layout.Load()
 	var plan []keyGroup
 	for _, token := range tokenize(text, options.Raw) {
 		var strokes []Stroke
@@ -95,13 +105,13 @@ func (keyboard *Keyboard) TypeText(ctx context.Context, text string, options Typ
 			for i := range parts {
 				parts[i] = strings.TrimSpace(parts[i])
 			}
-			strokes, err = keyboard.resolveKey(parts[len(parts)-1], parts[:len(parts)-1])
+			strokes, err = layout.resolveKey(parts[len(parts)-1], parts[:len(parts)-1])
 		} else if options.Raw && token.text == "\n" {
-			strokes, err = keyboard.resolveKey("enter", nil)
+			strokes, err = layout.resolveKey("enter", nil)
 		} else {
 			character, _ := utf8.DecodeRuneInString(token.text)
 			var ok bool
-			strokes, ok = keyboard.layout.Lookup(character)
+			strokes, ok = layout.Lookup(character)
 			if !ok {
 				err = fmt.Errorf("%w: %q", ErrUnsupported, character)
 			}
@@ -117,7 +127,7 @@ func (keyboard *Keyboard) TypeText(ctx context.Context, text string, options Typ
 // SendKey sends one named/hex key or layout character with optional modifiers.
 // Explicit modifiers apply to every stroke of a multi-stroke layout character.
 func (keyboard *Keyboard) SendKey(ctx context.Context, key string, modifiers []string) error {
-	strokes, err := keyboard.resolveKey(key, modifiers)
+	strokes, err := keyboard.layout.Load().resolveKey(key, modifiers)
 	if err != nil {
 		return err
 	}
@@ -134,9 +144,10 @@ func (keyboard *Keyboard) SendKeySequence(ctx context.Context, steps []KeyStep, 
 	if err != nil {
 		return err
 	}
+	layout := keyboard.layout.Load()
 	plan := make([]keyGroup, len(steps))
 	for i, step := range steps {
-		strokes, err := keyboard.resolveKey(step.Key, step.Modifiers)
+		strokes, err := layout.resolveKey(step.Key, step.Modifiers)
 		if err != nil {
 			return fmt.Errorf("step %d: %w", i, err)
 		}
@@ -149,7 +160,7 @@ func (keyboard *Keyboard) SendKeySequence(ctx context.Context, steps []KeyStep, 
 	return keyboard.play(ctx, plan)
 }
 
-func (keyboard *Keyboard) resolveKey(key string, names []string) ([]Stroke, error) {
+func (layout *Layout) resolveKey(key string, names []string) ([]Stroke, error) {
 	var bits byte
 	for _, name := range names {
 		bit, ok := Modifier(name)
@@ -165,7 +176,7 @@ func (keyboard *Keyboard) resolveKey(key string, names []string) ([]Stroke, erro
 		return nil, fmt.Errorf("%w: %q", ErrKeycode, key)
 	}
 	character, _ := utf8.DecodeRuneInString(key)
-	strokes, ok := keyboard.layout.Lookup(character)
+	strokes, ok := layout.Lookup(character)
 	if !ok {
 		return nil, fmt.Errorf("%w: %q", ErrUnsupported, character)
 	}

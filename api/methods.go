@@ -68,12 +68,20 @@ func (server *Server) setKeyboardLayout(ctx context.Context, data json.RawMessag
 	if err != nil {
 		return nil, err
 	}
+	server.mu.Lock()
+	defer server.mu.Unlock()
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	server.keyboard.SetLayout(layout)
 	server.layoutName = *request.Layout
-	return map[string]string{"keyboard_layout": server.layoutName}, nil
+	return map[string]string{"keyboard_layout": *request.Layout}, nil
+}
+
+func (server *Server) keyboardLayout() string {
+	server.mu.Lock()
+	defer server.mu.Unlock()
+	return server.layoutName
 }
 
 func (server *Server) listKeyboardLayouts(_ context.Context, data json.RawMessage) (any, error) {
@@ -87,7 +95,7 @@ func (server *Server) listKeyboardLayouts(_ context.Context, data json.RawMessag
 	return struct {
 		KeyboardLayout string           `json:"keyboard_layout"`
 		Layouts        []hid.LayoutInfo `json:"layouts"`
-	}{server.layoutName, layouts}, nil
+	}{server.keyboardLayout(), layouts}, nil
 }
 
 func (server *Server) typeText(ctx context.Context, data json.RawMessage) (any, error) {
@@ -297,7 +305,7 @@ func (server *Server) deviceInfo(ctx context.Context, data json.RawMessage) (any
 		"serial": map[string]any{"device": options.SerialDevice, "baud": options.SerialBaud, "auto_detect": options.SerialDevice == ""},
 		"config": map[string]any{
 			"screen_width": options.ScreenWidth, "screen_height": options.ScreenHeight,
-			"keyboard_layout": server.layoutName, "serial_baud": options.SerialBaud,
+			"keyboard_layout": server.keyboardLayout(), "serial_baud": options.SerialBaud,
 			"mouse_button_mode": options.ButtonMode,
 		},
 		"capture": server.captureInfo(ctx),
