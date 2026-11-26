@@ -88,7 +88,7 @@ func webArguments(args []string, settings *flag.FlagSet) []string {
 			break
 		}
 		if name == "web" && !assigned && (i+1 == len(args) || strings.HasPrefix(args[i+1], "-")) {
-			args[i] = argument + "=localhost:9330"
+			args[i] = argument + "=127.0.0.1:9330"
 		} else if !assigned {
 			boolean, ok := setting.Value.(interface{ IsBoolFlag() bool })
 			if !ok || !boolean.IsBoolFlag() {
@@ -139,7 +139,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.SetOutput(output)
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file")
 	settings.StringVar(&cfg.API, "api", cfg.API, "API listen host:port; empty disables it (example 127.0.0.1:9329)")
-	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen `[host:port]`; no address uses localhost:9330; empty disables it")
+	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen `[host:port]`; no address uses 127.0.0.1:9330; empty disables it")
 	settings.StringVar(&cfg.Token, "token", cfg.Token, "Shared-secret UTF-8 value; use token or token-file, not both")
 	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; empty disables authentication")
 	settings.StringVar(&cfg.SerialDevice, "serial-device", cfg.SerialDevice, "Serial path or Windows COMn; empty auto-detects one CH340/CH341")

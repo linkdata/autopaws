@@ -2,11 +2,20 @@ import {mapPointer, decodeMediaMessage, createFrameGuard, createInputController,
   from "./viewer-helpers.mjs";
 import {createAudioPlayback} from "./audio-playback.mjs";
 
+let secret = "";
+try { secret = sessionStorage.getItem("autopaws_token") ?? ""; } catch {}
 const authentication = tokenBootstrap(location.href);
 if (authentication !== null) {
   history.replaceState(null, "", authentication.url);
-  document.cookie = authentication.cookie;
+  secret = authentication.token;
+  try {
+    if (secret === "") sessionStorage.removeItem("autopaws_token");
+    else sessionStorage.setItem("autopaws_token", secret);
+  } catch {}
 }
+
+const protocols = secret === "" ? [] : ["autopaws", "autopaws-token." +
+  Array.from(new TextEncoder().encode(secret), byte => byte.toString(16).padStart(2, "0")).join("")];
 
 const byID = id => document.getElementById(id);
 const toolbar = byID("toolbar");
@@ -193,7 +202,7 @@ function connect() {
   showMessage("Connecting to the KVM…");
   const url = new URL("/ws", location.href);
   url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
-  const connection = new WebSocket(url);
+  const connection = new WebSocket(url, protocols);
   connection.binaryType = "arraybuffer";
   socket = connection;
   connection.addEventListener("open", () => {

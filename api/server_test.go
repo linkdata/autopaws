@@ -192,6 +192,7 @@ func TestBufferedExtraInputIsNotDispatched(t *testing.T) {
 		t.Fatal(err)
 	}
 	done := make(chan struct{})
+	server.pending = append(server.pending, serverConn)
 	go func() {
 		defer close(done)
 		server.handleConn(context.Background(), serverConn)
