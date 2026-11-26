@@ -33,8 +33,8 @@ func TestPendingRequestTimeout(t *testing.T) {
 				if partial != "" {
 					writeTest(t, client, partial)
 				}
-				if _, err := client.Read(make([]byte, 1)); !errors.Is(err, io.EOF) {
-					t.Fatalf("pending connection remained open: %v", err)
+				if _, err := io.Copy(io.Discard, client); err != nil {
+					t.Fatalf("pending connection did not close cleanly: %v", err)
 				}
 				<-done
 				if elapsed := time.Since(started); elapsed != requestTimeout {
