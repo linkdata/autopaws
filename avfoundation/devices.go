@@ -30,7 +30,8 @@ type Device struct {
 	Audio      bool
 }
 
-var deviceLine = regexp.MustCompile(`^\[[^]]*\]\s*\[[0-9]+\]\s*(.+)$`)
+// FFmpeg 9.1 appends device UIDs and optional serial numbers after the name.
+var deviceLine = regexp.MustCompile(`^\[[^]]*\]\s*\[[0-9]+\]\s*(.+?)(?:\s+\[uid:[^]]*\](?:\s+\[serial:[^]]*\])?)?$`)
 
 // Discover enumerates FFmpeg's AVFoundation inputs, excluding host displays.
 // FFmpeg deliberately exits nonzero after a successful device listing.

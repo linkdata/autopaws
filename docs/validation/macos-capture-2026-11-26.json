@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-26",
+  "scope": "Read-only replacement capture card investigation; no target input, configuration changes, screen inspection, screenshots or OCR retained.",
+  "host": {
+    "os": "macOS 27.2.1",
+    "build": "26B131",
+    "architecture": "arm64",
+    "installed_autopaws_version": "v0.5.0",
+    "ffmpeg_version": "9.1"
+  },
+  "capture": {
+    "video_name": "USB Video",
+    "usb_vid": "345f",
+    "usb_pid": "2109",
+    "audio_name": "USB Digital Audio",
+    "width": 1920,
+    "height": 1080,
+    "requested_fps": 30
+  },
+  "checks": [
+    {
+      "action": "Confirm macOS camera inventory, autopaws-kvm --list-devices and FFmpeg AVFoundation discovery all enumerate the card",
+      "result": "pass",
+      "observation": "All enumerate the card. FFmpeg 9.1 appends whitespace-separated [uid:...] metadata to video and audio names."
+    },
+    {
+      "action": "Open the automatically selected card using the unpatched Go AVFoundation backend",
+      "result": "fail",
+      "observation": "avfoundation: device missing or ambiguous: FFmpeg cannot select literal name containing the UID suffix."
+    },
+    {
+      "action": "Open USB Video:none directly with FFmpeg and discard one frame using the null output",
+      "result": "pass",
+      "observation": "The card accepts 1920x1080 at the requested 30 fps. FFmpeg negotiates uyvy422."
+    },
+    {
+      "action": "Discover, automatically select and open the card using the patched Go AVFoundation backend; read three frames, printing metadata only, then close",
+      "result": "pass",
+      "observation": "Selected avfoundation:USB Video; all three frames are 1920x1080 MJPEG. Frame contents were neither inspected nor retained."
+    },
+    {
+      "action": "Run AVFoundation regression tests against old listings and UID-annotated video/audio listings",
+      "result": "pass",
+      "observation": "The new regression test fails before the parser fix and passes after it."
+    }
+  ],
+  "limits": [
+    "No audio stream or browser playback test.",
+    "The installed autopaws binary was not replaced."
+  ]
+}
