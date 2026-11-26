@@ -175,7 +175,7 @@ func TestRuntimeCaptureSelectionConfigAndLazyFreshAPI(t *testing.T) {
 				discoveries.Add(1)
 				return []devices.VideoDevice{{Path: "/dev/video0", Name: "Integrated Webcam"}, {Path: "/dev/video2", Name: "HDMI"}}, nil
 			})
-			if selected.Device != wantDevice || selected.Width != 320 || selected.Height != 240 || selected.Autocrop != cfg.Autocrop {
+			if selected.Device != wantDevice || selected.Width != 320 || selected.Height != 240 || selected.Autocrop != cfg.Autocrop || selected.ScreenWidth != cfg.ScreenWidth || selected.ScreenHeight != cfg.ScreenHeight {
 				t.Fatalf("capture configuration was not forwarded: %+v", selected)
 			}
 			var info struct {

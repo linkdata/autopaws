@@ -15,7 +15,7 @@ func frameMetadata(width, height int) Metadata {
 func TestColdFrameSnapshotCropsAndCaches(t *testing.T) {
 	data := encodedImage(t, lumaImage(image.Rect(0, 0, 160, 120), image.Rect(0, 16, 160, 104), 200))
 	metadata := frameMetadata(160, 120)
-	frame, err := newProcessor(true).process(data, metadata, true)
+	frame, err := newProcessor(true, 160, 88).process(data, metadata, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestColdFrameSnapshotCropsAndCaches(t *testing.T) {
 
 func TestSnapshotPassthroughStillRequiresFullDecode(t *testing.T) {
 	data := colorJPEG(t)
-	processor := newProcessor(false)
+	processor := newProcessor(false, 0, 0)
 	frame, err := processor.process(data, frameMetadata(160, 120), false)
 	if err != nil {
 		t.Fatal(err)
@@ -89,13 +89,13 @@ func TestSnapshotPassthroughStillRequiresFullDecode(t *testing.T) {
 	if _, err = processor.process(truncated, frameMetadata(160, 120), true); err == nil {
 		t.Fatal("snapshot candidate accepted without full decode")
 	}
-	if _, err = newProcessor(false).process(truncated, frameMetadata(160, 120), false); err == nil {
+	if _, err = newProcessor(false, 0, 0).process(truncated, frameMetadata(160, 120), false); err == nil {
 		t.Fatal("corrupt warmup accepted")
 	}
 }
 
 func TestProcessorValidatesMetadataAndRecoversFromCorruptWarmup(t *testing.T) {
-	processor := newProcessor(true)
+	processor := newProcessor(true, 160, 88)
 	for _, data := range [][]byte{nil, []byte("garbage"), {0xff, 0xd8, 0xff, 0xe0, 0}} {
 		if _, err := processor.process(data, frameMetadata(160, 120), true); err == nil {
 			t.Fatal("corrupt candidate accepted")
@@ -120,7 +120,7 @@ func TestProcessorValidatesMetadataAndRecoversFromCorruptWarmup(t *testing.T) {
 func TestCropSamplingAndFrozenFrameMetadata(t *testing.T) {
 	plain := encodedImage(t, lumaImage(image.Rect(0, 0, 160, 120), image.Rect(0, 0, 160, 120), 200))
 	letterbox := encodedImage(t, lumaImage(image.Rect(0, 0, 160, 120), image.Rect(0, 16, 160, 104), 200))
-	p := newProcessor(true)
+	p := newProcessor(true, 160, 88)
 	old, err := p.process(plain, frameMetadata(160, 120), false)
 	if err != nil {
 		t.Fatal(err)
@@ -148,14 +148,14 @@ func TestCropSamplingAndFrozenFrameMetadata(t *testing.T) {
 		t.Fatal("new detection rewrote published metadata")
 	}
 	// A new processor is a fresh stream generation, with its own detector.
-	restarted, err := newProcessor(true).process(plain, frameMetadata(160, 120), true)
+	restarted, err := newProcessor(true, 160, 88).process(plain, frameMetadata(160, 120), true)
 	if err != nil || !restarted.Metadata().Crop.Empty() {
 		t.Fatal("new source inherited old crop", err)
 	}
 }
 
 func TestSnapshotRejectsInvalidCrop(t *testing.T) {
-	frame, err := newProcessor(false).process(colorJPEG(t), frameMetadata(160, 120), false)
+	frame, err := newProcessor(false, 0, 0).process(colorJPEG(t), frameMetadata(160, 120), false)
 	if err != nil {
 		t.Fatal(err)
 	}

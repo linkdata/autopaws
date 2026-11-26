@@ -91,6 +91,7 @@ func managerFrame(data []byte, micros int64, sequence uint32) v4l2.Frame {
 func managerOptions(source *managerSource, opened chan<- struct{}) Options {
 	return Options{
 		Device: "/dev/fake", Width: 128, Height: 96, Autocrop: true,
+		ScreenWidth: 128, ScreenHeight: 72,
 		IdleTimeout:  2 * time.Second,
 		MonotonicNow: func() (int64, error) { return 1_000, nil },
 		OpenSource: func(context.Context, string, v4l2.Options) (Source, error) {
@@ -329,7 +330,7 @@ func TestManagerNewInterestCancelsIdleStopAndLaterDemandRestarts(t *testing.T) {
 }
 
 func TestManagerOptionsAvailabilityAndDefaultSource(t *testing.T) {
-	for _, options := range []Options{{}, {Width: 1}, {Height: 1}, {Width: 1, Height: 1, IdleTimeout: -1}, {Device: "+1", Width: 1, Height: 1}} {
+	for _, options := range []Options{{}, {Width: 1}, {Height: 1}, {Width: 1, Height: 1, IdleTimeout: -1}, {Device: "+1", Width: 1, Height: 1}, {Width: 1, Height: 1, ScreenWidth: -1}, {Width: 1, Height: 1, ScreenHeight: -1}} {
 		if _, err := New(options); !errors.Is(err, ErrOptions) {
 			t.Errorf("invalid options accepted: %+v,%v", options, err)
 		}

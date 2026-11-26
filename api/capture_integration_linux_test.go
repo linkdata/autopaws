@@ -275,6 +275,7 @@ func TestCaptureAPIFreshCroppedSnapshot(t *testing.T) {
 	source.reads <- sourceFrame(data, 3000)
 	manager := captureManager(t, capture.Options{
 		Device: "/dev/video0", Width: 1920, Height: 1080, Autocrop: true,
+		ScreenWidth: 1920, ScreenHeight: 1080,
 		OpenSource: func(context.Context, string, v4l2.Options) (capture.Source, error) { return source, nil },
 	})
 	discover, _ := captureDiscovery(t, true)
@@ -289,7 +290,7 @@ func TestCaptureAPIFreshCroppedSnapshot(t *testing.T) {
 		t.Fatal(err)
 	}
 	decoded, err := jpeg.DecodeConfig(bytes.NewReader(frame.JPEG))
-	if err != nil || frame.Width != 160 || frame.Height != 88 || decoded.Width != frame.Width || decoded.Height != frame.Height {
+	if err != nil || frame.Width != 160 || frame.Height != 90 || decoded.Width != frame.Width || decoded.Height != frame.Height {
 		t.Fatalf("cropped frame = %dx%d, decoded %+v, %v", frame.Width, frame.Height, decoded, err)
 	}
 	if frame.TargetWidth != 1920 || frame.TargetHeight != 1080 {
