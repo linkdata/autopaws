@@ -169,9 +169,11 @@ filesystem read failures return `unavailable`. Failures and cancellation before
 activation leave the previous map and active name unchanged.
 
 The daemon uses the selection for subsequent text, tags, single-character keys
-and character-based sequences. Use sequential control requests from one active
-MCP connection. Restarting restores the CLI/YAML startup choice without rewriting
-configuration. Select the matching input source on the target OS separately.
+and character-based sequences. Each keyboard request resolves its entire plan
+against one layout; a concurrent switch does not alter that plan.
+Use sequential control requests from one active MCP connection. Restarting restores
+the CLI/YAML startup choice without rewriting configuration. Select the matching
+input source on the target OS separately.
 
 Listing and selection work without hardware and emit no input. They preserve
 capture/screenshot state, physical browser keycodes, named special keys,
