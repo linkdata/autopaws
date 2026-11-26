@@ -35,12 +35,13 @@ type Source interface {
 // use the platform capture backend and host monotonic clock. The FFmpeg source
 // retries failures while demand remains. Zero IdleTimeout uses ten seconds.
 type Options struct {
-	Device        string
-	Width, Height uint32
-	Autocrop      bool
-	OpenSource    func(context.Context, string, v4l2.Options) (Source, error)
-	MonotonicNow  func() (int64, error)
-	IdleTimeout   time.Duration
+	Device                    string
+	Width, Height             uint32
+	Autocrop                  bool
+	ScreenWidth, ScreenHeight int // Zero disables autocrop; otherwise the target output aspect.
+	OpenSource                func(context.Context, string, v4l2.Options) (Source, error)
+	MonotonicNow              func() (int64, error)
+	IdleTimeout               time.Duration
 }
 
 // Info reports selected/requested settings separately from negotiated Format.
@@ -103,7 +104,7 @@ type snapshotResult struct {
 // New validates settings without discovering or opening hardware. An empty
 // selected Device permits later selection while keyboard input remains usable.
 func New(options Options) (*Manager, error) {
-	if options.Width == 0 || options.Height == 0 || options.IdleTimeout < 0 || numericPath(options.Device) {
+	if options.Width == 0 || options.Height == 0 || options.ScreenWidth < 0 || options.ScreenHeight < 0 || options.IdleTimeout < 0 || numericPath(options.Device) {
 		return nil, ErrOptions
 	}
 	var recoveryDelay time.Duration
@@ -524,7 +525,7 @@ func unavailableError(err error) error {
 }
 
 func (manager *Manager) read(run *stream, source Source) error {
-	processor := newProcessor(run.settings.Autocrop)
+	processor := newProcessor(run.settings.Autocrop, run.settings.ScreenWidth, run.settings.ScreenHeight)
 	format := source.Format()
 	for {
 		frame, err := source.ReadFrame(run.ctx)

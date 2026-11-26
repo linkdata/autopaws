@@ -107,6 +107,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		}
 		video, err = factories.newCapture(capture.Options{
 			Device: selected, Width: uint32(cfg.CaptureWidth), Height: uint32(cfg.CaptureHeight), Autocrop: cfg.Autocrop,
+			ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
 		})
 		if err != nil {
 			return errors.Join(fmt.Errorf("create capture manager: %w", err), closeOwners())

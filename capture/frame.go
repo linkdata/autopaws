@@ -91,13 +91,16 @@ func (frame *Frame) Snapshot() (Snapshot, error) {
 }
 
 type processor struct {
-	autocrop bool
-	started  bool
-	frames   uint64
-	crop     image.Rectangle
+	autocrop                  bool
+	screenWidth, screenHeight int
+	started                   bool
+	frames                    uint64
+	crop                      image.Rectangle
 }
 
-func newProcessor(autocrop bool) *processor { return &processor{autocrop: autocrop} }
+func newProcessor(autocrop bool, screenWidth, screenHeight int) *processor {
+	return &processor{autocrop: autocrop, screenWidth: screenWidth, screenHeight: screenHeight}
+}
 
 // process takes ownership of raw. Full decoding happens during initial warmup,
 // crop detection and snapshot acquisition, then is reused by Snapshot.
@@ -119,7 +122,7 @@ func (processor *processor) process(raw []byte, metadata Metadata, needSnapshot 
 			return nil, err
 		}
 		if detect {
-			processor.crop, _ = DetectCrop(img)
+			processor.crop, _ = DetectCrop(img, processor.screenWidth, processor.screenHeight)
 		}
 	}
 	processor.started = true

@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-26",
+  "issue": 88,
+  "result": "PASS: read-only capture checks on the attached Windows target",
+  "privacy": "Actions, pass/fail and host/capture metadata only; no screen contents, labels, identifiers, screenshots or OCR retained or referenced.",
+  "target": {
+    "os": "Windows, as identified by owner",
+    "hdmi_resolution": [1920, 1080],
+    "resolution_source": "owner",
+    "scripts_placed": false,
+    "input_sent": false,
+    "files_or_settings_changed": false
+  },
+  "host": {
+    "os": "macOS 27.2.1",
+    "architecture": "arm64",
+    "ffmpeg_version": "9.1",
+    "build": "issue 88 working tree, go run ./cmd/autopaws-kvm",
+    "api": "127.0.0.1:19329",
+    "web": "127.0.0.1:19330",
+    "audio": "off"
+  },
+  "capture": {
+    "name": "USB Video",
+    "usb_vid": "345f",
+    "usb_pid": "2109",
+    "requested_width": 1920,
+    "requested_height": 1080
+  },
+  "checks": [
+    {
+      "action": "Start without an autocrop flag; acquire three fresh API snapshots and three WebSocket video frames",
+      "result": "pass",
+      "observation": "Status reports autocrop=false. Every snapshot is 1920x1080; every web crop rectangle is (0,0)-(1920,1080)."
+    },
+    {
+      "action": "Restart with explicit -autocrop; repeat three fresh API snapshots and three WebSocket video frames",
+      "result": "pass",
+      "observation": "Status reports autocrop=true. The matching target/capture aspects preserve 1920x1080 snapshots and full-frame web crop rectangles."
+    }
+  ],
+  "synthetic_regression_checks": [
+    "Matching-aspect dark desktop, centered content, single dark edge and letterboxed content do not crop.",
+    "A 1280x1024 target in a 1920x1080 capture crops to (285,0)-(1635,1080), including after quality-85 JPEG encoding.",
+    "A real capture-manager/API/MCP pipeline preserves screenshot-to-HID click coordinates for dark edges and real scaling bars. An overlay using the original detector fails the dark-edge case."
+  ],
+  "limits": [
+    "No physical input, audio or visual screen-content verification.",
+    "No target resolution changes; deliberately imposed scaling bars were tested synthetically.",
+    "Universal automatic detection of the incoming target aspect is not available; cropping is disabled by default."
+  ],
+  "cleanup": "Test daemons stopped; target settings unchanged."
+}

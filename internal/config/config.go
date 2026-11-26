@@ -52,7 +52,7 @@ func Defaults() Config {
 		API:        "127.0.0.1:9329",
 		SerialBaud: 9600, ScreenWidth: 1920, ScreenHeight: 1080,
 		TargetLayout: "us104", MouseButtonMode: "relative",
-		CaptureWidth: 1920, CaptureHeight: 1080, Autocrop: true,
+		CaptureWidth: 1920, CaptureHeight: 1080,
 		WebFPS: 20, LogLevel: "info",
 	}
 }

@@ -93,6 +93,7 @@ func newFixture(t *testing.T, options Options) fixture {
 	source := &frameSource{frames: make(chan v4l2.Frame), opened: make(chan struct{}), closed: make(chan struct{})}
 	captures, err := capture.New(capture.Options{
 		Device: "/dev/fake", Width: 128, Height: 96, Autocrop: true, IdleTimeout: time.Hour,
+		ScreenWidth: 1920, ScreenHeight: 1080,
 		OpenSource: func(context.Context, string, v4l2.Options) (capture.Source, error) {
 			close(source.opened)
 			return source, nil
