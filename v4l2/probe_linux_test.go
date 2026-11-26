@@ -13,8 +13,8 @@ import (
 
 func probeOperations(fake *fakeCapture, ops operations) operations {
 	ops.open = func(path string, flags int) (file, error) {
-		if path != "/probe/video" || flags != os.O_RDONLY|syscall.O_NONBLOCK {
-			panic("probe did not use a read-only nonblocking open")
+		if path != "/probe/video" || flags != os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOCTTY {
+			panic("probe used unexpected path or open flags")
 		}
 		return fake.file, nil
 	}
