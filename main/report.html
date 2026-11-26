@@ -141,7 +141,7 @@
 				
 				<option value="file42">github.com/linkdata/autopaws/hid/controller.go (100.0%)</option>
 				
-				<option value="file43">github.com/linkdata/autopaws/hid/keyboard.go (98.9%)</option>
+				<option value="file43">github.com/linkdata/autopaws/hid/keyboard.go (99.0%)</option>
 				
 				<option value="file44">github.com/linkdata/autopaws/hid/keycodes.go (100.0%)</option>
 				
@@ -345,9 +345,9 @@ func (capture *Capture) readLoop() error {
         storage := make([]byte, int(config.PeriodFrames)*int(config.Channels)*2)
         recovering := false
         for capture.lifetime.Err() == nil </span>{
-                <span class="cov8" title="57">frames, timestamp, err := capture.read(storage, config)
+                <span class="cov8" title="55">frames, timestamp, err := capture.read(storage, config)
                 if capture.lifetime.Err() != nil </span>{
-                        <span class="cov5" title="13">return nil
+                        <span class="cov5" title="11">return nil
 </span>                }
                 <span class="cov7" title="44">switch </span>{
                 case err == nil:
@@ -378,21 +378,21 @@ func (capture *Capture) readLoop() error {
                         <span class="cov5" title="10">return err</span>
                 }
         }
-        <span class="cov1" title="1">return nil</span>
+        <span class="cov3" title="3">return nil</span>
 }
 
 func (capture *Capture) read(storage []byte, config Config) (uint32, int64, error) {
-        <span class="cov8" title="58">capture.kernelMu.Lock()
+        <span class="cov8" title="56">capture.kernelMu.Lock()
         stopped := capture.lifetime.Err() != nil
         capture.kernelMu.Unlock()
         if stopped </span>{
                 <span class="cov1" title="1">return 0, 0, ErrClosed
 </span>        }
-        <span class="cov8" title="57">transfer := transfer{Buffer: unsafe.Pointer(&amp;storage[0]), Frames: uint64(config.PeriodFrames)}
+        <span class="cov8" title="55">transfer := transfer{Buffer: unsafe.Pointer(&amp;storage[0]), Frames: uint64(config.PeriodFrames)}
         err := capture.ops.ioctl(capture.fd, ioctlRead, unsafe.Pointer(&amp;transfer))
         runtime.KeepAlive(storage)
         if err != nil </span>{
-                <span class="cov7" title="32">return 0, 0, err
+                <span class="cov7" title="30">return 0, 0, err
 </span>        }
         <span class="cov6" title="25">if transfer.Result &lt;= 0 || uint64(transfer.Result) &gt; uint64(config.PeriodFrames) </span>{
                 <span class="cov3" title="3">return 0, 0, ErrSamples
@@ -549,7 +549,7 @@ func (subscription *Subscription) pop() Block {
 // it BEFORE TryNext, then wait only if no block/error is ready, to avoid missing
 // a concurrent publication. The signal carries no PCM and adds no sample queue.
 func (subscription *Subscription) Ready() &lt;-chan struct{} {
-        <span class="cov8" title="67">subscription.capture.mu.Lock()
+        <span class="cov8" title="68">subscription.capture.mu.Lock()
         defer subscription.capture.mu.Unlock()
         return subscription.notify
 </span>}
@@ -558,11 +558,11 @@ func (subscription *Subscription) Ready() &lt;-chan struct{} {
 // captured sample, separate from their acquisition duration. The queue itself
 // still holds at most100ms of sample frames.
 func (subscription *Subscription) TryNext() (Block, bool, error) {
-        <span class="cov8" title="68">now, err := subscription.capture.ops.now()
+        <span class="cov8" title="69">now, err := subscription.capture.ops.now()
         if err != nil </span>{
                 <span class="cov1" title="1">return Block{}, false, fmt.Errorf("alsa queue monotonic clock: %w", err)
 </span>        }
-        <span class="cov8" title="67">subscription.capture.mu.Lock()
+        <span class="cov8" title="68">subscription.capture.mu.Lock()
         defer subscription.capture.mu.Unlock()
         for len(subscription.queue) != 0 </span>{
                 <span class="cov7" title="30">first := subscription.queue[0]
@@ -573,7 +573,7 @@ func (subscription *Subscription) TryNext() (Block, bool, error) {
                 }
                 <span class="cov7" title="27">return subscription.pop(), true, nil</span>
         }
-        <span class="cov7" title="40">return Block{}, false, subscription.err</span>
+        <span class="cov7" title="41">return Block{}, false, subscription.err</span>
 }
 
 // Next discards blocks whose end-of-capture time is older than the server's
@@ -582,18 +582,18 @@ func (subscription *Subscription) TryNext() (Block, bool, error) {
 // stalls after Next must recheck freshness rather than replay an old block.
 func (subscription *Subscription) Next(ctx context.Context) (Block, error) {
         <span class="cov8" title="52">for </span>{
-                <span class="cov8" title="66">if err := ctx.Err(); err != nil </span>{
+                <span class="cov8" title="67">if err := ctx.Err(); err != nil </span>{
                         <span class="cov1" title="1">return Block{}, err
 </span>                }
-                <span class="cov8" title="65">notify := subscription.Ready()
+                <span class="cov8" title="66">notify := subscription.Ready()
                 block, ok, err := subscription.TryNext()
                 if err != nil || ok </span>{
                         <span class="cov8" title="50">return block, err
 </span>                }
-                <span class="cov5" title="15">select </span>{
+                <span class="cov6" title="16">select </span>{
                 case &lt;-ctx.Done():
                         <span class="cov1" title="1">return Block{}, ctx.Err()</span>
-                case &lt;-notify:<span class="cov5" title="14"></span>
+                case &lt;-notify:<span class="cov5" title="15"></span>
                 }
         }
 }
@@ -921,14 +921,14 @@ type captureStatus struct {
 }
 
 func (server *Server) captureDevices(ctx context.Context) ([]captureDevice, error) {
-        <span class="cov8" title="19">if server.options.DiscoverCapture == nil </span>{
+        <span class="cov7" title="19">if server.options.DiscoverCapture == nil </span>{
                 <span class="cov1" title="1">return nil, apiwire.ErrUnavailable
 </span>        }
-        <span class="cov8" title="18">found, err := server.options.DiscoverCapture(ctx)
+        <span class="cov7" title="18">found, err := server.options.DiscoverCapture(ctx)
         if err != nil </span>{
                 <span class="cov3" title="3">return nil, err
 </span>        }
-        <span class="cov8" title="15">result := make([]captureDevice, 0, len(found))
+        <span class="cov7" title="15">result := make([]captureDevice, 0, len(found))
         for _, device := range found </span>{
                 <span class="cov7" title="14">formats := make([]capturePixelFormat, 0, len(device.Formats))
                 for _, format := range device.Formats </span>{
@@ -939,47 +939,47 @@ func (server *Server) captureDevices(ctx context.Context) ([]captureDevice, erro
                         USB: captureUSB{device.USB.VID, device.USB.PID, device.USB.BusPath},
                 })</span>
         }
-        <span class="cov8" title="15">return result, nil</span>
+        <span class="cov7" title="15">return result, nil</span>
 }
 
 // captureInfo takes one manager metadata snapshot. Discovery enriches it
 // without opening a capture stream or changing selected/repairable settings.
 func (server *Server) captureInfo(ctx context.Context) any {
-        <span class="cov10" title="31">manager := server.options.Capture
+        <span class="cov10" title="47">manager := server.options.Capture
         if manager == nil </span>{
-                <span class="cov8" title="16">return map[string]apiwire.Code{"error": apiwire.ErrUnavailable}
+                <span class="cov9" title="32">return map[string]apiwire.Code{"error": apiwire.ErrUnavailable}
 </span>        }
-        <span class="cov8" title="15">info := manager.Info()
+        <span class="cov7" title="15">info := manager.Info()
         result := captureStatus{
                 Device: info.Device, RequestedWidth: info.Width, RequestedHeight: info.Height,
                 Autocrop: info.Autocrop, Running: info.Running, Generation: info.Generation,
                 AvailableDevices: []captureDevice{},
 </span>        }
-        <span class="cov8" title="15">if info.Format.Width != 0 || info.Format.Height != 0 </span>{
+        <span class="cov7" title="15">if info.Format.Width != 0 || info.Format.Height != 0 </span>{
                 <span class="cov3" title="3">result.Format = &amp;captureFormat{info.Format.Width, info.Format.Height, info.Format.FourCC, info.Format.BytesPerLine, info.Format.SizeImage}
 </span>        }
-        <span class="cov8" title="15">found, discoveryErr := server.captureDevices(ctx)
+        <span class="cov7" title="15">found, discoveryErr := server.captureDevices(ctx)
         if discoveryErr == nil </span>{
-                <span class="cov7" title="13">result.AvailableDevices = found
+                <span class="cov6" title="13">result.AvailableDevices = found
 </span>        }
-        <span class="cov8" title="15">statusErr := errors.Join(info.Err, discoveryErr)
+        <span class="cov7" title="15">statusErr := errors.Join(info.Err, discoveryErr)
         if info.Device == "" </span>{
                 <span class="cov1" title="1">statusErr = errors.Join(apiwire.ErrUnavailable, statusErr)
 </span>        }
-        <span class="cov8" title="15">if statusErr != nil </span>{
+        <span class="cov7" title="15">if statusErr != nil </span>{
                 <span class="cov5" title="6">result.Error, result.Detail = classifyError(statusErr)
 </span>        }
-        <span class="cov8" title="15">return result</span>
+        <span class="cov7" title="15">return result</span>
 }
 
 func (server *Server) captureFrame(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov8" title="17">if err := params(data, &amp;struct{}{}); err != nil </span>{
+        <span class="cov7" title="17">if err := params(data, &amp;struct{}{}); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
-        <span class="cov8" title="16">if server.options.Capture == nil </span>{
+        <span class="cov7" title="16">if server.options.Capture == nil </span>{
                 <span class="cov1" title="1">return nil, apiwire.ErrUnavailable
 </span>        }
-        <span class="cov8" title="15">frame, err := server.options.Capture.Snapshot(ctx)
+        <span class="cov7" title="15">frame, err := server.options.Capture.Snapshot(ctx)
         if err != nil </span>{
                 <span class="cov6" title="9">return nil, err
 </span>        }
@@ -993,7 +993,7 @@ func (server *Server) captureFrame(ctx context.Context, data json.RawMessage) (a
 }
 
 func (server *Server) listCaptureDevices(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov5" title="5">if err := params(data, &amp;struct{}{}); err != nil </span>{
+        <span class="cov4" title="5">if err := params(data, &amp;struct{}{}); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
         <span class="cov4" title="4">found, err := server.captureDevices(ctx)
@@ -1012,15 +1012,15 @@ func (server *Server) setCaptureDevice(ctx context.Context, data json.RawMessage
         <span class="cov7" title="14">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
-        <span class="cov7" title="13">if request.Device == nil </span>{
+        <span class="cov6" title="13">if request.Device == nil </span>{
                 <span class="cov2" title="2">return nil, required("device")
 </span>        }
-        <span class="cov7" title="11">numeric := *request.Device
+        <span class="cov6" title="11">numeric := *request.Device
         if len(numeric) &gt; 0 &amp;&amp; (numeric[0] == '+' || numeric[0] == '-') </span>{
                 <span class="cov3" title="3">numeric = numeric[1:]
 </span>        }
-        <span class="cov7" title="11">if *request.Device == "" || numeric != "" &amp;&amp; strings.Trim(numeric, "0123456789") == "" </span>{
-                <span class="cov5" title="5">return nil, fmt.Errorf("%w: device must be a nonempty path, not a numeric index", apiwire.ErrInvalidParams)
+        <span class="cov6" title="11">if *request.Device == "" || numeric != "" &amp;&amp; strings.Trim(numeric, "0123456789") == "" </span>{
+                <span class="cov4" title="5">return nil, fmt.Errorf("%w: device must be a nonempty path, not a numeric index", apiwire.ErrInvalidParams)
 </span>        }
         <span class="cov5" title="6">if server.options.Capture == nil </span>{
                 <span class="cov3" title="3">return nil, apiwire.ErrUnavailable
@@ -1032,16 +1032,16 @@ func (server *Server) setCaptureDevice(ctx context.Context, data json.RawMessage
 }
 
 func (server *Server) setCaptureResolution(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov8" title="18">var request struct {
+        <span class="cov7" title="18">var request struct {
                 Width, Height *uint32
 </span>        }
-        <span class="cov8" title="18">if err := params(data, &amp;request); err != nil </span>{
+        <span class="cov7" title="18">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov4" title="4">return nil, err
 </span>        }
         <span class="cov7" title="14">if request.Width == nil || request.Height == nil || *request.Width == 0 || *request.Height == 0 </span>{
                 <span class="cov3" title="3">return nil, fmt.Errorf("%w: width and height must be positive uint32 values", apiwire.ErrInvalidParams)
 </span>        }
-        <span class="cov7" title="11">if server.options.Capture == nil </span>{
+        <span class="cov6" title="11">if server.options.Capture == nil </span>{
                 <span class="cov2" title="2">return nil, apiwire.ErrUnavailable
 </span>        }
         <span class="cov6" title="9">if err := server.options.Capture.SetResolution(ctx, *request.Width, *request.Height); err != nil </span>{
@@ -1067,9 +1067,9 @@ import (
 )
 
 func classifyError(err error) (apiwire.Code, string) {
-        <span class="cov10" title="164">var code apiwire.Code
+        <span class="cov10" title="183">var code apiwire.Code
         switch </span>{
-        case errors.As(err, &amp;code):<span class="cov9" title="104"></span>
+        case errors.As(err, &amp;code):<span class="cov9" title="123"></span>
         case errors.Is(err, context.Canceled):
                 <span class="cov4" title="6">code = apiwire.ErrCanceled</span>
         case errors.Is(err, context.DeadlineExceeded):
@@ -1093,13 +1093,13 @@ func classifyError(err error) (apiwire.Code, string) {
         case errors.Is(err, serial.ErrBusy):
                 <span class="cov1" title="1">code = apiwire.ErrBusy</span>
         default:
-                <span class="cov6" title="18">code = apiwire.ErrUnavailable</span>
+                <span class="cov5" title="18">code = apiwire.ErrUnavailable</span>
         }
-        <span class="cov10" title="164">detail := err.Error()
+        <span class="cov10" title="183">detail := err.Error()
         if detail == code.Error() </span>{
                 <span class="cov5" title="12">detail = ""
 </span>        }
-        <span class="cov10" title="164">return code, detail</span>
+        <span class="cov10" title="183">return code, detail</span>
 }
 </pre>
 		
@@ -1131,7 +1131,7 @@ import (
 )
 
 func (server *Server) methods() map[string]handler {
-        <span class="cov5" title="70">return map[string]handler{
+        <span class="cov5" title="71">return map[string]handler{
                 "ping": server.ping, "type_text": server.typeText,
                 "send_key": server.sendKey, "send_key_sequence": server.sendKeySequence,
                 "mouse_move": server.mouseMove, "mouse_click": server.mouseClick,
@@ -1146,7 +1146,7 @@ func (server *Server) methods() map[string]handler {
 }
 
 func params(data json.RawMessage, output any) error {
-        <span class="cov6" title="213">return decodeObject(data, output, apiwire.ErrInvalidParams)
+        <span class="cov9" title="2366">return decodeObject(data, output, apiwire.ErrInvalidParams)
 </span>}
 
 func required(name string) error {
@@ -1154,13 +1154,13 @@ func required(name string) error {
 </span>}
 
 func milliseconds(value *int64) (*time.Duration, error) {
-        <span class="cov10" title="4134">if value == nil </span>{
+        <span class="cov10" title="4182">if value == nil </span>{
                 <span class="cov9" title="4118">return nil, nil
 </span>        }
-        <span class="cov3" title="16">if *value &lt; 0 || *value &gt; int64(hid.MaxDelay/time.Millisecond) </span>{
+        <span class="cov5" title="64">if *value &lt; 0 || *value &gt; int64(hid.MaxDelay/time.Millisecond) </span>{
                 <span class="cov2" title="6">return nil, fmt.Errorf("%w: delay must be in 0..%d ms", apiwire.ErrInvalidParams, hid.MaxDelay/time.Millisecond)
 </span>        }
-        <span class="cov3" title="10">delay := time.Duration(*value) * time.Millisecond
+        <span class="cov5" title="58">delay := time.Duration(*value) * time.Millisecond
         return &amp;delay, nil</span>
 }
 
@@ -1172,85 +1172,93 @@ func (server *Server) ping(_ context.Context, data json.RawMessage) (any, error)
 }
 
 func (server *Server) setKeyboardLayout(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov4" title="18">var request struct {
+        <span class="cov9" title="2091">var request struct {
                 Layout *string `json:"layout"`
 </span>        }
-        <span class="cov4" title="18">if err := params(data, &amp;request); err != nil </span>{
+        <span class="cov9" title="2091">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov2" title="3">return nil, err
 </span>        }
-        <span class="cov3" title="15">if request.Layout == nil </span>{
+        <span class="cov9" title="2088">if request.Layout == nil </span>{
                 <span class="cov1" title="2">return nil, required("layout")
 </span>        }
-        <span class="cov3" title="13">layout, err := hid.LoadLayout(*request.Layout, server.options.LayoutsDir)
+        <span class="cov9" title="2086">layout, err := hid.LoadLayout(*request.Layout, server.options.LayoutsDir)
         if err != nil </span>{
                 <span class="cov3" title="8">return nil, err
 </span>        }
-        <span class="cov2" title="5">if err := ctx.Err(); err != nil </span>{
+        <span class="cov9" title="2078">server.mu.Lock()
+        defer server.mu.Unlock()
+        if err := ctx.Err(); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
-        <span class="cov2" title="4">server.keyboard.SetLayout(layout)
+        <span class="cov9" title="2077">server.keyboard.SetLayout(layout)
         server.layoutName = *request.Layout
-        return map[string]string{"keyboard_layout": server.layoutName}, nil</span>
+        return map[string]string{"keyboard_layout": *request.Layout}, nil</span>
 }
 
+func (server *Server) keyboardLayout() string {
+        <span class="cov5" title="56">server.mu.Lock()
+        defer server.mu.Unlock()
+        return server.layoutName
+</span>}
+
 func (server *Server) listKeyboardLayouts(_ context.Context, data json.RawMessage) (any, error) {
-        <span class="cov2" title="4">if err := params(data, &amp;struct{}{}); err != nil </span>{
+        <span class="cov4" title="20">if err := params(data, &amp;struct{}{}); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
-        <span class="cov2" title="3">layouts, err := hid.ListLayouts(server.options.LayoutsDir)
+        <span class="cov4" title="19">layouts, err := hid.ListLayouts(server.options.LayoutsDir)
         if err != nil </span>{
                 <span class="cov1" title="2">return nil, fmt.Errorf("%w: %v", apiwire.ErrUnavailable, err)
 </span>        }
-        <span class="cov1" title="1">return struct {
+        <span class="cov4" title="17">return struct {
                 KeyboardLayout string           `json:"keyboard_layout"`
                 Layouts        []hid.LayoutInfo `json:"layouts"`
-        }{server.layoutName, layouts}, nil</span>
+        }{server.keyboardLayout(), layouts}, nil</span>
 }
 
 func (server *Server) typeText(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov4" title="18">var request struct {
+        <span class="cov4" title="34">var request struct {
                 Text      *string `json:"text"`
                 CharDelay *int64  `json:"char_delay_ms"`
                 Raw       bool    `json:"raw"`
 </span>        }
-        <span class="cov4" title="18">if err := params(data, &amp;request); err != nil </span>{
+        <span class="cov4" title="34">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov2" title="5">return nil, err
 </span>        }
-        <span class="cov3" title="13">if request.Text == nil </span>{
+        <span class="cov4" title="29">if request.Text == nil </span>{
                 <span class="cov1" title="2">return nil, required("text")
 </span>        }
-        <span class="cov3" title="11">delay, err := milliseconds(request.CharDelay)
+        <span class="cov4" title="27">delay, err := milliseconds(request.CharDelay)
         if err != nil </span>{
                 <span class="cov1" title="2">return nil, err
 </span>        }
-        <span class="cov3" title="9">if server.options.KeyLogger != nil </span>{
+        <span class="cov4" title="25">if server.options.KeyLogger != nil </span>{
                 <span class="cov1" title="1">server.options.KeyLogger.Debug("API typed text", "text", *request.Text, "raw", request.Raw)
 </span>        }
-        <span class="cov3" title="9">if err := server.keyboard.TypeText(ctx, *request.Text, hid.TypeOptions{Raw: request.Raw, CharDelay: delay}); err != nil </span>{
+        <span class="cov4" title="25">if err := server.keyboard.TypeText(ctx, *request.Text, hid.TypeOptions{Raw: request.Raw, CharDelay: delay}); err != nil </span>{
                 <span class="cov2" title="5">return nil, err
 </span>        }
-        <span class="cov2" title="4">return map[string]int{"chars_typed": utf8.RuneCountInString(*request.Text)}, nil</span>
+        <span class="cov4" title="20">return map[string]int{"chars_typed": utf8.RuneCountInString(*request.Text)}, nil</span>
 }
 
 func (server *Server) sendKey(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov3" title="13">var request struct {
+        <span class="cov4" title="29">var request struct {
                 Key       *string  `json:"key"`
                 Modifiers []string `json:"modifiers"`
 </span>        }
-        <span class="cov3" title="13">if err := params(data, &amp;request); err != nil </span>{
+        <span class="cov4" title="29">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov2" title="6">return nil, err
 </span>        }
-        <span class="cov3" title="7">if request.Key == nil </span>{
+        <span class="cov4" title="23">if request.Key == nil </span>{
                 <span class="cov1" title="2">return nil, required("key")
 </span>        }
-        <span class="cov2" title="5">if err := server.keyboard.SendKey(ctx, *request.Key, request.Modifiers); err != nil </span>{
+        <span class="cov4" title="21">if err := server.keyboard.SendKey(ctx, *request.Key, request.Modifiers); err != nil </span>{
                 <span class="cov2" title="3">return nil, err
 </span>        }
-        <span class="cov1" title="2">return map[string]bool{"sent": true}, nil</span>
+        <span class="cov4" title="18">return map[string]bool{"sent": true}, nil</span>
 }
 
 func (server *Server) sendKeySequence(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov4" title="19">var request struct {
+        <span class="cov4" title="35">var request struct {
                 Steps *[]struct {
                         Key       *string  `json:"key"`
                         Modifiers []string `json:"modifiers"`
@@ -1258,34 +1266,34 @@ func (server *Server) sendKeySequence(ctx context.Context, data json.RawMessage)
                 } `json:"steps"`
                 DefaultDelay *int64 `json:"default_delay_ms"`
 </span>        }
-        <span class="cov4" title="19">if err := params(data, &amp;request); err != nil </span>{
+        <span class="cov4" title="35">if err := params(data, &amp;request); err != nil </span>{
                 <span class="cov2" title="3">return nil, err
 </span>        }
-        <span class="cov3" title="16">if request.Steps == nil </span>{
+        <span class="cov4" title="32">if request.Steps == nil </span>{
                 <span class="cov1" title="2">return nil, required("steps")
 </span>        }
-        <span class="cov3" title="14">if len(*request.Steps) &gt; hid.MaxSequenceSteps </span>{
+        <span class="cov4" title="30">if len(*request.Steps) &gt; hid.MaxSequenceSteps </span>{
                 <span class="cov1" title="1">return nil, hid.ErrSequence
 </span>        }
-        <span class="cov3" title="13">delay, err := milliseconds(request.DefaultDelay)
+        <span class="cov4" title="29">delay, err := milliseconds(request.DefaultDelay)
         if err != nil </span>{
                 <span class="cov1" title="2">return nil, err
 </span>        }
-        <span class="cov3" title="11">steps := make([]hid.KeyStep, len(*request.Steps))
+        <span class="cov4" title="27">steps := make([]hid.KeyStep, len(*request.Steps))
         for i, step := range *request.Steps </span>{
-                <span class="cov9" title="4112">if step.Key == nil </span>{
+                <span class="cov9" title="4128">if step.Key == nil </span>{
                         <span class="cov1" title="2">return nil, required(fmt.Sprintf("steps[%d].key", i))
 </span>                }
-                <span class="cov9" title="4110">stepDelay, err := milliseconds(step.Delay)
+                <span class="cov9" title="4126">stepDelay, err := milliseconds(step.Delay)
                 if err != nil </span>{
                         <span class="cov1" title="2">return nil, err
 </span>                }
-                <span class="cov9" title="4108">steps[i] = hid.KeyStep{Key: *step.Key, Modifiers: step.Modifiers, Delay: stepDelay}</span>
+                <span class="cov9" title="4124">steps[i] = hid.KeyStep{Key: *step.Key, Modifiers: step.Modifiers, Delay: stepDelay}</span>
         }
-        <span class="cov3" title="7">if err := server.keyboard.SendKeySequence(ctx, steps, delay); err != nil </span>{
+        <span class="cov4" title="23">if err := server.keyboard.SendKeySequence(ctx, steps, delay); err != nil </span>{
                 <span class="cov2" title="4">return nil, err
 </span>        }
-        <span class="cov2" title="3">return map[string]int{"steps_sent": len(steps)}, nil</span>
+        <span class="cov4" title="19">return map[string]int{"steps_sent": len(steps)}, nil</span>
 }
 
 func (server *Server) mouseMove(ctx context.Context, data json.RawMessage) (any, error) {
@@ -1406,15 +1414,15 @@ func (server *Server) mouseDrag(ctx context.Context, data json.RawMessage) (any,
 }
 
 func (server *Server) deviceInfo(ctx context.Context, data json.RawMessage) (any, error) {
-        <span class="cov4" title="24">if err := params(data, &amp;struct{}{}); err != nil </span>{
+        <span class="cov4" title="40">if err := params(data, &amp;struct{}{}); err != nil </span>{
                 <span class="cov1" title="1">return nil, err
 </span>        }
-        <span class="cov4" title="23">options := server.options
+        <span class="cov4" title="39">options := server.options
         return map[string]any{
                 "serial": map[string]any{"device": options.SerialDevice, "baud": options.SerialBaud, "auto_detect": options.SerialDevice == ""},
                 "config": map[string]any{
                         "screen_width": options.ScreenWidth, "screen_height": options.ScreenHeight,
-                        "keyboard_layout": server.layoutName, "serial_baud": options.SerialBaud,
+                        "keyboard_layout": server.keyboardLayout(), "serial_baud": options.SerialBaud,
                         "mouse_button_mode": options.ButtonMode,
                 },
                 "capture": server.captureInfo(ctx),
@@ -1478,7 +1486,7 @@ type Server struct {
         keyboard   *hid.Keyboard
         mouse      *hid.Mouse
         options    Options
-        layoutName string
+        layoutName string // guarded by mu
         handlers   map[string]handler
 
         mu        sync.Mutex
@@ -1491,15 +1499,15 @@ type Server struct {
 // New constructs a server without opening devices or listeners. Nil HID
 // dependencies are programming errors and panic. Call Serve once per Server.
 func New(keyboard *hid.Keyboard, mouse *hid.Mouse, options Options) *Server {
-        <span class="cov5" title="72">if keyboard == nil || mouse == nil </span>{
+        <span class="cov5" title="73">if keyboard == nil || mouse == nil </span>{
                 <span class="cov1" title="2">panic("api: nil HID dependency")</span>
         }
-        <span class="cov5" title="70">server := &amp;Server{
+        <span class="cov5" title="71">server := &amp;Server{
                 keyboard: keyboard, mouse: mouse, options: options,
                 layoutName: options.KeyboardLayout,
                 conns:      make(map[net.Conn]struct{}), serveDone: make(chan struct{}),
 </span>        }
-        <span class="cov5" title="70">server.handlers = server.methods()
+        <span class="cov5" title="71">server.handlers = server.methods()
         return server</span>
 }
 
@@ -1512,24 +1520,24 @@ func New(keyboard *hid.Keyboard, mouse *hid.Mouse, options Options) *Server {
 // shutdown. It does not wait for HID cleanup. Start Controller.Close promptly,
 // then [Server.Wait].
 func (server *Server) Serve(ctx context.Context, listener net.Listener) error {
-        <span class="cov5" title="46">runCtx, cancel := context.WithCancel(ctx)
+        <span class="cov5" title="47">runCtx, cancel := context.WithCancel(ctx)
         stopped := make(chan struct{})
         go func() </span>{
-                <span class="cov5" title="46">defer close(stopped)
+                <span class="cov5" title="47">defer close(stopped)
                 &lt;-runCtx.Done()
                 server.stopNetwork(listener)
 </span>        }()
-        <span class="cov5" title="46">defer func() </span>{
-                <span class="cov5" title="46">cancel()
+        <span class="cov5" title="47">defer func() </span>{
+                <span class="cov5" title="47">cancel()
                 &lt;-stopped
                 close(server.serveDone)
 </span>        }()
-        <span class="cov5" title="46">var retryDelay time.Duration
+        <span class="cov5" title="47">var retryDelay time.Duration
         for </span>{
-                <span class="cov7" title="342">conn, err := listener.Accept()
+                <span class="cov9" title="2496">conn, err := listener.Accept()
                 if err != nil </span>{
-                        <span class="cov5" title="56">if runCtx.Err() != nil </span>{
-                                <span class="cov5" title="43">return nil
+                        <span class="cov5" title="57">if runCtx.Err() != nil </span>{
+                                <span class="cov5" title="44">return nil
 </span>                        }
                         <span class="cov3" title="13">var networkErr net.Error
                         if errors.As(err, &amp;networkErr) &amp;&amp; networkErr.Temporary() </span>{ //nolint:staticcheck // SA1019 -- Match net/http's retry classification for listener resource exhaustion.
@@ -1547,174 +1555,174 @@ func (server *Server) Serve(ctx context.Context, listener net.Listener) error {
                         }
                         <span class="cov1" title="1">return err</span>
                 }
-                <span class="cov7" title="286">retryDelay = 0
+                <span class="cov9" title="2439">retryDelay = 0
                 server.mu.Lock()
                 if runCtx.Err() != nil </span>{
                         <span class="cov1" title="1">server.mu.Unlock()
                         _ = conn.Close()
                         return nil
 </span>                }
-                <span class="cov7" title="285">var displaced net.Conn
+                <span class="cov9" title="2438">var displaced net.Conn
                 if len(server.pending) == maxPending </span>{
                         <span class="cov1" title="2">displaced = server.pending[0]
                         server.pending = slices.Delete(server.pending, 0, 1)
 </span>                }
-                <span class="cov7" title="285">server.pending = append(server.pending, conn)
+                <span class="cov9" title="2438">server.pending = append(server.pending, conn)
                 server.conns[conn] = struct{}{}
                 server.workers.Add(1)
                 server.mu.Unlock()
                 if displaced != nil </span>{
                         <span class="cov1" title="2">_ = displaced.Close()
 </span>                }
-                <span class="cov7" title="285">go func() </span>{
-                        <span class="cov7" title="285">defer server.workers.Done()
+                <span class="cov9" title="2438">go func() </span>{
+                        <span class="cov9" title="2438">defer server.workers.Done()
                         defer func() </span>{
-                                <span class="cov7" title="285">server.mu.Lock()
+                                <span class="cov9" title="2438">server.mu.Lock()
                                 delete(server.conns, conn)
-                                server.pending = slices.DeleteFunc(server.pending, func(pending net.Conn) bool </span>{ <span class="cov10" title="4361">return pending == conn }</span>)
-                                <span class="cov7" title="285">server.mu.Unlock()</span>
+                                server.pending = slices.DeleteFunc(server.pending, func(pending net.Conn) bool </span>{ <span class="cov10" title="4898">return pending == conn }</span>)
+                                <span class="cov9" title="2438">server.mu.Unlock()</span>
                         }()
-                        <span class="cov7" title="285">server.handleConn(runCtx, conn)</span>
+                        <span class="cov9" title="2438">server.handleConn(runCtx, conn)</span>
                 }()
         }
 }
 
 func (server *Server) stopNetwork(listener net.Listener) {
-        <span class="cov5" title="46">_ = listener.Close()
+        <span class="cov5" title="47">_ = listener.Close()
         server.mu.Lock()
         conns := make([]net.Conn, 0, len(server.conns))
         for conn := range server.conns </span>{
-                <span class="cov5" title="87">conns = append(conns, conn)
+                <span class="cov5" title="92">conns = append(conns, conn)
 </span>        }
-        <span class="cov5" title="46">server.mu.Unlock()
+        <span class="cov5" title="47">server.mu.Unlock()
         for _, conn := range conns </span>{
-                <span class="cov5" title="87">_ = conn.Close()
+                <span class="cov5" title="92">_ = conn.Close()
 </span>        }
 }
 
 // Wait joins handlers after Serve has stopped adding them. It may be called
 // early, but callers should initiate shared Controller.Close before waiting.
 func (server *Server) Wait() {
-        <span class="cov5" title="46">&lt;-server.serveDone
+        <span class="cov5" title="47">&lt;-server.serveDone
         server.workers.Wait()
 </span>}
 
 func (server *Server) handleConn(ctx context.Context, conn net.Conn) {
-        <span class="cov7" title="297">var monitorDone chan struct{}
+        <span class="cov9" title="2450">var monitorDone chan struct{}
         defer func() </span>{
-                <span class="cov7" title="297">_ = conn.Close()
+                <span class="cov9" title="2450">_ = conn.Close()
                 if monitorDone != nil </span>{
-                        <span class="cov6" title="149">&lt;-monitorDone
+                        <span class="cov9" title="2302">&lt;-monitorDone
 </span>                }
         }()
-        <span class="cov7" title="297">if err := conn.SetDeadline(time.Now().Add(requestTimeout)); err != nil </span>{
+        <span class="cov9" title="2450">if err := conn.SetDeadline(time.Now().Add(requestTimeout)); err != nil </span>{
                 <span class="cov0" title="0">return
 </span>        }
-        <span class="cov7" title="297">reader := bufio.NewReader(conn)
+        <span class="cov9" title="2450">reader := bufio.NewReader(conn)
         line, err := apiwire.ReadLine(reader, apiwire.MaxRequestLine)
         if err != nil </span>{
                 <span class="cov6" title="134">if errors.Is(err, io.EOF) || ctx.Err() != nil </span>{
-                        <span class="cov6" title="107">return
+                        <span class="cov5" title="88">return
 </span>                }
-                <span class="cov4" title="27">code := apiwire.ErrInvalidRequest
+                <span class="cov5" title="46">code := apiwire.ErrInvalidRequest
                 if errors.Is(err, apiwire.ErrLineTooLarge) </span>{
                         <span class="cov1" title="1">code = apiwire.ErrRequestTooLarge
 </span>                }
-                <span class="cov4" title="27">_ = server.respond(conn, nil, "", nil, fmt.Errorf("%w: %v", code, err))
+                <span class="cov5" title="46">_ = server.respond(conn, nil, "", nil, fmt.Errorf("%w: %v", code, err))
                 return</span>
         }
-        <span class="cov6" title="163">var request apiwire.Request
+        <span class="cov9" title="2316">var request apiwire.Request
         if err := decodeObject(line, &amp;request, apiwire.ErrInvalidRequest); err != nil </span>{
                 <span class="cov2" title="6">_ = server.respond(conn, nil, "", nil, err)
                 return
 </span>        }
-        <span class="cov6" title="157">if !token.Match(server.options.Token, request.Token) </span>{
+        <span class="cov9" title="2310">if !token.Match(server.options.Token, request.Token) </span>{
                 <span class="cov2" title="5">_ = server.respond(conn, request.ID, "", nil, apiwire.ErrUnauthorized)
                 return
 </span>        }
-        <span class="cov6" title="152">server.mu.Lock()
+        <span class="cov9" title="2305">server.mu.Lock()
         index := slices.Index(server.pending, conn)
         if index &gt;= 0 </span>{
-                <span class="cov6" title="152">server.pending = slices.Delete(server.pending, index, index+1)
+                <span class="cov9" title="2305">server.pending = slices.Delete(server.pending, index, index+1)
 </span>        }
-        <span class="cov6" title="152">server.mu.Unlock()
+        <span class="cov9" title="2305">server.mu.Unlock()
         if index &lt; 0 </span>{
                 <span class="cov0" title="0">return // A newer connection displaced this one before authentication.
 </span>        }
-        <span class="cov6" title="152">if err := conn.SetDeadline(time.Time{}); err != nil </span>{
+        <span class="cov9" title="2305">if err := conn.SetDeadline(time.Time{}); err != nil </span>{
                 <span class="cov0" title="0">return
 </span>        }
-        <span class="cov6" title="152">if request.Method == "" </span>{
+        <span class="cov9" title="2305">if request.Method == "" </span>{
                 <span class="cov1" title="2">_ = server.respond(conn, request.ID, "", nil, fmt.Errorf("%w: method is required", apiwire.ErrInvalidRequest))
                 return
 </span>        }
-        <span class="cov6" title="150">if len(request.Params) == 0 </span>{
+        <span class="cov9" title="2303">if len(request.Params) == 0 </span>{
                 <span class="cov4" title="17">request.Params = json.RawMessage("{}")
 </span>        }
-        <span class="cov6" title="150">if reader.Buffered() != 0 </span>{
+        <span class="cov9" title="2303">if reader.Buffered() != 0 </span>{
                 <span class="cov1" title="1">_ = server.respond(conn, request.ID, request.Method, nil, fmt.Errorf("%w: extra input after request line", apiwire.ErrInvalidRequest))
                 return
 </span>        }
-        <span class="cov6" title="149">requestCtx, cancel := context.WithCancel(ctx)
+        <span class="cov9" title="2302">requestCtx, cancel := context.WithCancel(ctx)
         defer cancel()
         monitorDone = make(chan struct{})
         monitorReason := make(chan bool, 1)
         go func() </span>{
-                <span class="cov6" title="149">defer close(monitorDone)
+                <span class="cov9" title="2302">defer close(monitorDone)
                 _, err := reader.ReadByte()
                 monitorReason &lt;- err == nil
                 cancel()
 </span>        }()
-        <span class="cov6" title="149">method, found := server.handlers[request.Method]
+        <span class="cov9" title="2302">method, found := server.handlers[request.Method]
         var result any
         if !found </span>{
                 <span class="cov2" title="3">err = fmt.Errorf("%w: %s", apiwire.ErrUnknownMethod, request.Method)
 </span>        } else {
-                <span class="cov6" title="146">result, err = method(requestCtx, request.Params)
+                <span class="cov9" title="2299">result, err = method(requestCtx, request.Params)
 </span>        }
-        <span class="cov6" title="149">if err == nil </span>{
-                <span class="cov5" title="64">err = requestCtx.Err()
+        <span class="cov9" title="2302">if err == nil </span>{
+                <span class="cov9" title="2217">err = requestCtx.Err()
 </span>        }
-        <span class="cov6" title="149">select </span>{
+        <span class="cov9" title="2302">select </span>{
         case extraInput := &lt;-monitorReason:
                 <span class="cov2" title="6">if extraInput </span>{
                         <span class="cov1" title="1">err = fmt.Errorf("%w: extra input after request line (action error: %v)", apiwire.ErrInvalidRequest, err)
 </span>                }
-        default:<span class="cov6" title="143"></span>
+        default:<span class="cov9" title="2296"></span>
         }
-        <span class="cov6" title="149">_ = server.respond(conn, request.ID, request.Method, result, err)</span>
+        <span class="cov9" title="2302">_ = server.respond(conn, request.ID, request.Method, result, err)</span>
 }
 
 func (server *Server) respond(writer io.Writer, id json.RawMessage, method string, result any, err error) error {
-        <span class="cov6" title="193">response := apiwire.Response{ID: id, OK: err == nil}
+        <span class="cov9" title="2365">response := apiwire.Response{ID: id, OK: err == nil}
         if err == nil </span>{
-                <span class="cov5" title="65">response.Result, err = json.Marshal(result)
+                <span class="cov9" title="2218">response.Result, err = json.Marshal(result)
                 response.OK = err == nil
 </span>        }
-        <span class="cov6" title="193">if err != nil </span>{
-                <span class="cov6" title="129">response.Error, response.Detail = classifyError(err)
+        <span class="cov9" title="2365">if err != nil </span>{
+                <span class="cov6" title="148">response.Error, response.Detail = classifyError(err)
 </span>        }
-        <span class="cov6" title="193">if server.options.Logger != nil </span>{
+        <span class="cov9" title="2365">if server.options.Logger != nil </span>{
                 <span class="cov3" title="10">server.options.Logger.Debug("API request", "method", method, "outcome", string(response.Error))
 </span>        }
-        <span class="cov6" title="193">return json.NewEncoder(writer).Encode(response)</span>
+        <span class="cov9" title="2365">return json.NewEncoder(writer).Encode(response)</span>
 }
 
 func decodeObject(data []byte, output any, code apiwire.Code) error {
-        <span class="cov7" title="376">trimmed := bytes.TrimSpace(data)
+        <span class="cov9" title="4682">trimmed := bytes.TrimSpace(data)
         if len(trimmed) == 0 || trimmed[0] != '{' </span>{
                 <span class="cov4" title="20">return fmt.Errorf("%w: expected an object", code)
 </span>        }
-        <span class="cov7" title="356">decoder := json.NewDecoder(bytes.NewReader(trimmed))
+        <span class="cov9" title="4662">decoder := json.NewDecoder(bytes.NewReader(trimmed))
         decoder.DisallowUnknownFields()
         if err := decoder.Decode(output); err != nil </span>{
                 <span class="cov4" title="24">return fmt.Errorf("%w: %v", code, err)
 </span>        }
-        <span class="cov7" title="332">var extra any
+        <span class="cov9" title="4638">var extra any
         if err := decoder.Decode(&amp;extra); err != io.EOF </span>{
                 <span class="cov1" title="1">return fmt.Errorf("%w: expected one JSON object", code)
 </span>        }
-        <span class="cov7" title="331">return nil</span>
+        <span class="cov9" title="4637">return nil</span>
 }
 </pre>
 		
@@ -4071,9 +4079,9 @@ func (state *screenState) commit(ctx context.Context, epoch uint64, dimensions s
                 <span class="cov1" title="1">return err
 </span>        }
         <span class="cov9" title="856">if state.epoch != epoch </span>{
-                <span class="cov6" title="84">return errors.New("capture configuration changed during capture; capture_screen again")
+                <span class="cov7" title="137">return errors.New("capture configuration changed during capture; capture_screen again")
 </span>        }
-        <span class="cov9" title="772">state.dimensions = dimensions
+        <span class="cov9" title="719">state.dimensions = dimensions
         return nil</span>
 }
 
@@ -4081,9 +4089,9 @@ func (state *screenState) snapshot() (screenDimensions, error) {
         <span class="cov10" title="872">state.mu.Lock()
         defer state.mu.Unlock()
         if state.dimensions.width == 0 </span>{
-                <span class="cov8" title="203">return screenDimensions{}, errors.New("capture_screen must succeed before absolute mouse input")
+                <span class="cov8" title="271">return screenDimensions{}, errors.New("capture_screen must succeed before absolute mouse input")
 </span>        }
-        <span class="cov9" title="669">return state.dimensions, nil</span>
+        <span class="cov9" title="601">return state.dimensions, nil</span>
 }
 
 // Pixel mapping uses a full 128-bit product, so large int dimensions cannot
@@ -5694,10 +5702,10 @@ type Controller struct {
 // NewController creates a controller without opening hardware. A nil transport
 // is a programming error and panics. Close owns the transport's final close.
 func NewController(transport Transport) *Controller {
-        <span class="cov8" title="256">if transport == nil </span>{
+        <span class="cov8" title="262">if transport == nil </span>{
                 <span class="cov1" title="1">panic("hid: nil transport")</span>
         }
-        <span class="cov8" title="255">lifetime, stop := context.WithCancel(context.Background())
+        <span class="cov8" title="261">lifetime, stop := context.WithCancel(context.Background())
         return &amp;Controller{transport: transport, gate: make(chan struct{}, 1), lifetime: lifetime, stop: stop}</span>
 }
 
@@ -5716,51 +5724,51 @@ const (
 )
 
 func (controller *Controller) isClosing() bool {
-        <span class="cov9" title="559">controller.mu.Lock()
+        <span class="cov9" title="566">controller.mu.Lock()
         defer controller.mu.Unlock()
         return controller.closing
 </span>}
 
 func (controller *Controller) acquire(ctx context.Context) error {
-        <span class="cov9" title="692">if err := ctx.Err(); err != nil </span>{
-                <span class="cov1" title="1">return err
+        <span class="cov10" title="827">if err := ctx.Err(); err != nil </span>{
+                <span class="cov7" title="126">return err
 </span>        }
-        <span class="cov9" title="691">select </span>{
+        <span class="cov9" title="701">select </span>{
         case &lt;-ctx.Done():
-                <span class="cov6" title="71">return ctx.Err()</span>
+                <span class="cov6" title="65">return ctx.Err()</span>
         case &lt;-controller.lifetime.Done():
-                <span class="cov5" title="31">return ErrClosed</span>
-        case controller.gate &lt;- struct{}{}:<span class="cov9" title="589"></span>
+                <span class="cov5" title="34">return ErrClosed</span>
+        case controller.gate &lt;- struct{}{}:<span class="cov9" title="602"></span>
         }
-        <span class="cov9" title="589">if err := ctx.Err(); err != nil </span>{
-                <span class="cov6" title="59">&lt;-controller.gate
+        <span class="cov9" title="602">if err := ctx.Err(); err != nil </span>{
+                <span class="cov6" title="65">&lt;-controller.gate
                 return err
 </span>        }
-        <span class="cov9" title="530">if controller.isClosing() </span>{
-                <span class="cov5" title="33">&lt;-controller.gate
+        <span class="cov9" title="537">if controller.isClosing() </span>{
+                <span class="cov5" title="30">&lt;-controller.gate
                 return ErrClosed
 </span>        }
-        <span class="cov9" title="497">return nil</span>
+        <span class="cov9" title="507">return nil</span>
 }
 
 func (controller *Controller) run(ctx context.Context, release releaseMask, execute func(*action) error) error {
-        <span class="cov9" title="686">if err := controller.acquire(ctx); err != nil </span>{
-                <span class="cov8" title="194">return err
+        <span class="cov9" title="821">if err := controller.acquire(ctx); err != nil </span>{
+                <span class="cov8" title="319">return err
 </span>        }
-        <span class="cov9" title="492">defer func() </span>{ <span class="cov9" title="492">&lt;-controller.gate }</span>()
-        <span class="cov9" title="492">activeCtx, cancel := context.WithCancel(ctx)
+        <span class="cov9" title="502">defer func() </span>{ <span class="cov9" title="502">&lt;-controller.gate }</span>()
+        <span class="cov9" title="502">activeCtx, cancel := context.WithCancel(ctx)
         stop := context.AfterFunc(controller.lifetime, cancel)
         defer stop()
         defer cancel()
         if _, err := controller.prepare(activeCtx); err != nil </span>{
                 <span class="cov1" title="1">return err
 </span>        }
-        <span class="cov9" title="491">current := &amp;action{controller: controller, ctx: activeCtx}
+        <span class="cov9" title="501">current := &amp;action{controller: controller, ctx: activeCtx}
         err := execute(current)
         if err == nil </span>{
-                <span class="cov9" title="459">err = activeCtx.Err()
+                <span class="cov9" title="469">err = activeCtx.Err()
 </span>        }
-        <span class="cov9" title="491">if err != nil &amp;&amp; current.dirty </span>{
+        <span class="cov9" title="501">if err != nil &amp;&amp; current.dirty </span>{
                 <span class="cov5" title="29">attempt := controller.beginCleanup(ctx)
                 if controller.isClosing() </span>{
                         <span class="cov1" title="2">release = releaseBoth
@@ -5769,27 +5777,27 @@ func (controller *Controller) run(ctx context.Context, release releaseMask, exec
                 controller.endCleanup(attempt)
                 err = errors.Join(err, cleanupErr)</span>
         }
-        <span class="cov9" title="491">return err</span>
+        <span class="cov9" title="501">return err</span>
 }
 
 func (controller *Controller) prepare(ctx context.Context) (bool, error) {
-        <span class="cov9" title="528">generation, err := controller.transport.Prepare(ctx)
+        <span class="cov9" title="543">generation, err := controller.transport.Prepare(ctx)
         if err != nil </span>{
                 <span class="cov2" title="3">return false, err
 </span>        }
-        <span class="cov9" title="525">changed := !controller.prepared || controller.generation != generation
+        <span class="cov9" title="540">changed := !controller.prepared || controller.generation != generation
         if changed </span>{
-                <span class="cov8" title="250">controller.buttons = 0
+                <span class="cov8" title="255">controller.buttons = 0
 </span>        }
-        <span class="cov9" title="525">controller.prepared, controller.generation = true, generation
+        <span class="cov9" title="540">controller.prepared, controller.generation = true, generation
         return changed, nil</span>
 }
 
 func (current *action) write(frame []byte) error {
-        <span class="cov10" title="752">if err := current.ctx.Err(); err != nil </span>{
+        <span class="cov9" title="782">if err := current.ctx.Err(); err != nil </span>{
                 <span class="cov1" title="1">return err
 </span>        }
-        <span class="cov9" title="751">current.dirty = true // A failed send may already have reached the target.
+        <span class="cov9" title="781">current.dirty = true // A failed send may already have reached the target.
         return current.controller.transport.WriteFrame(current.ctx, frame)</span>
 }
 
@@ -5804,18 +5812,18 @@ type cleanupAttempt struct {
 }
 
 func (controller *Controller) beginCleanup(ctx context.Context) *cleanupAttempt {
-        <span class="cov5" title="31">cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Second)
+        <span class="cov5" title="36">cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Second)
         return controller.registerCleanup(cleanupCtx, cancel)
 </span>}
 
 func (controller *Controller) registerCleanup(ctx context.Context, cancel context.CancelFunc) *cleanupAttempt {
-        <span class="cov5" title="36">attempt := &amp;cleanupAttempt{ctx: ctx, cancel: cancel}
+        <span class="cov5" title="41">attempt := &amp;cleanupAttempt{ctx: ctx, cancel: cancel}
         controller.mu.Lock()
         controller.active = attempt
         if controller.closing </span>{
-                <span class="cov2" title="4">controller.shutdown = attempt
+                <span class="cov3" title="9">controller.shutdown = attempt
 </span>        }
-        <span class="cov5" title="36">controller.mu.Unlock()
+        <span class="cov5" title="41">controller.mu.Unlock()
         return attempt</span>
 }
 
@@ -5856,63 +5864,63 @@ func (controller *Controller) endCleanup(attempt *cleanupAttempt) {
 // cleanup runs only with the gate held. One preparation and at most one attempt
 // per release report are shared if shutdown overlaps an ordinary input cleanup.
 func (controller *Controller) cleanup(attempt *cleanupAttempt, release releaseMask) error {
-        <span class="cov6" title="40">if !attempt.prepared </span>{
-                <span class="cov5" title="36">attempt.prepared = true
+        <span class="cov6" title="45">if !attempt.prepared </span>{
+                <span class="cov5" title="41">attempt.prepared = true
                 changed, err := controller.prepare(attempt.ctx)
                 if err != nil </span>{
                         <span class="cov1" title="2">attempt.failed = true
                         attempt.err = fmt.Errorf("prepare release: %w", err)
-</span>                } else <span class="cov5" title="34">if changed </span>{
+</span>                } else <span class="cov5" title="39">if changed </span>{
                         <span class="cov2" title="4">attempt.keyboard, attempt.mouse = true, true
 </span>                }
         }
-        <span class="cov6" title="40">if attempt.failed </span>{
+        <span class="cov6" title="45">if attempt.failed </span>{
                 <span class="cov1" title="2">return attempt.err
 </span>        }
-        <span class="cov5" title="38">if release&amp;releaseKeyboard != 0 &amp;&amp; !attempt.keyboard </span>{
-                <span class="cov4" title="15">attempt.keyboard = true
+        <span class="cov6" title="43">if release&amp;releaseKeyboard != 0 &amp;&amp; !attempt.keyboard </span>{
+                <span class="cov5" title="20">attempt.keyboard = true
                 err := controller.transport.WriteFrame(attempt.ctx, ch9329.Keyboard(0))
                 if err != nil </span>{
                         <span class="cov3" title="5">attempt.err = errors.Join(attempt.err, fmt.Errorf("release keyboard: %w", err))
 </span>                }
         }
-        <span class="cov5" title="38">if release&amp;releaseMouse != 0 &amp;&amp; !attempt.mouse </span>{
-                <span class="cov5" title="25">attempt.mouse = true
+        <span class="cov6" title="43">if release&amp;releaseMouse != 0 &amp;&amp; !attempt.mouse </span>{
+                <span class="cov5" title="30">attempt.mouse = true
                 err := controller.transport.WriteFrame(attempt.ctx, ch9329.MouseRelative(0, 0, 0, 0))
                 if err != nil </span>{
                         <span class="cov2" title="4">attempt.err = errors.Join(attempt.err, fmt.Errorf("release mouse: %w", err))
 </span>                } else {
-                        <span class="cov5" title="21">controller.buttons = 0
+                        <span class="cov5" title="26">controller.buttons = 0
 </span>                }
         }
-        <span class="cov5" title="38">return attempt.err</span>
+        <span class="cov6" title="43">return attempt.err</span>
 }
 
 // Close rejects new actions, cancels active application waits, attempts release
 // before permanently closing the transport, and shares its result with other
 // Close callers. Its cleanup budget cannot interrupt an executing kernel call.
 func (controller *Controller) Close() error {
-        <span class="cov5" title="23">controller.once.Do(func() </span>{
-                <span class="cov3" title="8">controller.mu.Lock()
+        <span class="cov5" title="29">controller.once.Do(func() </span>{
+                <span class="cov4" title="14">controller.mu.Lock()
                 controller.closing = true
                 controller.stop()
                 controller.shutdown = controller.active
                 controller.mu.Unlock()
                 controller.gate &lt;- struct{}{}
-                defer func() </span>{ <span class="cov3" title="8">&lt;-controller.gate }</span>()
-                <span class="cov3" title="8">controller.mu.Lock()
+                defer func() </span>{ <span class="cov4" title="14">&lt;-controller.gate }</span>()
+                <span class="cov4" title="14">controller.mu.Lock()
                 attempt := controller.shutdown
                 controller.mu.Unlock()
                 if controller.prepared </span>{
-                        <span class="cov3" title="6">if attempt == nil </span>{
-                                <span class="cov1" title="2">attempt = controller.beginCleanup(context.Background())
+                        <span class="cov4" title="11">if attempt == nil </span>{
+                                <span class="cov3" title="7">attempt = controller.beginCleanup(context.Background())
 </span>                        }
-                        <span class="cov3" title="6">controller.closeErr = controller.cleanup(attempt, releaseBoth)
+                        <span class="cov4" title="11">controller.closeErr = controller.cleanup(attempt, releaseBoth)
                         attempt.cancel()</span>
                 }
-                <span class="cov3" title="8">controller.closeErr = errors.Join(controller.closeErr, controller.transport.Close())</span>
+                <span class="cov4" title="14">controller.closeErr = errors.Join(controller.closeErr, controller.transport.Close())</span>
         })
-        <span class="cov5" title="23">return controller.closeErr</span>
+        <span class="cov5" title="29">return controller.closeErr</span>
 }
 </pre>
 		
@@ -5923,6 +5931,7 @@ import (
         "errors"
         "fmt"
         "strings"
+        "sync/atomic"
         "time"
         "unicode/utf8"
 
@@ -5957,29 +5966,37 @@ type KeyStep struct {
         Delay     *time.Duration
 }
 
-// Keyboard resolves text through its currently selected immutable layout.
+// Keyboard resolves text using its currently selected [Layout].
+//
+// Methods may be called concurrently. Each text, key or sequence call uses one
+// layout snapshot. A Keyboard must not be copied after first use.
 type Keyboard struct {
         controller *Controller
-        layout     *Layout
+        layout     atomic.Pointer[Layout]
 }
 
-// NewKeyboard creates a keyboard sharing controller's action gate. Nil
-// dependencies are programming errors and panic; a zero Layout is valid.
+// NewKeyboard creates a keyboard sharing controller's action gate.
+//
+// Nil dependencies are programming errors and panic; a zero [Layout] is valid.
 func NewKeyboard(controller *Controller, layout *Layout) *Keyboard {
-        <span class="cov6" title="36">if controller == nil || layout == nil </span>{
-                <span class="cov2" title="2">panic("hid: nil keyboard dependency")</span>
+        <span class="cov3" title="42">if controller == nil || layout == nil </span>{
+                <span class="cov1" title="2">panic("hid: nil keyboard dependency")</span>
         }
-        <span class="cov6" title="34">return &amp;Keyboard{controller: controller, layout: layout}</span>
+        <span class="cov3" title="40">keyboard := &amp;Keyboard{controller: controller}
+        keyboard.layout.Store(layout)
+        return keyboard</span>
 }
 
-// SetLayout selects an immutable text map without preparing or sending to the
-// transport. Call it between keyboard operations; concurrent changes are not
-// supported. A nil layout is a programming error and panics.
+// SetLayout selects an immutable [Layout].
+//
+// It does not prepare or send to the transport and may run concurrently with
+// keyboard operations. Each operation snapshots its layout before resolving
+// input. A nil layout is a programming error and panics.
 func (keyboard *Keyboard) SetLayout(layout *Layout) {
-        <span class="cov2" title="2">if layout == nil </span>{
+        <span class="cov10" title="1189198">if layout == nil </span>{
                 <span class="cov0" title="0">panic("hid: nil keyboard layout")</span>
         }
-        <span class="cov2" title="2">keyboard.layout = layout</span>
+        <span class="cov10" title="1189198">keyboard.layout.Store(layout)</span>
 }
 
 type keyGroup struct {
@@ -5988,150 +6005,152 @@ type keyGroup struct {
 }
 
 func delayValue(value *time.Duration, fallback time.Duration) (time.Duration, error) {
-        <span class="cov7" title="46">delay := fallback
+        <span class="cov7" title="32052">delay := fallback
         if value != nil </span>{
-                <span class="cov4" title="10">delay = *value
+                <span class="cov3" title="78">delay = *value
 </span>        }
-        <span class="cov7" title="46">if delay &lt; 0 || delay &gt; MaxDelay </span>{
-                <span class="cov3" title="4">return 0, fmt.Errorf("%w: %s (allowed 0..%s)", ErrDelay, delay, MaxDelay)
+        <span class="cov7" title="32052">if delay &lt; 0 || delay &gt; MaxDelay </span>{
+                <span class="cov1" title="4">return 0, fmt.Errorf("%w: %s (allowed 0..%s)", ErrDelay, delay, MaxDelay)
 </span>        }
-        <span class="cov7" title="42">return delay, nil</span>
+        <span class="cov7" title="32048">return delay, nil</span>
 }
 
 // TypeText validates the entire text before preparing hardware, then types it as
 // one action. Raw mode treats tags/braces literally and normalizes CRLF/CR to LF.
 func (keyboard *Keyboard) TypeText(ctx context.Context, text string, options TypeOptions) error {
-        <span class="cov6" title="27">delay, err := delayValue(options.CharDelay, 20*time.Millisecond)
+        <span class="cov4" title="222">delay, err := delayValue(options.CharDelay, 20*time.Millisecond)
         if err != nil </span>{
-                <span class="cov2" title="2">return err
+                <span class="cov1" title="2">return err
 </span>        }
-        <span class="cov6" title="25">var plan []keyGroup
+        <span class="cov4" title="220">layout := keyboard.layout.Load()
+        var plan []keyGroup
         for _, token := range tokenize(text, options.Raw) </span>{
-                <span class="cov8" title="94">var strokes []Stroke
+                <span class="cov8" title="96455">var strokes []Stroke
                 if token.tag </span>{
-                        <span class="cov4" title="8">parts := strings.Split(token.text, "+")
+                        <span class="cov7" title="31786">parts := strings.Split(token.text, "+")
                         for i := range parts </span>{
-                                <span class="cov5" title="12">parts[i] = strings.TrimSpace(parts[i])
+                                <span class="cov7" title="31791">parts[i] = strings.TrimSpace(parts[i])
 </span>                        }
-                        <span class="cov4" title="8">strokes, err = keyboard.resolveKey(parts[len(parts)-1], parts[:len(parts)-1])</span>
-                } else <span class="cov8" title="86">if options.Raw &amp;&amp; token.text == "\n" </span>{
-                        <span class="cov4" title="7">strokes, err = keyboard.resolveKey("enter", nil)
+                        <span class="cov7" title="31786">strokes, err = layout.resolveKey(parts[len(parts)-1], parts[:len(parts)-1])</span>
+                } else <span class="cov8" title="64669">if options.Raw &amp;&amp; token.text == "\n" </span>{
+                        <span class="cov7" title="14856">strokes, err = layout.resolveKey("enter", nil)
 </span>                } else {
-                        <span class="cov8" title="79">character, _ := utf8.DecodeRuneInString(token.text)
+                        <span class="cov7" title="49813">character, _ := utf8.DecodeRuneInString(token.text)
                         var ok bool
-                        strokes, ok = keyboard.layout.Lookup(character)
+                        strokes, ok = layout.Lookup(character)
                         if !ok </span>{
-                                <span class="cov3" title="4">err = fmt.Errorf("%w: %q", ErrUnsupported, character)
+                                <span class="cov3" title="69">err = fmt.Errorf("%w: %q", ErrUnsupported, character)
 </span>                        }
                 }
-                <span class="cov8" title="94">if err != nil </span>{
-                        <span class="cov3" title="5">return fmt.Errorf("rune %d: %w", token.position, err)
+                <span class="cov8" title="96455">if err != nil </span>{
+                        <span class="cov3" title="103">return fmt.Errorf("rune %d: %w", token.position, err)
 </span>                }
-                <span class="cov8" title="89">plan = append(plan, keyGroup{strokes: strokes, delay: delay})</span>
+                <span class="cov8" title="96352">plan = append(plan, keyGroup{strokes: strokes, delay: delay})</span>
         }
-        <span class="cov5" title="20">return keyboard.play(ctx, plan)</span>
+        <span class="cov4" title="117">return keyboard.play(ctx, plan)</span>
 }
 
 // SendKey sends one named/hex key or layout character with optional modifiers.
 // Explicit modifiers apply to every stroke of a multi-stroke layout character.
 func (keyboard *Keyboard) SendKey(ctx context.Context, key string, modifiers []string) error {
-        <span class="cov9" title="219">strokes, err := keyboard.resolveKey(key, modifiers)
+        <span class="cov4" title="225">strokes, err := keyboard.layout.Load().resolveKey(key, modifiers)
         if err != nil </span>{
-                <span class="cov2" title="3">return err
+                <span class="cov1" title="3">return err
 </span>        }
-        <span class="cov9" title="216">return keyboard.play(ctx, []keyGroup{{strokes: strokes}})</span>
+        <span class="cov4" title="222">return keyboard.play(ctx, []keyGroup{{strokes: strokes}})</span>
 }
 
 // SendKeySequence validates and executes all steps as one action. A nil default
 // delay uses 100 ms; each step may override it, including with an explicit zero.
 func (keyboard *Keyboard) SendKeySequence(ctx context.Context, steps []KeyStep, defaultDelay *time.Duration) error {
-        <span class="cov4" title="10">if len(steps) &gt; MaxSequenceSteps </span>{
+        <span class="cov3" title="75">if len(steps) &gt; MaxSequenceSteps </span>{
                 <span class="cov1" title="1">return ErrSequence
 </span>        }
-        <span class="cov4" title="9">delay, err := delayValue(defaultDelay, 100*time.Millisecond)
+        <span class="cov3" title="74">delay, err := delayValue(defaultDelay, 100*time.Millisecond)
         if err != nil </span>{
                 <span class="cov1" title="1">return err
 </span>        }
-        <span class="cov4" title="8">plan := make([]keyGroup, len(steps))
+        <span class="cov3" title="73">layout := keyboard.layout.Load()
+        plan := make([]keyGroup, len(steps))
         for i, step := range steps </span>{
-                <span class="cov5" title="12">strokes, err := keyboard.resolveKey(step.Key, step.Modifiers)
+                <span class="cov7" title="31791">strokes, err := layout.resolveKey(step.Key, step.Modifiers)
                 if err != nil </span>{
-                        <span class="cov2" title="2">return fmt.Errorf("step %d: %w", i, err)
+                        <span class="cov3" title="35">return fmt.Errorf("step %d: %w", i, err)
 </span>                }
-                <span class="cov4" title="10">stepDelay, err := delayValue(step.Delay, delay)
+                <span class="cov7" title="31756">stepDelay, err := delayValue(step.Delay, delay)
                 if err != nil </span>{
                         <span class="cov1" title="1">return fmt.Errorf("step %d: %w", i, err)
 </span>                }
-                <span class="cov4" title="9">plan[i] = keyGroup{strokes: strokes, delay: stepDelay}</span>
+                <span class="cov7" title="31755">plan[i] = keyGroup{strokes: strokes, delay: stepDelay}</span>
         }
-        <span class="cov3" title="5">return keyboard.play(ctx, plan)</span>
+        <span class="cov3" title="37">return keyboard.play(ctx, plan)</span>
 }
 
-func (keyboard *Keyboard) resolveKey(key string, names []string) ([]Stroke, error) {
-        <span class="cov9" title="246">var bits byte
+func (layout *Layout) resolveKey(key string, names []string) ([]Stroke, error) {
+        <span class="cov8" title="78658">var bits byte
         for _, name := range names </span>{
-                <span class="cov4" title="9">bit, ok := Modifier(name)
+                <span class="cov2" title="10">bit, ok := Modifier(name)
                 if !ok </span>{
-                        <span class="cov2" title="2">return nil, fmt.Errorf("%w: %q", ErrModifier, name)
+                        <span class="cov1" title="2">return nil, fmt.Errorf("%w: %q", ErrModifier, name)
 </span>                }
-                <span class="cov4" title="7">bits |= bit</span>
+                <span class="cov2" title="8">bits |= bit</span>
         }
-        <span class="cov9" title="244">if code, ok := SpecialKey(key); ok </span>{
-                <span class="cov5" title="17">return []Stroke{{Modifier: bits, Keycode: code}}, nil
+        <span class="cov8" title="78656">if code, ok := SpecialKey(key); ok </span>{
+                <span class="cov7" title="14866">return []Stroke{{Modifier: bits, Keycode: code}}, nil
 </span>        }
-        <span class="cov9" title="227">if utf8.RuneCountInString(key) != 1 </span>{
-                <span class="cov2" title="2">return nil, fmt.Errorf("%w: %q", ErrKeycode, key)
+        <span class="cov8" title="63790">if utf8.RuneCountInString(key) != 1 </span>{
+                <span class="cov1" title="2">return nil, fmt.Errorf("%w: %q", ErrKeycode, key)
 </span>        }
-        <span class="cov9" title="225">character, _ := utf8.DecodeRuneInString(key)
-        strokes, ok := keyboard.layout.Lookup(character)
+        <span class="cov8" title="63788">character, _ := utf8.DecodeRuneInString(key)
+        strokes, ok := layout.Lookup(character)
         if !ok </span>{
-                <span class="cov2" title="2">return nil, fmt.Errorf("%w: %q", ErrUnsupported, character)
+                <span class="cov3" title="68">return nil, fmt.Errorf("%w: %q", ErrUnsupported, character)
 </span>        }
-        <span class="cov9" title="223">for i := range strokes </span>{
-                <span class="cov9" title="224">strokes[i].Modifier |= bits
+        <span class="cov8" title="63720">for i := range strokes </span>{
+                <span class="cov8" title="63721">strokes[i].Modifier |= bits
 </span>        }
-        <span class="cov9" title="223">return strokes, nil</span>
+        <span class="cov8" title="63720">return strokes, nil</span>
 }
 
 func (keyboard *Keyboard) play(ctx context.Context, plan []keyGroup) error {
-        <span class="cov9" title="241">if len(plan) == 0 </span>{
-                <span class="cov2" title="2">return ctx.Err()
+        <span class="cov4" title="376">if len(plan) == 0 </span>{
+                <span class="cov1" title="2">return ctx.Err()
 </span>        }
-        <span class="cov9" title="239">return keyboard.controller.run(ctx, releaseKeyboard, func(current *action) error </span>{
-                <span class="cov7" title="44">for _, group := range plan </span>{
-                        <span class="cov8" title="108">for _, stroke := range group.strokes </span>{
-                                <span class="cov8" title="110">if err := current.ctx.Err(); err != nil </span>{
+        <span class="cov4" title="374">return keyboard.controller.run(ctx, releaseKeyboard, func(current *action) error </span>{
+                <span class="cov3" title="54">for _, group := range plan </span>{
+                        <span class="cov4" title="123">for _, stroke := range group.strokes </span>{
+                                <span class="cov4" title="125">if err := current.ctx.Err(); err != nil </span>{
                                         <span class="cov1" title="1">return err
 </span>                                }
-                                <span class="cov8" title="109">if err := current.write(ch9329.Keyboard(stroke.Modifier, stroke.Keycode)); err != nil </span>{
-                                        <span class="cov2" title="2">return err
+                                <span class="cov4" title="124">if err := current.write(ch9329.Keyboard(stroke.Modifier, stroke.Keycode)); err != nil </span>{
+                                        <span class="cov1" title="2">return err
 </span>                                }
-                                <span class="cov8" title="107">if err := wait(current.ctx, 10*time.Millisecond); err != nil </span>{
-                                        <span class="cov2" title="3">return err
+                                <span class="cov4" title="122">if err := wait(current.ctx, 10*time.Millisecond); err != nil </span>{
+                                        <span class="cov1" title="3">return err
 </span>                                }
-                                <span class="cov8" title="104">if err := current.write(ch9329.Keyboard(0)); err != nil </span>{
-                                        <span class="cov2" title="2">return err
+                                <span class="cov4" title="119">if err := current.write(ch9329.Keyboard(0)); err != nil </span>{
+                                        <span class="cov1" title="2">return err
 </span>                                }
                         }
-                        <span class="cov8" title="100">if err := wait(current.ctx, group.delay); err != nil </span>{
+                        <span class="cov4" title="115">if err := wait(current.ctx, group.delay); err != nil </span>{
                                 <span class="cov1" title="1">return err
 </span>                        }
                 }
-                <span class="cov6" title="35">return nil</span>
+                <span class="cov3" title="45">return nil</span>
         })
 }
 
 func wait(ctx context.Context, delay time.Duration) error {
-        <span class="cov10" title="259">if delay == 0 </span>{
-                <span class="cov6" title="23">return ctx.Err()
+        <span class="cov4" title="289">if delay == 0 </span>{
+                <span class="cov3" title="38">return ctx.Err()
 </span>        }
-        <span class="cov9" title="236">timer := time.NewTimer(delay)
+        <span class="cov4" title="251">timer := time.NewTimer(delay)
         defer timer.Stop()
         select </span>{
         case &lt;-ctx.Done():
-                <span class="cov4" title="10">return ctx.Err()</span>
+                <span class="cov2" title="10">return ctx.Err()</span>
         case &lt;-timer.C:
-                <span class="cov9" title="226">return ctx.Err()</span>
+                <span class="cov4" title="241">return ctx.Err()</span>
         }
 }
 </pre>
@@ -6166,7 +6185,7 @@ var specialKeys = map[string]byte{
 
 // Modifier resolves a case-insensitive modifier name to its bitmask.
 func Modifier(name string) (byte, bool) {
-        <span class="cov9" title="26824">bit, ok := modifiers[strings.ToLower(name)]
+        <span class="cov8" title="27226">bit, ok := modifiers[strings.ToLower(name)]
         return bit, ok
 </span>}
 
@@ -6174,18 +6193,18 @@ func Modifier(name string) (byte, bool) {
 // Hexadecimal codes use 0x followed by digits and must fit in one byte.
 // A zero keycode is valid; the bool distinguishes it from an invalid name.
 func SpecialKey(name string) (byte, bool) {
-        <span class="cov5" title="356">name = strings.ToLower(name)
+        <span class="cov9" title="144305">name = strings.ToLower(name)
         if keycode, ok := specialKeys[name]; ok </span>{
-                <span class="cov4" title="65">return keycode, true
+                <span class="cov8" title="14914">return keycode, true
 </span>        }
-        <span class="cov5" title="291">return hexKeycode(name)</span>
+        <span class="cov9" title="129391">return hexKeycode(name)</span>
 }
 
 func hexKeycode(text string) (byte, bool) {
-        <span class="cov10" title="45393">if len(text) &lt;= 2 || !strings.EqualFold(text[:2], "0x") </span>{
-                <span class="cov5" title="265">return 0, false
+        <span class="cov10" title="175168">if len(text) &lt;= 2 || !strings.EqualFold(text[:2], "0x") </span>{
+                <span class="cov9" title="129365">return 0, false
 </span>        }
-        <span class="cov9" title="45128">value, err := strconv.ParseUint(text[2:], 16, 8)
+        <span class="cov9" title="45803">value, err := strconv.ParseUint(text[2:], 16, 8)
         return byte(value), err == nil</span>
 }
 </pre>
@@ -6242,7 +6261,7 @@ type LayoutInfo struct {
 // Lookup returns a copy of the strokes for character. It is safe to call
 // concurrently; changing the returned slice does not change the layout.
 func (layout *Layout) Lookup(character rune) ([]Stroke, bool) {
-        <span class="cov7" title="1751">strokes, ok := layout.characters[character]
+        <span class="cov10" title="115048">strokes, ok := layout.characters[character]
         return slices.Clone(strokes), ok
 </span>}
 
@@ -6286,7 +6305,7 @@ func ListLayouts(userDirectory string) ([]LayoutInfo, error) {
                 <span class="cov3" title="26">result = append(result, info)</span>
         }
         <span class="cov2" title="4">slices.SortFunc(result, func(left, right LayoutInfo) int </span>{
-                <span class="cov4" title="56">return strings.Compare(left.Name, right.Name)
+                <span class="cov3" title="47">return strings.Compare(left.Name, right.Name)
 </span>        })
         <span class="cov2" title="4">return result, nil</span>
 }
@@ -6296,10 +6315,10 @@ func ListLayouts(userDirectory string) ([]LayoutInfo, error) {
 // a user file replaces a built-in layout with the same name. A selected user
 // file's read or parse error is returned without falling back to a built-in.
 func LoadLayout(name, userDirectory string) (*Layout, error) {
-        <span class="cov6" title="411">if name == "" || strings.ContainsAny(name, "/\\\x00") </span>{
+        <span class="cov5" title="422">if name == "" || strings.ContainsAny(name, "/\\\x00") </span>{
                 <span class="cov2" title="8">return nil, fmt.Errorf("%w: %w %q", ErrLayout, ErrUnknownLayout, name)
 </span>        }
-        <span class="cov6" title="403">if userDirectory != "" </span>{
+        <span class="cov5" title="414">if userDirectory != "" </span>{
                 <span class="cov3" title="32">if err := validateLayoutDirectory(userDirectory); err != nil </span>{
                         <span class="cov1" title="1">return nil, err
 </span>                }
@@ -6320,15 +6339,15 @@ func LoadLayout(name, userDirectory string) (*Layout, error) {
                         <span class="cov0" title="0">return nil, fmt.Errorf("%w: inspect %s: %w", ErrLayout, path, err)
 </span>                }
         }
-        <span class="cov6" title="393">data, err := builtins.ReadFile("layouts/" + name + ".yaml")
+        <span class="cov5" title="404">data, err := builtins.ReadFile("layouts/" + name + ".yaml")
         if err != nil </span>{
                 <span class="cov2" title="6">return nil, fmt.Errorf("%w: %w %q", ErrLayout, ErrUnknownLayout, name)
 </span>        }
-        <span class="cov6" title="387">return decodeLayout(data)</span>
+        <span class="cov5" title="398">return decodeLayout(data)</span>
 }
 
 func validateLayoutDirectory(path string) error {
-        <span class="cov4" title="36">info, err := os.Stat(path)
+        <span class="cov3" title="36">info, err := os.Stat(path)
         if errors.Is(err, fs.ErrNotExist) </span>{
                 <span class="cov2" title="8">return nil
 </span>        }
@@ -6342,18 +6361,18 @@ func validateLayoutDirectory(path string) error {
 }
 
 func decodeLayout(data []byte) (*Layout, error) {
-        <span class="cov6" title="443">var document yaml.Node
+        <span class="cov5" title="454">var document yaml.Node
         decoder := yaml.NewDecoder(bytes.NewReader(data))
         if err := decoder.Decode(&amp;document); err != nil </span>{
                 <span class="cov1" title="3">return nil, fmt.Errorf("%w: %w", ErrLayout, err)
 </span>        }
-        <span class="cov6" title="440">root := document.Content[0]
+        <span class="cov5" title="451">root := document.Content[0]
         if root.Kind != yaml.MappingNode || len(root.Content) != 2 ||
                 root.Content[0].Kind != yaml.ScalarNode || root.Content[0].Tag != "!!str" ||
                 root.Content[0].Value != "overrides" || root.Content[1].Kind != yaml.MappingNode </span>{
-                <span class="cov3" title="12">return nil, fmt.Errorf("%w: expected only an overrides mapping", ErrLayout)
+                <span class="cov2" title="12">return nil, fmt.Errorf("%w: expected only an overrides mapping", ErrLayout)
 </span>        }
-        <span class="cov6" title="428">var extra yaml.Node
+        <span class="cov5" title="439">var extra yaml.Node
         if err := decoder.Decode(&amp;extra); err != io.EOF </span>{
                 <span class="cov1" title="2">if err != nil </span>{
                         <span class="cov1" title="1">return nil, fmt.Errorf("%w: %w", ErrLayout, err)
@@ -6361,100 +6380,100 @@ func decodeLayout(data []byte) (*Layout, error) {
                 <span class="cov1" title="1">return nil, fmt.Errorf("%w: expected one YAML document", ErrLayout)</span>
         }
 
-        <span class="cov6" title="426">layout := &amp;Layout{characters: us104()}
+        <span class="cov5" title="437">layout := &amp;Layout{characters: us104()}
         seen := make(map[rune]bool)
         entries := root.Content[1].Content
         for i := 0; i &lt; len(entries); i += 2 </span>{
-                <span class="cov9" title="28957">key, value := entries[i], entries[i+1]
+                <span class="cov8" title="29387">key, value := entries[i], entries[i+1]
                 if key.Kind != yaml.ScalarNode || key.Tag != "!!str" || utf8.RuneCountInString(key.Value) != 1 </span>{
                         <span class="cov2" title="6">return nil, fmt.Errorf("%w: line %d: %w", ErrLayout, key.Line, ErrCharacter)
 </span>                }
-                <span class="cov9" title="28951">character, _ := utf8.DecodeRuneInString(key.Value)
+                <span class="cov8" title="29381">character, _ := utf8.DecodeRuneInString(key.Value)
                 if seen[character] </span>{
                         <span class="cov1" title="1">return nil, fmt.Errorf("%w: line %d: duplicate character %q", ErrLayout, key.Line, character)
 </span>                }
-                <span class="cov9" title="28950">seen[character] = true
+                <span class="cov8" title="29380">seen[character] = true
                 strokes, err := decodeStrokes(value)
                 if err != nil </span>{
                         <span class="cov3" title="27">return nil, fmt.Errorf("%w: line %d for %q: %w", ErrLayout, value.Line, character, err)
 </span>                }
-                <span class="cov9" title="28923">layout.characters[character] = strokes</span>
+                <span class="cov8" title="29353">layout.characters[character] = strokes</span>
         }
-        <span class="cov6" title="392">return layout, nil</span>
+        <span class="cov5" title="403">return layout, nil</span>
 }
 
 func decodeStrokes(node *yaml.Node) ([]Stroke, error) {
-        <span class="cov9" title="28950">if node.Kind != yaml.SequenceNode || len(node.Content) == 0 </span>{
+        <span class="cov8" title="29380">if node.Kind != yaml.SequenceNode || len(node.Content) == 0 </span>{
                 <span class="cov2" title="5">return nil, errors.New("expected a stroke or nonempty stroke sequence")
 </span>        }
-        <span class="cov9" title="28945">pairs := node.Content
+        <span class="cov8" title="29375">pairs := node.Content
         if pairs[0].Kind == yaml.ScalarNode </span>{
-                <span class="cov8" title="12760">pairs = []*yaml.Node{node}
+                <span class="cov8" title="12945">pairs = []*yaml.Node{node}
 </span>        }
-        <span class="cov9" title="28945">strokes := make([]Stroke, len(pairs))
+        <span class="cov8" title="29375">strokes := make([]Stroke, len(pairs))
         for i, pair := range pairs </span>{
-                <span class="cov10" title="45128">if pair.Kind != yaml.SequenceNode || len(pair.Content) != 2 ||
+                <span class="cov9" title="45803">if pair.Kind != yaml.SequenceNode || len(pair.Content) != 2 ||
                         pair.Content[0].Kind != yaml.ScalarNode || pair.Content[0].Tag != "!!str" </span>{
                         <span class="cov2" title="6">return nil, errors.New("expected [modifier, keycode]")
 </span>                }
-                <span class="cov9" title="45122">modifier, err := decodeModifier(pair.Content[0].Value)
+                <span class="cov9" title="45797">modifier, err := decodeModifier(pair.Content[0].Value)
                 if err != nil </span>{
                         <span class="cov2" title="4">return nil, err
 </span>                }
-                <span class="cov9" title="45118">keycode, err := decodeKeycode(pair.Content[1])
+                <span class="cov9" title="45793">keycode, err := decodeKeycode(pair.Content[1])
                 if err != nil </span>{
-                        <span class="cov3" title="12">return nil, err
+                        <span class="cov2" title="12">return nil, err
 </span>                }
-                <span class="cov9" title="45106">strokes[i] = Stroke{Modifier: modifier, Keycode: keycode}</span>
+                <span class="cov9" title="45781">strokes[i] = Stroke{Modifier: modifier, Keycode: keycode}</span>
         }
-        <span class="cov9" title="28923">return strokes, nil</span>
+        <span class="cov8" title="29353">return strokes, nil</span>
 }
 
 func decodeModifier(text string) (byte, error) {
-        <span class="cov9" title="45122">if strings.EqualFold(strings.TrimSpace(text), "none") </span>{
-                <span class="cov9" title="18353">return 0, nil
+        <span class="cov9" title="45797">if strings.EqualFold(strings.TrimSpace(text), "none") </span>{
+                <span class="cov8" title="18628">return 0, nil
 </span>        }
-        <span class="cov9" title="26769">var bits byte
+        <span class="cov8" title="27169">var bits byte
         for name := range strings.SplitSeq(text, "+") </span>{
-                <span class="cov9" title="26772">bit, ok := Modifier(strings.TrimSpace(name))
+                <span class="cov8" title="27172">bit, ok := Modifier(strings.TrimSpace(name))
                 if !ok </span>{
                         <span class="cov2" title="4">return 0, fmt.Errorf("%w: %q", ErrModifier, name)
 </span>                }
-                <span class="cov9" title="26768">bits |= bit</span>
+                <span class="cov8" title="27168">bits |= bit</span>
         }
-        <span class="cov9" title="26765">return bits, nil</span>
+        <span class="cov8" title="27165">return bits, nil</span>
 }
 
 func decodeKeycode(node *yaml.Node) (byte, error) {
-        <span class="cov9" title="45118">if node.Kind == yaml.ScalarNode </span>{
-                <span class="cov9" title="45117">switch node.Tag </span>{
+        <span class="cov9" title="45793">if node.Kind == yaml.ScalarNode </span>{
+                <span class="cov9" title="45792">switch node.Tag </span>{
                 case "!!int":
-                        <span class="cov3" title="11">var value byte
+                        <span class="cov2" title="11">var value byte
                         if err := node.Decode(&amp;value); err == nil </span>{
                                 <span class="cov2" title="8">return value, nil
 </span>                        }
                 case "!!str":
-                        <span class="cov9" title="45102">if value, ok := hexKeycode(node.Value); ok </span>{
-                                <span class="cov9" title="45098">return value, nil
+                        <span class="cov9" title="45777">if value, ok := hexKeycode(node.Value); ok </span>{
+                                <span class="cov9" title="45773">return value, nil
 </span>                        }
                 }
         }
-        <span class="cov3" title="12">return 0, fmt.Errorf("%w: %q", ErrKeycode, node.Value)</span>
+        <span class="cov2" title="12">return 0, fmt.Errorf("%w: %q", ErrKeycode, node.Value)</span>
 }
 
 func us104() map[rune][]Stroke {
-        <span class="cov6" title="426">characters := make(map[rune][]Stroke, 97)
+        <span class="cov5" title="437">characters := make(map[rune][]Stroke, 97)
         for i, lower := range "abcdefghijklmnopqrstuvwxyz" </span>{
-                <span class="cov8" title="11076">characters[lower] = []Stroke{{Keycode: byte(0x04 + i)}}
+                <span class="cov8" title="11362">characters[lower] = []Stroke{{Keycode: byte(0x04 + i)}}
                 characters[lower-'a'+'A'] = []Stroke{{Modifier: 0x02, Keycode: byte(0x04 + i)}}
 </span>        }
-        <span class="cov6" title="426">for i, digit := range "1234567890" </span>{
-                <span class="cov8" title="4260">characters[digit] = []Stroke{{Keycode: byte(0x1e + i)}}
+        <span class="cov5" title="437">for i, digit := range "1234567890" </span>{
+                <span class="cov7" title="4370">characters[digit] = []Stroke{{Keycode: byte(0x1e + i)}}
 </span>        }
-        <span class="cov6" title="426">for i, symbol := range "!@#$%^&amp;*()" </span>{
-                <span class="cov8" title="4260">characters[symbol] = []Stroke{{Modifier: 0x02, Keycode: byte(0x1e + i)}}
+        <span class="cov5" title="437">for i, symbol := range "!@#$%^&amp;*()" </span>{
+                <span class="cov7" title="4370">characters[symbol] = []Stroke{{Modifier: 0x02, Keycode: byte(0x1e + i)}}
 </span>        }
-        <span class="cov6" title="426">for _, pair := range []struct {
+        <span class="cov5" title="437">for _, pair := range []struct {
                 keycode byte
                 plain   rune
                 shifted rune
@@ -6471,10 +6490,10 @@ func us104() map[rune][]Stroke {
                 {0x37, '.', '&gt;'},
                 {0x38, '/', '?'},
 </span>        } {
-                <span class="cov8" title="4686">characters[pair.plain] = []Stroke{{Keycode: pair.keycode}}
+                <span class="cov7" title="4807">characters[pair.plain] = []Stroke{{Keycode: pair.keycode}}
                 characters[pair.shifted] = []Stroke{{Modifier: 0x02, Keycode: pair.keycode}}
 </span>        }
-        <span class="cov6" title="426">characters[' '] = []Stroke{{Keycode: 0x2c}}
+        <span class="cov5" title="437">characters[' '] = []Stroke{{Keycode: 0x2c}}
         characters['\t'] = []Stroke{{Keycode: 0x2b}}
         characters['\n'] = []Stroke{{Keycode: 0x28}}
         return characters</span>
@@ -6747,46 +6766,46 @@ type textToken struct {
 }
 
 func tokenize(text string, raw bool) []textToken {
-        <span class="cov7" title="71">characters := []rune(text)
+        <span class="cov5" title="266">characters := []rune(text)
         tokens := make([]textToken, 0, len(characters))
         for i := 0; i &lt; len(characters); i++ </span>{
-                <span class="cov10" title="384">character := characters[i]
+                <span class="cov10" title="196999">character := characters[i]
                 position := i
                 if raw </span>{
-                        <span class="cov6" title="52">if character == '\r' </span>{
-                                <span class="cov4" title="9">character = '\n'
+                        <span class="cov9" title="65591">if character == '\r' </span>{
+                                <span class="cov2" title="9">character = '\n'
                                 if i+1 &lt; len(characters) &amp;&amp; characters[i+1] == '\n' </span>{
-                                        <span class="cov3" title="6">i++
+                                        <span class="cov2" title="6">i++
 </span>                                }
                         }
-                } else <span class="cov9" title="332">if character == '{' || character == '}' </span>{
-                        <span class="cov7" title="82">if i+1 &lt; len(characters) &amp;&amp; characters[i+1] == character </span>{
-                                <span class="cov5" title="25">i++
-</span>                        } else <span class="cov7" title="57">if character == '{' </span>{
-                                <span class="cov6" title="46">if offset := slices.Index(characters[i+1:], '}'); offset &gt;= 0 </span>{
-                                        <span class="cov6" title="45">end := i + 1 + offset
+                } else <span class="cov9" title="131408">if character == '{' || character == '}' </span>{
+                        <span class="cov9" title="65619">if i+1 &lt; len(characters) &amp;&amp; characters[i+1] == character </span>{
+                                <span class="cov3" title="25">i++
+</span>                        } else <span class="cov9" title="65594">if character == '{' </span>{
+                                <span class="cov9" title="65583">if offset := slices.Index(characters[i+1:], '}'); offset &gt;= 0 </span>{
+                                        <span class="cov9" title="65582">end := i + 1 + offset
                                         candidate := string(characters[i+1 : end])
                                         if validTag(candidate) </span>{
-                                                <span class="cov6" title="32">tokens = append(tokens, textToken{text: candidate, position: position, tag: true})
+                                                <span class="cov9" title="65569">tokens = append(tokens, textToken{text: candidate, position: position, tag: true})
                                                 i = end
                                                 continue</span>
                                         }
                                 }
                         }
                 }
-                <span class="cov9" title="352">tokens = append(tokens, textToken{text: string(character), position: position})</span>
+                <span class="cov9" title="131430">tokens = append(tokens, textToken{text: string(character), position: position})</span>
         }
-        <span class="cov7" title="71">return tokens</span>
+        <span class="cov5" title="266">return tokens</span>
 }
 
 func validTag(tag string) bool {
-        <span class="cov7" title="65">parts := strings.Split(tag, "+")
+        <span class="cov9" title="65602">parts := strings.Split(tag, "+")
         for _, name := range parts[:len(parts)-1] </span>{
-                <span class="cov5" title="27">if _, ok := Modifier(strings.TrimSpace(name)); !ok </span>{
-                        <span class="cov3" title="5">return false
+                <span class="cov3" title="28">if _, ok := Modifier(strings.TrimSpace(name)); !ok </span>{
+                        <span class="cov2" title="5">return false
 </span>                }
         }
-        <span class="cov7" title="60">key := strings.TrimSpace(parts[len(parts)-1])
+        <span class="cov9" title="65597">key := strings.TrimSpace(parts[len(parts)-1])
         _, special := SpecialKey(key)
         return special || utf8.RuneCountInString(key) == 1</span>
 }
@@ -8880,8 +8899,8 @@ func (device *Device) Formats() []PixelFormat {
 </span>}
 
 func (device *Device) check(ctx context.Context) error {
-        <span class="cov10" title="369">if err := ctx.Err(); err != nil </span>{
-                <span class="cov7" title="79">return err
+        <span class="cov10" title="368">if err := ctx.Err(); err != nil </span>{
+                <span class="cov7" title="78">return err
 </span>        }
         <span class="cov9" title="290">if device.lifetime.Err() != nil </span>{
                 <span class="cov3" title="7">return ErrClosed
@@ -8895,19 +8914,19 @@ func (device *Device) acquire(ctx context.Context) error {
 </span>        }
         <span class="cov8" title="163">select </span>{
         case &lt;-ctx.Done():
-                <span class="cov7" title="59">return ctx.Err()</span>
+                <span class="cov7" title="60">return ctx.Err()</span>
         case &lt;-device.lifetime.Done():
                 <span class="cov1" title="1">return ErrClosed</span>
         case &lt;-device.gate:
-                <span class="cov8" title="103">if err := device.check(ctx); err != nil </span>{
-                        <span class="cov7" title="70">device.release()
+                <span class="cov8" title="102">if err := device.check(ctx); err != nil </span>{
+                        <span class="cov7" title="69">device.release()
                         return err
 </span>                }
                 <span class="cov6" title="33">return nil</span>
         }
 }
 
-func (device *Device) release() { <span class="cov8" title="166">device.gate &lt;- struct{}{} }</span>
+func (device *Device) release() { <span class="cov8" title="165">device.gate &lt;- struct{}{} }</span>
 
 // ReadFrame waits for one descriptor-valid MJPG frame, preserving its original
 // compressed bytes. It does not decode JPEGs, apply warm-up sleeps or filter image
@@ -9426,7 +9445,7 @@ func newAudioManager(ctx context.Context, video *capture.Manager, options AudioO
 </span>}
 
 func (manager *audioManager) notifyLocked() {
-        <span class="cov9" title="144">close(manager.changed)
+        <span class="cov9" title="145">close(manager.changed)
         manager.changed = make(chan struct{})
 </span>}
 
@@ -9453,43 +9472,43 @@ func (manager *audioManager) control() {
         <span class="cov6" title="30">defer close(manager.done)
         var attempted audioKey
         for </span>{
-                <span class="cov9" title="164">video, videoChanged := manager.video.Watch()
+                <span class="cov9" title="160">video, videoChanged := manager.video.Watch()
                 manager.mu.Lock()
                 key := audioKey{video.Generation, manager.active}
                 want := manager.ctx.Err() == nil &amp;&amp; manager.clients != 0 &amp;&amp; manager.options.Device != "off" &amp;&amp;
                         !errors.Is(video.Err, capture.ErrClosed)
                 if manager.run != nil &amp;&amp; (!want || manager.run.key != key) &amp;&amp; manager.run.ctx.Err() == nil </span>{
-                        <span class="cov5" title="12">manager.run.cancel()
+                        <span class="cov5" title="13">manager.run.cancel()
                         manager.notifyLocked()
 </span>                }
-                <span class="cov9" title="164">if manager.run == nil &amp;&amp; want &amp;&amp; key != attempted </span>{
+                <span class="cov9" title="160">if manager.run == nil &amp;&amp; want &amp;&amp; key != attempted </span>{
                         <span class="cov6" title="33">ctx, cancel := context.WithCancel(manager.ctx)
                         run := &amp;audioRun{key: key, ctx: ctx, cancel: cancel, done: make(chan struct{})}
                         manager.run, attempted = run, key
                         go manager.own(run, video.Device)
 </span>                }
-                <span class="cov9" title="164">run := manager.run
+                <span class="cov9" title="160">run := manager.run
                 changed := manager.changed
                 manager.mu.Unlock()
                 if manager.ctx.Err() != nil &amp;&amp; run == nil </span>{
                         <span class="cov6" title="30">return
 </span>                }
-                <span class="cov9" title="134">var ended &lt;-chan struct{}
+                <span class="cov9" title="130">var ended &lt;-chan struct{}
                 if run != nil </span>{
-                        <span class="cov8" title="92">ended = run.done
+                        <span class="cov8" title="94">ended = run.done
 </span>                }
-                <span class="cov9" title="134">var retry &lt;-chan time.Time
+                <span class="cov9" title="130">var retry &lt;-chan time.Time
                 if run == nil &amp;&amp; want &amp;&amp; key == attempted &amp;&amp; manager.options.retryInterval &gt; 0 </span>{
                         <span class="cov3" title="4">retry = time.After(manager.options.retryInterval)
 </span>                }
-                <span class="cov9" title="134">stop := manager.ctx.Done()
+                <span class="cov9" title="130">stop := manager.ctx.Done()
                 if run != nil &amp;&amp; manager.ctx.Err() != nil </span>{
-                        <span class="cov5" title="13">stop = nil // Retain ownership without spinning on cancellation.
+                        <span class="cov5" title="14">stop = nil // Retain ownership without spinning on cancellation.
 </span>                }
-                <span class="cov9" title="134">select </span>{
-                case &lt;-stop:<span class="cov5" title="13"></span>
-                case &lt;-videoChanged:<span class="cov5" title="15"></span>
-                case &lt;-changed:<span class="cov8" title="71"></span>
+                <span class="cov9" title="130">select </span>{
+                case &lt;-stop:<span class="cov5" title="11"></span>
+                case &lt;-videoChanged:<span class="cov4" title="10"></span>
+                case &lt;-changed:<span class="cov8" title="74"></span>
                 case &lt;-retry:
                         <span class="cov2" title="2">attempted = audioKey{}</span>
                 case &lt;-ended:
@@ -9562,20 +9581,20 @@ type audioView struct {
 }
 
 func (manager *audioManager) view(video capture.Info) (audioView, &lt;-chan struct{}) {
-        <span class="cov10" title="194">view := audioView{config: audioConfig{Status: "unavailable", Generation: "0"}}
+        <span class="cov10" title="208">view := audioView{config: audioConfig{Status: "unavailable", Generation: "0"}}
         if manager == nil </span>{
                 <span class="cov7" title="52">return view, nil
 </span>        }
-        <span class="cov9" title="142">manager.mu.Lock()
+        <span class="cov9" title="156">manager.mu.Lock()
         changed := manager.changed
         run := manager.run
         if manager.options.Device == "off" </span>{
                 <span class="cov3" title="5">view.config.Status = "off"
-</span>        } else <span class="cov9" title="137">if run != nil &amp;&amp; run.key.video == video.Generation &amp;&amp; run.ctx.Err() == nil &amp;&amp;
+</span>        } else <span class="cov9" title="151">if run != nil &amp;&amp; run.key.video == video.Generation &amp;&amp; run.ctx.Err() == nil &amp;&amp;
                 !run.failed &amp;&amp; run.source != nil &amp;&amp; !errors.Is(video.Err, capture.ErrClosed) </span>{
                 <span class="cov8" title="86">view.run = run
 </span>        }
-        <span class="cov9" title="142">manager.mu.Unlock()
+        <span class="cov9" title="156">manager.mu.Unlock()
         if view.run != nil </span>{
                 <span class="cov8" title="86">view.raw = view.run.source.Config()
                 view.config = audioConfig{
@@ -9583,7 +9602,7 @@ func (manager *audioManager) view(video capture.Info) (audioView, &lt;-chan stru
                         SampleRate: view.raw.Rate, Channels: view.raw.Channels,
 </span>                }
         }
-        <span class="cov9" title="142">return view, changed</span>
+        <span class="cov9" title="156">return view, changed</span>
 }
 
 func (manager *audioManager) current(view audioView) bool {
@@ -10082,18 +10101,18 @@ func serveAsset(output http.ResponseWriter, request *http.Request) {
 }
 
 func (server *Server) writeMessage(ctx context.Context, conn socket, kind websocket.MessageType, parts ...[]byte) error {
-        <span class="cov9" title="91">ctx, cancel := context.WithTimeout(ctx, server.options.WriteTimeout)
+        <span class="cov9" title="94">ctx, cancel := context.WithTimeout(ctx, server.options.WriteTimeout)
         defer cancel()
         writer, err := conn.Writer(ctx, kind)
         if err != nil </span>{
                 <span class="cov3" title="3">return err
 </span>        }
-        <span class="cov9" title="88">for _, part := range parts </span>{
-                <span class="cov10" title="122">if _, err := writer.Write(part); err != nil </span>{
+        <span class="cov9" title="91">for _, part := range parts </span>{
+                <span class="cov10" title="125">if _, err := writer.Write(part); err != nil </span>{
                         <span class="cov2" title="2">return errors.Join(err, writer.Close())
 </span>                }
         }
-        <span class="cov9" title="86">return writer.Close()</span>
+        <span class="cov9" title="89">return writer.Close()</span>
 }
 </pre>
 		
@@ -10114,7 +10133,7 @@ import (
 
 func audioConfigMessage(config audioConfig) []byte {
         // All fields are primitive strings/uint32, so marshaling cannot fail.
-        <span class="cov7" title="53">data, _ := json.Marshal(struct {
+        <span class="cov7" title="56">data, _ := json.Marshal(struct {
                 Type  string      `json:"type"`
                 Audio audioConfig `json:"audio"`
         }{Type: "config", Audio: config})
@@ -10134,7 +10153,7 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
                 <span class="cov0" title="0">return err
 </span>        }
         <span class="cov7" title="35">if server.audio != nil </span>{
-                <span class="cov6" title="18">server.audio.subscribe()
+                <span class="cov5" title="18">server.audio.subscribe()
                 defer server.audio.unsubscribe()
 </span>        }
         <span class="cov7" title="35">var audioSubscription AudioSubscription
@@ -10153,10 +10172,10 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
         timer.Stop()
         defer timer.Stop()
         for </span>{
-                <span class="cov10" title="177">if err := ctx.Err(); err != nil </span>{
+                <span class="cov10" title="190">if err := ctx.Err(); err != nil </span>{
                         <span class="cov0" title="0">return err
 </span>                }
-                <span class="cov10" title="177">video, videoChanged := server.capture.Watch()
+                <span class="cov10" title="190">video, videoChanged := server.capture.Watch()
                 view, audioChanged := server.audio.view(video)
                 if view.run != attached </span>{
                         <span class="cov6" title="21">if audioSubscription != nil </span>{
@@ -10168,22 +10187,22 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
                                 <span class="cov5" title="17">audioSubscription = attached.source.Subscribe()
 </span>                        }
                 }
-                <span class="cov10" title="177">if !configured || view.config != lastConfig </span>{
-                        <span class="cov7" title="53">if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config)); err != nil </span>{
+                <span class="cov10" title="190">if !configured || view.config != lastConfig </span>{
+                        <span class="cov7" title="56">if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config)); err != nil </span>{
                                 <span class="cov1" title="1">return err
 </span>                        }
-                        <span class="cov7" title="52">lastConfig, configured = view.config, true
+                        <span class="cov7" title="55">lastConfig, configured = view.config, true
                         continue</span> // Recheck recovery/config changes after the bounded send.
                 }
-                <span class="cov9" title="124">var audioReady &lt;-chan struct{}
+                <span class="cov9" title="134">var audioReady &lt;-chan struct{}
                 if audioSubscription != nil </span>{
-                        <span class="cov8" title="59">audioReady = audioSubscription.Ready()
+                        <span class="cov7" title="59">audioReady = audioSubscription.Ready()
                         block, ok, err := audioSubscription.TryNext()
                         if err != nil </span>{
                                 <span class="cov2" title="2">server.audio.fail(attached, err)
                                 continue</span>
                         }
-                        <span class="cov8" title="57">if ok </span>{
+                        <span class="cov7" title="57">if ok </span>{
                                 <span class="cov6" title="20">if block.Config != view.raw || !server.audio.current(view) </span>{
                                         <span class="cov0" title="0">continue</span> // Drop a dequeue racing generation/recovery; never replay.
                                 }
@@ -10198,7 +10217,7 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
                                 <span class="cov5" title="17">continue</span>
                         }
                 }
-                <span class="cov9" title="102">if pendingVideo != nil &amp;&amp; !time.Now().Before(nextVideo) </span>{
+                <span class="cov9" title="112">if pendingVideo != nil &amp;&amp; !time.Now().Before(nextVideo) </span>{
                         // If audio occupied the writer, replace its held JPEG with the
                         // newest frame already waiting in the original one-slot channel.
                         <span class="cov5" title="15">select </span>{
@@ -10234,29 +10253,29 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 </span>                        }
                         <span class="cov5" title="14">continue</span>
                 }
-                <span class="cov8" title="87">videoEvents := videoSubscription.Events()
+                <span class="cov8" title="97">videoEvents := videoSubscription.Events()
                 var due &lt;-chan time.Time
                 if delay := time.Until(nextVideo); delay &gt; 0 </span>{
                         <span class="cov5" title="15">videoEvents = nil // Leave video in its latest slot until pacing permits.
                         timer.Reset(delay)
                         due = timer.C
 </span>                }
-                <span class="cov8" title="87">select </span>{
+                <span class="cov8" title="97">select </span>{
                 case &lt;-ctx.Done():
                         <span class="cov6" title="31">timer.Stop()
                         return ctx.Err()</span>
-                case &lt;-videoChanged:<span class="cov2" title="3"></span>
-                case &lt;-audioChanged:<span class="cov5" title="12"></span>
+                case &lt;-videoChanged:<span class="cov3" title="5"></span>
+                case &lt;-audioChanged:<span class="cov6" title="20"></span>
                 case &lt;-audioReady:<span class="cov6" title="20"></span>
                 case &lt;-due:<span class="cov2" title="3"></span>
                 case event, ok := &lt;-videoEvents:
-                        <span class="cov6" title="18">if !ok </span>{
+                        <span class="cov5" title="18">if !ok </span>{
                                 <span class="cov0" title="0">timer.Stop()
                                 return capture.ErrClosed
 </span>                        }
-                        <span class="cov6" title="18">pendingVideo = event.Frame</span> // Failure events keep the subscription repairable.
+                        <span class="cov5" title="18">pendingVideo = event.Frame</span> // Failure events keep the subscription repairable.
                 }
-                <span class="cov7" title="56">timer.Stop()</span>
+                <span class="cov8" title="66">timer.Stop()</span>
         }
 }
 </pre>
