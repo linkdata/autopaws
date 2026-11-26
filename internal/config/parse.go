@@ -34,6 +34,8 @@ func (err *argumentsError) Error() string {
 func (*argumentsError) Unwrap() error { return ErrUsage }
 
 // Parse resolves explicit flags over the selected YAML file over defaults.
+//
+// Inline tokens are YAML-only.
 // Help and standalone informational actions do not load configuration files.
 // True informational selectors cannot be combined with other actions or settings.
 func Parse(args []string) (Config, Action, error) {
@@ -64,6 +66,8 @@ func Parse(args []string) (Config, Action, error) {
 	resolved := Defaults()
 	var unusedPath string
 	settings := daemonFlags(&resolved, &unusedPath, io.Discard)
+	// Inline tokens are accepted only from YAML, never from process arguments.
+	settings.StringVar(&resolved.Token, "token", resolved.Token, "")
 	ignored := MCPDefaults()
 	if err := resolveSettings(parsed, path, settings, mcpFlags(&ignored, &unusedPath, io.Discard)); err != nil {
 		return Config{}, Daemon, err
@@ -112,8 +116,7 @@ func resolveSettings(parsed *flag.FlagSet, path string, settings, other *flag.Fl
 	if err == nil {
 		parsed.Visit(func(value *flag.Flag) {
 			if value.Name != "config" && settings.Lookup(value.Name) != nil {
-				// Both flag sets have identical setting registrations, and the first
-				// parse already validated each value's flag syntax.
+				// The first parse already validated each explicit flag's syntax.
 				_ = settings.Set(value.Name, value.Value.String())
 			}
 		})
@@ -140,8 +143,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.StringVar(path, "config", "", "Read only this YAML configuration file")
 	settings.StringVar(&cfg.API, "api", cfg.API, "API listen host:port; empty disables it (example 127.0.0.1:9329)")
 	settings.StringVar(&cfg.Web, "web", cfg.Web, "Web listen `[host:port]`; no address uses 127.0.0.1:9330; empty disables it")
-	settings.StringVar(&cfg.Token, "token", cfg.Token, "Shared-secret UTF-8 value; use token or token-file, not both")
-	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; empty disables authentication")
+	settings.StringVar(&cfg.TokenFile, "token-file", cfg.TokenFile, "Shared-secret UTF-8 file; alternative to YAML token")
 	settings.StringVar(&cfg.SerialDevice, "serial-device", cfg.SerialDevice, "Serial path or Windows COMn; empty auto-detects one CH340/CH341")
 	settings.IntVar(&cfg.SerialBaud, "serial-baud", cfg.SerialBaud, "Serial baud rate")
 	settings.IntVar(&cfg.ScreenWidth, "screen-width", cfg.ScreenWidth, "Target screen width in pixels")

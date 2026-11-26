@@ -93,9 +93,12 @@ func TestMCPUsageAndNoAutomaticFiles(t *testing.T) {
 	}
 	var usage bytes.Buffer
 	WriteMCPUsage(&usage)
-	for _, setting := range []string{"config", "api", "token", "token-file", "capture-log", "tesseract", "vision-api", "vision-model", "vision-token-file", "vision-max-width", "vision-request-json"} {
+	for _, setting := range []string{"config", "api", "token-file", "capture-log", "tesseract", "vision-api", "vision-model", "vision-token-file", "vision-max-width", "vision-request-json"} {
 		if !strings.Contains(usage.String(), "-"+setting) {
 			t.Errorf("MCP usage omitted %s", setting)
 		}
+	}
+	if strings.Contains(usage.String(), "\n  -token ") {
+		t.Fatal("inline token flag advertised in MCP usage")
 	}
 }

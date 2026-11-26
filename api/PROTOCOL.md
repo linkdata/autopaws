@@ -39,7 +39,7 @@ before hardware preparation or input emission.
 ## Optional shared token
 
 With a nonempty `token-file` or `token` in the shared YAML file (or via the
-matching daemon flag), each request must include the matching
+daemon's `-token-file PATH` flag), each request must include the matching
 secret as an envelope string field, for example `"token":"your-secret"`. It is
 checked before method dispatch or HID preparation. Missing, null, empty, or wrong tokens
 receive `{"id":1,"ok":false,"error":"unauthorized"}` (with the request's ID).
@@ -50,7 +50,7 @@ Token values must be nonempty UTF-8; surrounding whitespace is trimmed.
 Restart to load a changed secret. Nonempty `token` and `token-file` together
 are rejected. The portable Go client uses `apiclient.NewWithToken(address, secret)`;
 `New(address)` omits it. MCP reads the same secret from the shared YAML file
-or its own `-token-file PATH` or `-token SECRET` flag.
+or its own `-token-file PATH` flag.
 Use loopback addresses and the SSH tunnel in the README: the token does not encrypt
 plain TCP traffic.
 
