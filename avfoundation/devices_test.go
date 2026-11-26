@@ -47,6 +47,29 @@ func TestParseDevices(t *testing.T) {
 	}
 }
 
+func TestParseDevicesWithUIDs(t *testing.T) {
+	output := `[AVFoundation indev @ 0x1] AVFoundation video devices:
+[AVFoundation indev @ 0x1] [0] USB Video  [uid:0x120000345f2109]
+[AVFoundation indev @ 0x1] [1] USB Capture  [uid:0x2] [serial:1234]
+[AVFoundation indev @ 0x1] AVFoundation audio devices:
+[AVFoundation indev @ 0x1] [0] USB Digital Audio  [uid:AppleUSBAudioEngine:MACROSILICON:Unknown USB Audio Device:120000:3]
+`
+	want := []Device{
+		{Path: "avfoundation:USB Video", Name: "USB Video"},
+		{Path: "avfoundation:USB Capture", Name: "USB Capture"},
+		{Path: "avfoundation:USB Digital Audio", Name: "USB Digital Audio", Audio: true},
+	}
+	devices, ok := parseDevices(output)
+	if !ok || !reflect.DeepEqual(devices, want) {
+		t.Fatalf("parse = %#v, %v", devices, ok)
+	}
+	for _, device := range want {
+		if got, err := selectDevice(devices, device.Path, device.Audio); err != nil || got != device {
+			t.Fatalf("select %q = %+v, %v", device.Path, got, err)
+		}
+	}
+}
+
 func TestRejectUnsafeNames(t *testing.T) {
 	for _, name := range []string{"0 Camera", "123", "+2", "none", "default Input", "USB:Capture", ""} {
 		device := Device{Path: "avfoundation:" + name, Name: name}
