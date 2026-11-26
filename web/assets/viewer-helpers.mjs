@@ -429,12 +429,11 @@ export function createAudioQueue({sampleRate, channels, generation}) {
 }
 
 // The fragment is handled locally and removed before any WebSocket is opened.
-// Keep the cookie URI-encoded so arbitrary UTF-8 secrets fit Cookie syntax.
 export function tokenBootstrap(href) {
   const url = new URL(href);
   const fragment = new URLSearchParams(url.hash.slice(1));
   if (!fragment.has("token")) return null;
-  const cookie = `autopaws_token=${encodeURIComponent(fragment.get("token"))}; Path=/; SameSite=Strict${url.protocol === "https:" ? "; Secure" : ""}`;
+  const token = fragment.get("token");
   url.hash = "";
-  return {cookie, url: url.href};
+  return {token, url: url.href};
 }

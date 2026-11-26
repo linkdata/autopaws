@@ -48,6 +48,7 @@ func TestAuthenticationPrecedesDispatchAndDoesNotLogToken(t *testing.T) {
 			t.Fatal(err)
 		}
 		done := make(chan struct{})
+		server.pending = append(server.pending, left)
 		go func() { server.handleConn(context.Background(), left); close(done) }()
 		writeTest(t, right, string(line)+"\n")
 		response := replyTest(t, right)

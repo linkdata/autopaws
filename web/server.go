@@ -7,11 +7,14 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"encoding/hex"
 	"errors"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
-	"net/url"
+	"net/netip"
+	"strings"
 	"sync"
 	"time"
 
@@ -74,22 +77,28 @@ func New(controller *hid.Controller, mouse *hid.Mouse, captures *capture.Manager
 	return server, nil
 }
 
+// ServeHTTP serves public viewer assets and validates WebSocket admission.
+//
+// Responses prohibit framing. Without a token, upgrades require localhost or an IP host.
 func (server *Server) ServeHTTP(output http.ResponseWriter, request *http.Request) {
 	output.Header().Set("Cache-Control", "no-cache")
+	output.Header().Set("Content-Security-Policy", "frame-ancestors 'none'")
+	output.Header().Set("X-Frame-Options", "DENY")
+	if _, err := request.Cookie("autopaws_token"); err == nil {
+		http.SetCookie(output, &http.Cookie{Name: "autopaws_token", Path: "/", MaxAge: -1})
+	}
 	if request.URL.Path != "/ws" {
 		serveAsset(output, request)
 		return
 	}
 	if server.options.Token != "" {
-		cookie, err := request.Cookie("autopaws_token")
-		supplied := ""
-		if err == nil {
-			supplied, err = url.PathUnescape(cookie.Value)
-		}
-		if err != nil || !token.Match(server.options.Token, supplied) {
+		if !server.authenticated(request) {
 			http.Error(output, "authentication required", http.StatusForbidden)
 			return
 		}
+	} else if !literalHost(request.Host) {
+		http.Error(output, "localhost or IP host required", http.StatusForbidden)
+		return
 	}
 	server.mu.Lock()
 	if server.closed {
@@ -100,11 +109,35 @@ func (server *Server) ServeHTTP(output http.ResponseWriter, request *http.Reques
 	server.workers.Add(1)
 	server.mu.Unlock()
 	defer server.workers.Done()
-	conn, err := websocket.Accept(output, request, nil) // Keep default origin checks.
+	conn, err := websocket.Accept(output, request, &websocket.AcceptOptions{Subprotocols: []string{"autopaws"}}) // Keep default origin checks.
 	if err != nil {
 		return // Accept already wrote its HTTP error response.
 	}
 	server.serveConnection(conn)
+}
+
+func (server *Server) authenticated(request *http.Request) bool {
+	for _, value := range request.Header.Values("Sec-WebSocket-Protocol") {
+		for _, protocol := range strings.Split(value, ",") {
+			if encoded, ok := strings.CutPrefix(strings.TrimSpace(protocol), "autopaws-token."); ok {
+				if supplied, err := hex.DecodeString(encoded); err == nil && token.Match(server.options.Token, string(supplied)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func literalHost(host string) bool {
+	if name, _, err := net.SplitHostPort(host); err == nil {
+		host = name
+	}
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	_, err := netip.ParseAddr(strings.TrimSuffix(strings.TrimPrefix(host, "["), "]"))
+	return err == nil
 }
 
 func (server *Server) serveConnection(conn socket) {

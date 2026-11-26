@@ -13,7 +13,9 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"slices"
 	"sync"
+	"time"
 
 	"github.com/linkdata/autopaws/apiwire"
 	"github.com/linkdata/autopaws/capture"
@@ -41,6 +43,11 @@ type Options struct {
 
 type handler func(context.Context, json.RawMessage) (any, error)
 
+const (
+	requestTimeout = 10 * time.Second
+	maxPending     = 64
+)
+
 // Server handles one request/response per connection. The caller owns HID
 // shutdown; Serve stops networking without waiting for input cleanup to drain.
 type Server struct {
@@ -52,6 +59,7 @@ type Server struct {
 
 	mu        sync.Mutex
 	conns     map[net.Conn]struct{}
+	pending   []net.Conn
 	workers   sync.WaitGroup
 	serveDone chan struct{}
 }
@@ -71,9 +79,14 @@ func New(keyboard *hid.Keyboard, mouse *hid.Mouse, options Options) *Server {
 	return server
 }
 
-// Serve accepts connections until ctx is cancelled or Accept fails. It closes
-// the listener/connections before returning; cancellation is normal shutdown.
-// It does not wait for HID cleanup. Start Controller.Close promptly, then Wait.
+// Serve accepts connections until ctx is cancelled or Accept fails permanently.
+//
+// Temporary accept errors are retried with backoff. Connections have ten seconds
+// to authenticate; at most 64 may be pending, with the oldest displaced by a new
+// connection. The limits also apply when token authentication is disabled.
+// Serve closes the listener/connections before returning; cancellation is normal
+// shutdown. It does not wait for HID cleanup. Start Controller.Close promptly,
+// then [Server.Wait].
 func (server *Server) Serve(ctx context.Context, listener net.Listener) error {
 	runCtx, cancel := context.WithCancel(ctx)
 	stopped := make(chan struct{})
@@ -87,28 +100,54 @@ func (server *Server) Serve(ctx context.Context, listener net.Listener) error {
 		<-stopped
 		close(server.serveDone)
 	}()
+	var retryDelay time.Duration
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			if runCtx.Err() != nil {
 				return nil
 			}
+			var networkErr net.Error
+			if errors.As(err, &networkErr) && networkErr.Temporary() { //nolint:staticcheck // SA1019 -- Match net/http's retry classification for listener resource exhaustion.
+				if retryDelay == 0 {
+					retryDelay = 5 * time.Millisecond
+				} else {
+					retryDelay = min(2*retryDelay, time.Second)
+				}
+				select {
+				case <-runCtx.Done():
+					return nil
+				case <-time.After(retryDelay):
+					continue
+				}
+			}
 			return err
 		}
+		retryDelay = 0
 		server.mu.Lock()
 		if runCtx.Err() != nil {
 			server.mu.Unlock()
 			_ = conn.Close()
 			return nil
 		}
+		var displaced net.Conn
+		if len(server.pending) == maxPending {
+			displaced = server.pending[0]
+			server.pending = slices.Delete(server.pending, 0, 1)
+		}
+		server.pending = append(server.pending, conn)
 		server.conns[conn] = struct{}{}
 		server.workers.Add(1)
 		server.mu.Unlock()
+		if displaced != nil {
+			_ = displaced.Close()
+		}
 		go func() {
 			defer server.workers.Done()
 			defer func() {
 				server.mu.Lock()
 				delete(server.conns, conn)
+				server.pending = slices.DeleteFunc(server.pending, func(pending net.Conn) bool { return pending == conn })
 				server.mu.Unlock()
 			}()
 			server.handleConn(runCtx, conn)
@@ -144,6 +183,9 @@ func (server *Server) handleConn(ctx context.Context, conn net.Conn) {
 			<-monitorDone
 		}
 	}()
+	if err := conn.SetDeadline(time.Now().Add(requestTimeout)); err != nil {
+		return
+	}
 	reader := bufio.NewReader(conn)
 	line, err := apiwire.ReadLine(reader, apiwire.MaxRequestLine)
 	if err != nil {
@@ -164,6 +206,18 @@ func (server *Server) handleConn(ctx context.Context, conn net.Conn) {
 	}
 	if !token.Match(server.options.Token, request.Token) {
 		_ = server.respond(conn, request.ID, "", nil, apiwire.ErrUnauthorized)
+		return
+	}
+	server.mu.Lock()
+	index := slices.Index(server.pending, conn)
+	if index >= 0 {
+		server.pending = slices.Delete(server.pending, index, index+1)
+	}
+	server.mu.Unlock()
+	if index < 0 {
+		return // A newer connection displaced this one before authentication.
+	}
+	if err := conn.SetDeadline(time.Time{}); err != nil {
 		return
 	}
 	if request.Method == "" {

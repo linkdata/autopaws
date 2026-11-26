@@ -56,6 +56,13 @@ plain TCP traffic.
 
 ## Connections and cancellation
 
+Connections have ten seconds to send and authenticate their request, including
+any error response before authentication. At most 64 connections may await
+authentication; a new connection closes the oldest pending one. These limits
+apply before the request's token check, even when no token is configured. Once
+the request passes that check, it runs without that deadline or pending limit.
+Temporary listener accept errors are retried with backoff from 5 ms to one second.
+
 A read EOF cancels the request, including `shutdown(SHUT_WR)`, `CloseWrite` and
 `nc -N`. A half-close is **not** a request terminator; keep both directions open
 while waiting for the reply. A fully disconnected client may not receive the

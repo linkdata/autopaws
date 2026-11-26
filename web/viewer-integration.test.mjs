@@ -152,7 +152,7 @@ function pcm(generation, sequence, {sampleRate = 48000, channels = 2, sampleFram
 
 async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   missingWorklet = false, prefixedAudio = false, resumeRequiresRetry = false, audioLoad = null,
-  href = "http://127.0.0.1:9999/"} = {}) {
+  href = "http://127.0.0.1:9999/", storage = new Map(), storageBlocked = false} = {}) {
   const clock = new Clock();
   const window = new Events();
   window.isSecureContext = secureContext;
@@ -250,6 +250,11 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   });
   const cookies = [], historyChanges = [];
   Object.defineProperty(document, "cookie", {set: value => cookies.push(value)});
+  const sessionStorage = {
+    getItem(key) { if (storageBlocked) throw new Error("storage blocked"); return storage.get(key) ?? null; },
+    setItem(key, value) { if (storageBlocked) throw new Error("storage blocked"); storage.set(key, value); },
+    removeItem(key) { if (storageBlocked) throw new Error("storage blocked"); storage.delete(key); },
+  };
   const pageLocation = new URL(href);
   const history = {replaceState(state, title, url) {
     historyChanges.push({state, title, url});
@@ -262,9 +267,9 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     bufferedAmount = 0;
     sent = [];
     closes = [];
-    constructor(url) {
-      super(); this.url = String(url);
-      this.bootstrap = {cookies: [...cookies], href: pageLocation.href};
+    constructor(url, protocols) {
+      super(); this.url = String(url); this.protocols = protocols;
+      this.bootstrap = {cookies: [...cookies], href: pageLocation.href, token: storage.get("autopaws_token")};
       sockets.push(this);
     }
     open() { this.readyState = 1; return this.fire("open").done; }
@@ -285,7 +290,7 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     decodes.push({blob, resolve, reject, settled: false});
   });
   const globals = {
-    window, document, history, navigator: {}, location: pageLocation,
+    window, document, history, sessionStorage, navigator: {}, location: pageLocation,
     WebSocket: Socket, createImageBitmap, performance: {timeOrigin: 1700000000000, now: () => clock.now},
     setTimeout: (callback, delay) => clock.schedule(callback, delay),
     clearTimeout: id => clock.timers.delete(id),
@@ -315,7 +320,7 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   await sockets[0].open();
   const h = {
     clock, window, document, elements, sockets, decodes, draws, clears, dimensions, audioContexts, audioNodes,
-    cookies, historyChanges,
+    cookies, historyChanges, storage,
     get socket() { return sockets.at(-1); },
     get sent() { return this.socket.sent; },
     async frame(generation, sequence, payload = Number(sequence), options) {
@@ -801,16 +806,40 @@ test("a second page audio click cancels module loading and late completion stays
 });
 
 
-test("fragment authentication finishes before the first WebSocket and survives reconnect", async t => {
+test("fragment authentication uses session storage before connection and survives reconnect", async t => {
   const h = await viewer(t, {href: "http://localhost:9330/#token=a%2Bb%3B%C3%A5"});
-  assert.deepEqual(h.cookies, ["autopaws_token=a%2Bb%3B%C3%A5; Path=/; SameSite=Strict"]);
+  assert.deepEqual(h.cookies, []);
   assert.deepEqual(h.historyChanges, [{state: null, title: "", url: "http://localhost:9330/"}]);
-  assert.deepEqual(h.socket.bootstrap, {cookies: h.cookies, href: "http://localhost:9330/"});
+  assert.deepEqual(h.socket.bootstrap, {cookies: [], href: "http://localhost:9330/", token: "a+b;å"});
   assert.equal(h.socket.url, "ws://localhost:9330/ws");
+  assert.deepEqual(h.socket.protocols, ["autopaws", "autopaws-token.612b623bc3a5"]);
   h.socket.close(1006, "reconnect");
   await settle();
   h.clock.advance(500);
   assert.equal(h.sockets.length, 2);
   assert.equal(h.socket.url, "ws://localhost:9330/ws");
-  assert.equal(h.cookies.length, 1, "reconnect reuses the cookie, never the fragment");
+  assert.deepEqual(h.socket.protocols, ["autopaws", "autopaws-token.612b623bc3a5"]);
+  assert.deepEqual(h.cookies, []);
+});
+
+test("viewer reload reads session token without fragment", async t => {
+  const storage = new Map([["autopaws_token", "a+b;å"]]);
+  const h = await viewer(t, {storage});
+  assert.deepEqual(h.historyChanges, []);
+  assert.deepEqual(h.socket.protocols, ["autopaws", "autopaws-token.612b623bc3a5"]);
+  assert.deepEqual(h.cookies, []);
+});
+
+test("empty fragment clears saved token", async t => {
+  const storage = new Map([["autopaws_token", "stale-secret"]]);
+  const h = await viewer(t, {href: "http://localhost:9330/#token=", storage});
+  assert.equal(storage.has("autopaws_token"), false);
+  assert.deepEqual(h.socket.protocols, []);
+  assert.deepEqual(h.cookies, []);
+});
+
+test("blocked storage still permits token authentication for this page", async t => {
+  const h = await viewer(t, {href: "http://localhost:9330/#token=a%2Bb%3B%C3%A5", storageBlocked: true});
+  assert.deepEqual(h.socket.protocols, ["autopaws", "autopaws-token.612b623bc3a5"]);
+  assert.deepEqual(h.cookies, []);
 });
