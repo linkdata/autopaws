@@ -36,9 +36,11 @@ type Device struct {
 	readErr    error
 }
 
-// Open opens path without discovery, verifies streaming capture and MJPG
-// support, negotiates the size, maps four buffers (or the driver's actual count)
-// and starts the stream. ctx controls startup, not the returned stream lifetime.
+// Open starts a capture stream without acquiring a controlling terminal.
+//
+// It opens path without discovery, verifies streaming capture and MJPG support,
+// negotiates the size and maps four buffers (or the driver's actual count).
+// ctx controls startup, not the returned stream lifetime.
 func Open(ctx context.Context, path string, options Options) (*Device, error) {
 	return open(ctx, path, options, systemOperations())
 }
@@ -50,7 +52,7 @@ func open(ctx context.Context, path string, options Options, ops operations) (*D
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	file, err := ops.open(path, os.O_RDWR|syscall.O_NONBLOCK)
+	file, err := ops.open(path, os.O_RDWR|syscall.O_NONBLOCK|syscall.O_NOCTTY)
 	if err != nil {
 		return nil, operationError("open", path, err)
 	}
