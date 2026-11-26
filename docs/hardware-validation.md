@@ -150,6 +150,14 @@ Windows ARM64 is cross-built; ARM64 hardware has not been tested. See
 
 ## Windows target checks
 
+The [extended-4K check](validation/windows-extended-4k-2026-11-26.json) received
+fresh 1920×1080 capture frames with owner-reported 4K Windows output and
+3840×2160 host target coordinates. This card advertised no 4K capture mode on
+macOS and rejected 4K capture at both 30 and 5 fps. Pointer commands were
+acknowledged. The owner reported the cursor was on the primary display
+rather than the captured extended display. Use the documented single or mirrored
+target setup; this check does not establish extended-display absolute input support.
+
 A [read-only autocrop check](validation/autocrop-windows-readonly-2026-11-26.json)
 verified that the new default and explicit opt-in preserve full 1920×1080
 snapshots and web frames from the attached Windows target. No input was sent
