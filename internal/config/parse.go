@@ -154,7 +154,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.StringVar(&cfg.CaptureDevice, "capture-device", cfg.CaptureDevice, "Capture path, macOS avfoundation:NAME or Windows dshow:NAME; empty auto-detects (no numeric indexes)")
 	settings.IntVar(&cfg.CaptureWidth, "capture-width", cfg.CaptureWidth, "Requested capture width in pixels")
 	settings.IntVar(&cfg.CaptureHeight, "capture-height", cfg.CaptureHeight, "Requested capture height in pixels")
-	settings.BoolVar(&cfg.Autocrop, "autocrop", cfg.Autocrop, "Detect and crop capture black borders")
+	settings.BoolVar(&cfg.Autocrop, "autocrop", cfg.Autocrop, "Crop black bars matching the target output aspect")
 	settings.IntVar(&cfg.WebFPS, "web-fps", cfg.WebFPS, "Web viewer frame rate in 1..120")
 	settings.StringVar(&cfg.AudioDevice, "audio-device", cfg.AudioDevice, "Audio PCM path, macOS avfoundation:NAME or Windows dshow:NAME; empty auto-detects on Linux, off disables audio")
 	settings.StringVar(&cfg.LogLevel, "log-level", cfg.LogLevel, "Ordinary log level: debug, info, warn, or error")

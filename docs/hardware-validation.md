@@ -150,6 +150,12 @@ Windows ARM64 is cross-built; ARM64 hardware has not been tested. See
 
 ## Windows target checks
 
+A [read-only autocrop check](validation/autocrop-windows-readonly-2026-11-26.json)
+verified that the new default and explicit opt-in preserve full 1920×1080
+snapshots and web frames from the attached Windows target. No input was sent
+or target settings changed; scaling bars and click mapping were tested with
+synthetic frames and a recording HID transport. Cropping is now off by default.
+
 The limited read-only laptop smoke passed keyboard shortcuts, focus navigation,
 pointer movement and positioned clicks after owner-handled setup. It placed no
 scripts on the target and changed no files or settings. Only permitted metadata,

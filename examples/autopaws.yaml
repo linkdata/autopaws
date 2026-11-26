@@ -25,7 +25,7 @@ mouse-button-mode: relative
 capture-device: ""
 capture-width: 1920
 capture-height: 1080
-autocrop: true
+autocrop: false
 web-fps: 20
 # Empty selects capture audio on the selected video's complete USB device path.
 # Set off to disable it, or use an explicit /dev/snd/pcmC...D...c capture path.
