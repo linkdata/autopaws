@@ -12,8 +12,8 @@ connections do not merge independent held states.
 
 ## Optional shared token
 
-When a nonempty `token-file` or `token` is configured in YAML or with the
-matching daemon flag, `/ws` requires a `Sec-WebSocket-Protocol` offer of
+When a nonempty `token-file` or `token` is configured in YAML (or via the
+daemon's `-token-file PATH` flag), `/ws` requires a `Sec-WebSocket-Protocol` offer of
 `autopaws-token.HEX`, where HEX is the hex encoding of the secret's UTF-8 bytes.
 Missing or wrong values receive HTTP 403 before upgrade or subscription.
 The browser also offers `autopaws`; the server selects that fixed protocol and

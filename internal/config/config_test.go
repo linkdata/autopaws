@@ -91,9 +91,9 @@ func TestOptionalWebAddress(t *testing.T) {
 		{[]string{"-web="}, ""},
 		{[]string{"-web", "-web", ":1234"}, ":1234"},
 		{[]string{"-web=:1234", "-web"}, "127.0.0.1:9330"},
-		{[]string{"-token", "-web"}, ""},
+		{[]string{"-token-file", "-web"}, ""},
 		{[]string{"-serial-device", "--web"}, ""},
-		{[]string{"-token=-web", "-web"}, "127.0.0.1:9330"},
+		{[]string{"-token-file=-web", "-web"}, "127.0.0.1:9330"},
 	} {
 		t.Run(fmt.Sprint(vector.args), func(t *testing.T) {
 			original := append([]string(nil), vector.args...)

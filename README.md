@@ -123,7 +123,8 @@ autopaws-mcp -config ./autopaws.yaml
 ```
 
 See [the example configuration](examples/autopaws.yaml). Flag names and YAML keys
-match. Both binaries accept the same file, sharing `api`, `token` and `token-file`.
+match, except `token` is YAML-only. Both binaries accept the same file, sharing
+`api`, `token` and `token-file`.
 Each uses its own remaining settings. Relative file paths resolve from the
 process's working directory. Explicit false, empty and zero values override the
 file. Use `=false` for boolean flags, such as `-autocrop=false`. YAML must be one
@@ -208,8 +209,8 @@ Configure each MCP client to start its own local stdio process against the daemo
 autopaws-mcp -config ./autopaws.yaml
 ```
 
-MCP settings in the [shared configuration file](#configuration-file) use the
-flag name without its leading `-`; `config` itself is command-line only.
+MCP flags below use their names without the leading `-` in the
+[shared configuration file](#configuration-file); `config` is command-line only.
 With no `-config`, MCP uses defaults and explicit flags only.
 
 | Flag | Default | Meaning |
@@ -217,8 +218,7 @@ With no `-config`, MCP uses defaults and explicit flags only.
 | `-config PATH` | off | Read the shared KVM/MCP YAML file |
 | `-api host:port` | `127.0.0.1:9329` | KVM JSON Lines address, port 1–65535 |
 | `-capture-log DIR` | off | Save screenshot JPEGs; no retention limit |
-| `-token SECRET` | off | API secret; alternative to `-token-file` |
-| `-token-file PATH` | off | Read the API secret from a UTF-8 file instead |
+| `-token-file PATH` | off | Read the API secret from a UTF-8 file |
 | `-tesseract PATH` | automatic | Optional OCR engine; an invalid explicit path disables OCR |
 | `-vision-api URL` | off | OpenAI-compatible base URL or full `chat/completions` endpoint for `wait_for` |
 | `-vision-model NAME` | off | Model used to evaluate visual conditions; configure with `-vision-api` |
