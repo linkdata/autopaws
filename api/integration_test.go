@@ -354,6 +354,8 @@ func TestClientServerActionsShareTheControllerGate(t *testing.T) {
 		t.Run(test.method, func(t *testing.T) {
 			fixture := newIntegrationFixture(t)
 			firstFrame, proceed := make(chan struct{}), make(chan struct{})
+			unblock := sync.OnceFunc(func() { close(proceed) })
+			defer unblock()
 			var first sync.Once
 			fixture.transport.setHook(func(ctx context.Context, _ []byte) error {
 				var err error
@@ -382,7 +384,7 @@ func TestClientServerActionsShareTheControllerGate(t *testing.T) {
 			case <-time.After(20 * time.Millisecond):
 			}
 			requireFrames(t, fixture.transport, test.frames[0])
-			close(proceed)
+			unblock()
 			if err := receive(t, apiDone); err != nil {
 				t.Fatal(err)
 			}
@@ -403,6 +405,8 @@ func TestClientCancellationReleasesBeforeNextAction(t *testing.T) {
 	press := ch9329.Keyboard(0, 4)
 	release := ch9329.Keyboard(0)
 	pressed, releasing, finishRelease := make(chan struct{}), make(chan struct{}), make(chan struct{})
+	finish := sync.OnceFunc(func() { close(finishRelease) })
+	defer finish()
 	var cleanup sync.Once
 	fixture.transport.setHook(func(ctx context.Context, frame []byte) error {
 		if bytes.Equal(frame, press) {
@@ -443,7 +447,7 @@ func TestClientCancellationReleasesBeforeNextAction(t *testing.T) {
 	case <-time.After(20 * time.Millisecond):
 	}
 	requireFrames(t, fixture.transport, press, release)
-	close(finishRelease)
+	finish()
 	if err := receive(t, next); err != nil {
 		t.Fatal(err)
 	}
