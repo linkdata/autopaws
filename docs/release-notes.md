@@ -1,3 +1,32 @@
+# v0.7.2
+
+Optional `-mouse-absolute-refresh` restores absolute cursor destinations that
+macOS can ignore after relative motion. It also positions the cursor before
+new absolute button presses. The setting defaults off, preserving existing
+report sequences for Windows/Linux targets, and `get_device_info` reports its
+active value. With refresh enabled, button releases and cleanup keep exact
+release coordinates.
+
+The MCP `setup` checklist now gives concise Windows, Linux and macOS mouse
+instructions. The README documents adapter-dependent macOS button holds and an
+optional, physically verified CH9329 USB-mode workaround. It does not require a
+specific cable manufacturer or change adapter configuration automatically.
+
+The JSON Lines API adds `get_adapter_usb_mode` and `set_adapter_usb_mode` for
+supported adapters. The explicit setter preserves other configuration bytes,
+releases held input, and verifies reset/re-enumeration and readback, with
+best-effort rollback on failure. Save the exact raw mode before changing it to
+retain hardware-pin selection when restoring. Setter attempts invalidate mouse
+mapping; recapture and recheck afterward. MCP `setup` does not change adapter
+settings.
+
+Physical checks used two adapters against a mirrored macOS target. The
+[compatibility record](validation/macos-mouse-compatibility-2026-11-27.json)
+separates repeat-position fixes, native clicks and held text selection from
+unverified combinations. The complete local CI gate checks default and enabled
+behavior, cancellation, report failures, configuration and supported-platform
+cross-builds. Refresh-enabled Windows/Linux behavior was not physically tested.
+
 # v0.7.1
 
 Linux capture now retries automatically after USB reconnect. Native capture

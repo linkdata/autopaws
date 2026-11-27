@@ -31,6 +31,7 @@ type commAPI struct {
 	event       func(*windows.SecurityAttributes, uint32, uint32, *uint16) (windows.Handle, error)
 	signal      func(windows.Handle) error
 	close       func(windows.Handle) error
+	read        func(windows.Handle, []byte, *uint32, *windows.Overlapped) error
 	write       func(windows.Handle, []byte, *uint32, *windows.Overlapped) error
 	wait        func([]windows.Handle, bool, uint32) (uint32, error)
 	result      func(windows.Handle, *windows.Overlapped, *uint32, bool) error
@@ -41,7 +42,7 @@ type commAPI struct {
 var nativeCommAPI = commAPI{
 	open: windows.CreateFile, getState: windows.GetCommState, setState: windows.SetCommState,
 	timeouts: windows.SetCommTimeouts, purge: windows.PurgeComm, event: windows.CreateEvent,
-	signal: windows.SetEvent, close: windows.CloseHandle, write: windows.WriteFile,
+	signal: windows.SetEvent, close: windows.CloseHandle, read: windows.ReadFile, write: windows.WriteFile,
 	wait: windows.WaitForMultipleObjects, result: windows.GetOverlappedResult,
 	cancel: windows.CancelIoEx, clearErrors: windows.ClearCommError,
 }
@@ -51,7 +52,8 @@ type windowsDevice struct {
 	api             commAPI
 	io              sync.Mutex
 	mu              sync.Mutex
-	deadline        time.Time
+	readDeadline    time.Time
+	writeDeadline   time.Time
 	closed          bool
 	closeOnce       sync.Once
 	closeErr        error
@@ -127,38 +129,54 @@ func (d *windowsDevice) configure(ctx context.Context, speed uint32) error {
 		state.StopBits != windows.ONESTOPBIT || state.Flags&0x7fff != 1 {
 		return ErrSettings
 	}
-	// Driver timeouts also bound writes if cancellation is delayed by the driver.
+	// Return buffered bytes or wait for the first byte; driver timeouts also
+	// bound I/O if cancellation is delayed by the driver.
 	if err := d.api.timeouts(d.handle, &windows.CommTimeouts{
-		ReadIntervalTimeout: ^uint32(0), WriteTotalTimeoutConstant: uint32(ioBudget / time.Millisecond),
+		ReadIntervalTimeout: ^uint32(0), ReadTotalTimeoutMultiplier: ^uint32(0),
+		ReadTotalTimeoutConstant:  uint32(ioBudget / time.Millisecond),
+		WriteTotalTimeoutConstant: uint32(ioBudget / time.Millisecond),
 	}); err != nil {
 		return err
 	}
-	if err := d.api.purge(d.handle, windows.PURGE_RXABORT|windows.PURGE_RXCLEAR); err != nil {
-		return err
-	}
-	return ctx.Err()
+	return d.flushInput(ctx)
 }
 
 func (d *windowsDevice) SetWriteDeadline(deadline time.Time) error {
+	return d.setDeadline(deadline, false)
+}
+
+func (d *windowsDevice) SetReadDeadline(deadline time.Time) error {
+	return d.setDeadline(deadline, true)
+}
+
+func (d *windowsDevice) setDeadline(deadline time.Time, read bool) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.closed {
 		return os.ErrClosed
 	}
-	d.deadline = deadline
+	if read {
+		d.readDeadline = deadline
+	} else {
+		d.writeDeadline = deadline
+	}
 	return d.api.signal(d.changed)
 }
 
-func (d *windowsDevice) writeState() (time.Time, error) {
+func (d *windowsDevice) ioState(read bool) (time.Time, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.closed {
 		return time.Time{}, os.ErrClosed
 	}
-	if !d.deadline.IsZero() && !time.Now().Before(d.deadline) {
-		return d.deadline, os.ErrDeadlineExceeded
+	deadline := d.writeDeadline
+	if read {
+		deadline = d.readDeadline
 	}
-	return d.deadline, nil
+	if !deadline.IsZero() && !time.Now().Before(deadline) {
+		return deadline, os.ErrDeadlineExceeded
+	}
+	return deadline, nil
 }
 
 func windowsWaitTimeout(deadline time.Time) uint32 {
@@ -172,11 +190,14 @@ func windowsWaitTimeout(deadline time.Time) uint32 {
 	return uint32(min((remaining-1)/time.Millisecond+1, time.Duration(windows.INFINITE-1)))
 }
 
-func (d *windowsDevice) Write(data []byte) (written int, err error) {
+func (d *windowsDevice) Write(data []byte) (int, error) { return d.transfer(data, false) }
+func (d *windowsDevice) Read(data []byte) (int, error)  { return d.transfer(data, true) }
+
+func (d *windowsDevice) transfer(data []byte, read bool) (transferred int, err error) {
 	d.io.Lock()
 	defer d.io.Unlock()
 	defer runtime.KeepAlive(data)
-	if _, err := d.writeState(); err != nil {
+	if _, err := d.ioState(read); err != nil {
 		return 0, err
 	}
 	if len(data) == 0 {
@@ -189,18 +210,22 @@ func (d *windowsDevice) Write(data []byte) (written int, err error) {
 	defer func() { err = errors.Join(err, d.api.close(event)) }()
 	operation := windows.Overlapped{HEvent: event}
 	var count uint32
-	err = d.api.write(d.handle, data, &count, &operation)
+	operationName, call := "write", d.api.write
+	if read {
+		operationName, call = "read", d.api.read
+	}
+	err = call(d.handle, data, &count, &operation)
 	if !errors.Is(err, windows.ERROR_IO_PENDING) {
 		return int(count), err
 	}
 	for {
-		deadline, reason := d.writeState()
+		deadline, reason := d.ioState(read)
 		if reason != nil {
-			return d.cancelWrite(&operation, reason)
+			return d.cancelIO(&operation, reason)
 		}
 		state, waitErr := d.api.wait([]windows.Handle{event, d.changed}, false, windowsWaitTimeout(deadline))
 		if waitErr != nil {
-			return d.cancelWrite(&operation, waitErr)
+			return d.cancelIO(&operation, waitErr)
 		}
 		switch state {
 		case windows.WAIT_OBJECT_0:
@@ -209,12 +234,12 @@ func (d *windowsDevice) Write(data []byte) (written int, err error) {
 		case windows.WAIT_OBJECT_0 + 1, uint32(windows.WAIT_TIMEOUT):
 			// A changed deadline or an elapsed wait requires fresh state.
 		default:
-			return d.cancelWrite(&operation, fmt.Errorf("serial: unexpected write wait status %d", state))
+			return d.cancelIO(&operation, fmt.Errorf("serial: unexpected %s wait status %d", operationName, state))
 		}
 	}
 }
 
-func (d *windowsDevice) cancelWrite(operation *windows.Overlapped, reason error) (int, error) {
+func (d *windowsDevice) cancelIO(operation *windows.Overlapped, reason error) (int, error) {
 	cancelErr := d.api.cancel(d.handle, operation)
 	if errors.Is(cancelErr, windows.ERROR_NOT_FOUND) {
 		cancelErr = nil // Completion won the cancellation race.
@@ -226,6 +251,22 @@ func (d *windowsDevice) cancelWrite(operation *windows.Overlapped, reason error)
 		resultErr = nil
 	}
 	return int(count), errors.Join(reason, cancelErr, resultErr)
+}
+
+func (d *windowsDevice) flushInput(ctx context.Context) error {
+	d.io.Lock()
+	defer d.io.Unlock()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	d.mu.Lock()
+	closed := d.closed
+	d.mu.Unlock()
+	if closed {
+		return os.ErrClosed
+	}
+	err := d.api.purge(d.handle, windows.PURGE_RXABORT|windows.PURGE_RXCLEAR)
+	return errors.Join(ctx.Err(), err)
 }
 
 func (d *windowsDevice) queued(ctx context.Context) (int, error) {
@@ -245,7 +286,7 @@ func (d *windowsDevice) queued(ctx context.Context) (int, error) {
 	if err := d.api.clearErrors(d.handle, &faults, &state); err != nil {
 		return 0, errors.Join(ctx.Err(), err)
 	}
-	// Replies are deliberately unread, as on Unix; receive overflow is not a write failure.
+	// Ordinary HID writes leave replies unread; receive overflow is not a write failure.
 	if faults&0x100 != 0 { // CE_TXFULL
 		return 0, fmt.Errorf("serial: communication errors %#x", faults)
 	}

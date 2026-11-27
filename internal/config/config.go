@@ -25,26 +25,27 @@ var (
 // Config contains the resolved serve settings. Empty listener addresses disable
 // their listeners; empty device paths select automatic discovery.
 type Config struct {
-	API             string
-	Web             string
-	Token           string
-	TokenFile       string
-	SerialDevice    string
-	SerialBaud      int
-	ScreenWidth     int
-	ScreenHeight    int
-	TargetLayout    string
-	LayoutsDir      string
-	MouseButtonMode string
-	MouseMode       string
-	CaptureDevice   string
-	CaptureWidth    int
-	CaptureHeight   int
-	Autocrop        bool
-	WebFPS          int
-	AudioDevice     string
-	LogLevel        string
-	DebugKeys       bool
+	API                  string
+	Web                  string
+	Token                string
+	TokenFile            string
+	SerialDevice         string
+	SerialBaud           int
+	ScreenWidth          int
+	ScreenHeight         int
+	TargetLayout         string
+	LayoutsDir           string
+	MouseButtonMode      string
+	MouseMode            string
+	MouseAbsoluteRefresh bool
+	CaptureDevice        string
+	CaptureWidth         int
+	CaptureHeight        int
+	Autocrop             bool
+	WebFPS               int
+	AudioDevice          string
+	LogLevel             string
+	DebugKeys            bool
 }
 
 // Defaults returns the built-in settings with the loopback API enabled.

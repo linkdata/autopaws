@@ -117,3 +117,8 @@ func TestDarwinPTYBlockedWriteDeadline(t *testing.T) {
 		t.Fatalf("blocked write = %v", err)
 	}
 }
+
+func TestDarwinPTYReadsDeadlineAndInputDrain(t *testing.T) {
+	master, path := darwinPTY(t)
+	testTTYReads(t, master, path)
+}

@@ -112,6 +112,11 @@ func TestPTYRawSpeedsAndBytes(t *testing.T) {
 	}
 }
 
+func TestPTYReadsDeadlineAndInputDrain(t *testing.T) {
+	master, path := newPTY(t)
+	testTTYReads(t, master, path)
+}
+
 func TestPTYBusyDoesNotChangeOrFlushFirstPort(t *testing.T) {
 	master, path := newPTY(t)
 	first := realPort(t, path, 9600)

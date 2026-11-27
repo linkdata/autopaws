@@ -64,6 +64,8 @@ func (d *ttyDevice) configure(ctx context.Context, speed uint32) error {
 	return d.flushInput(ctx)
 }
 
+func (d *ttyDevice) Read(b []byte) (int, error)         { return d.f.Read(b) }
+func (d *ttyDevice) SetReadDeadline(t time.Time) error  { return d.f.SetReadDeadline(t) }
 func (d *ttyDevice) Write(b []byte) (int, error)        { return d.f.Write(b) }
 func (d *ttyDevice) SetWriteDeadline(t time.Time) error { return d.f.SetWriteDeadline(t) }
 func (d *ttyDevice) Close() error                       { return d.f.Close() }

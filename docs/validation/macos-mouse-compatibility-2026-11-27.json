@@ -1,0 +1,374 @@
+{
+  "date": "2026-11-27",
+  "scope": "macOS target mouse report compatibility, optional absolute-coordinate refresh, and two CH9329 adapters; no automatic display correction.",
+  "setup": {
+    "host": "Linux amd64",
+    "target": "macOS 27.2.1 (26B131)",
+    "display": "Mirrored; final settled MCP trials used 1920x1080 Cocoa points at scale 1. USB/video restarts temporarily changed the logical primary display; raw gesture dimensions are recorded separately.",
+    "capture": [
+      1920,
+      1080
+    ],
+    "api_screen": [
+      1280,
+      720
+    ],
+    "serial_baud": 9600,
+    "serial_protocol_mode": 0,
+    "default_button_mode": "relative"
+  },
+  "method": {
+    "input": "Real autopaws-mcp screenshot coordinates through candidate autopaws-kvm; separate raw serial experiments establish sustained holds.",
+    "observation": "Native AppKit NSView event callbacks, NSEvent.pressedMouseButtons changed-state samples, and a selectable noneditable NSTextView containing fixed test text.",
+    "coordinate_units": "Cocoa logical points with primary top-left origin; screenshot coordinates match only after display settlement.",
+    "transfer": "Local bounded telemetry, one expiring public paste upload per run; no screen contents or keyboard telemetry retained here.",
+    "physical_candidate_sha256": "f62ac3e9debb8db218f71c75c98f67b522c264666b85ba03939afc047167925c",
+    "candidate_version": "v0.7.1+mouse-compat-test",
+    "build_scope": "Earlier mode-2 and replacement-adapter physical trials used the first candidate with refresh enabled unconditionally. A final original-adapter mode-0 MCP run used the opt-in flag and verified get_device_info.config.mouse_absolute_refresh=true. Default-off legacy sequences and config wiring are also covered by automated tests.",
+    "final_flag_candidate_sha256": "e71395f4e23e8623b8948f0a1c66f01714bdc455f2338ebc0a46309e5318e5d0",
+    "api_candidate_sha256": "589dfe058b62054d3ce93b2a599e2f8d1c9e9dc1416011d9f705bd2e0fccf28e"
+  },
+  "adapters": [
+    {
+      "name": "original",
+      "get_info_version_byte": "38",
+      "target_product_string": "WCH UART TO KB-MS_V1.8",
+      "host_usb": "1a86:7523",
+      "target_usb_original": "1a86:e129",
+      "original_work_mode_byte": "80 (hardware-pin-selected mode 0)",
+      "mouse_descriptors_original": [
+        {
+          "bytes": 152,
+          "sha256": "4bd7fef9a944f2688e48a48cc8c4cfc91ddf7d94f69456ebc9afc9cefbd0366a"
+        }
+      ]
+    },
+    {
+      "name": "replacement",
+      "get_info_version_byte": "34",
+      "target_product_string": "WCH UART TO KB-MS_V1.4",
+      "host_usb": "1a86:7523",
+      "target_usb_original": "1a86:e129",
+      "original_work_mode_byte": "80 (hardware-pin-selected mode 0)",
+      "mouse_descriptors_original": [
+        {
+          "bytes": 152,
+          "sha256": "4bd7fef9a944f2688e48a48cc8c4cfc91ddf7d94f69456ebc9afc9cefbd0366a"
+        }
+      ],
+      "original_50_configuration_bytes": "Identical to original adapter; separately read back after the aborted no-op reset gate."
+    }
+  ],
+  "issue_107": {
+    "released_baseline": {
+      "absolute_api": [
+        640,
+        360
+      ],
+      "native_absolute": [
+        960.69921875,
+        540.65625
+      ],
+      "relative_counts": [
+        25,
+        -20
+      ],
+      "native_after_relative": [
+        983.53515625,
+        522.3828125
+      ],
+      "repeated_same_absolute": "Ignored; distinct absolute coordinate followed by exact destination restored position."
+    },
+    "candidate_replacement_mode_0": {
+      "screenshot_absolute": [
+        303,
+        556
+      ],
+      "native_absolute": [
+        303.3359375,
+        555.6875
+      ],
+      "relative_counts": [
+        25,
+        -20
+      ],
+      "native_after_relative": [
+        326.171875,
+        537.4140625
+      ],
+      "native_repeated_absolute": [
+        303.3359375,
+        555.6875
+      ],
+      "positioned_absolute_click_native": [
+        303.3359375,
+        555.6875
+      ],
+      "native_down_up_pairs": 1
+    },
+    "candidate_original_mode_2": {
+      "screenshot_click": [
+        303,
+        556
+      ],
+      "native_after_relative": [
+        326.171875,
+        537.4140625
+      ],
+      "native_positioned_absolute_click": [
+        303.3359375,
+        555.6875
+      ],
+      "native_down_up_pairs": 1
+    },
+    "result": "Optional coordinate refresh restores repeated absolute destinations and positions before new absolute button presses.",
+    "final_original_mode_0_flag_enabled": {
+      "screenshot_absolute": [
+        303,
+        556
+      ],
+      "native_absolute": [
+        303.3359375,
+        555.6875
+      ],
+      "relative_counts": [
+        25,
+        -20
+      ],
+      "native_after_relative": [
+        326.171875,
+        537.4140625
+      ],
+      "native_repeated_absolute": [
+        303.3359375,
+        555.6875
+      ],
+      "native_positioned_absolute_click": [
+        303.3359375,
+        555.6875
+      ],
+      "native_down_up_pairs": 1,
+      "native_global_buttons_after_run": 0,
+      "mcp_actions_completed": 9,
+      "candidate_shutdown_exit_code": 0,
+      "official_v0_7_1_service_restored": true
+    }
+  },
+  "issue_106_original_mode_0": {
+    "relative_buttons": "Native button hold/click not established.",
+    "absolute_buttons": "Press registered, but changing absolute coordinates caused a native release despite held report masks.",
+    "duplicate_report_button_masks": "Holding the same button on both report types did not preserve the native hold.",
+    "relative_move_with_unchanged_absolute_button_anchor": "Preserved a roughly five-second native hold and grew selected text from zero to three characters.",
+    "relative_count_limit": "30 counts moved 25.7109375 Cocoa points in this run; relative counts cannot be treated as screenshot pixels.",
+    "final_flag_run": "Default relative-button click/drag still failed. Absolute-button click produced one native down/up pair at the exact requested point; atomic absolute drag selected seven characters but the global button was already zero at the endpoint. Refresh does not repair this hold loss."
+  },
+  "issue_106_replacement_mode_0": {
+    "positioned_absolute_click": "One native down/up pair at the requested point.",
+    "default_relative_button_drag": "Did not select text.",
+    "absolute_button_atomic_drag": "Selected seven characters, but a sustained global hold was not captured. This does not establish continuous drag/drop compatibility.",
+    "mode_2_attempt": "Aborted before setting mode 2 because a no-op reset of the original configuration omitted the expected reset acknowledgement. Separate readback verified all 50 original bytes unchanged."
+  },
+  "optional_original_adapter_mode_2": {
+    "meaning": "CH9329 USB working mode 2, not a USB standard, not serial protocol mode 2, and not a manufacturer-independent requirement.",
+    "mutation": "Changed only byte 0 of the saved 50-byte configuration from 80 to 02; serial protocol mode 0 and 9600 baud preserved.",
+    "target_usb_temporary": "1a86:e329",
+    "mouse_descriptors": [
+      {
+        "bytes": 52,
+        "sha256": "18f75ac4d307ae39b22a1f92e039ebfdefe2fca12a435cd88a8913f2bcdd29dd"
+      },
+      {
+        "bytes": 88,
+        "sha256": "e506d7ea3461c38fce22133e05fb3381c228bf561e1175011566069b7d577c18"
+      }
+    ],
+    "native_sustained_absolute_drag": {
+      "start": [
+        320.07421875,
+        400.09375
+      ],
+      "end": [
+        640.15234375,
+        400.09375
+      ],
+      "selection_location": 180,
+      "selection_length_before": 0,
+      "selection_length_while_held": 19,
+      "buttons_at_start_and_end": 1,
+      "buttons_after_release": 0,
+      "hold_duration_between_endpoints_ms": 1096,
+      "logical_display": [
+        1280,
+        800
+      ]
+    },
+    "mcp_clicks": [
+      {
+        "button_mode": "absolute",
+        "screenshot": [
+          303,
+          556
+        ],
+        "native": [
+          303.3359375,
+          555.6875
+        ],
+        "native_down_up_pairs": 1
+      },
+      {
+        "button_mode": "relative (default)",
+        "screenshot": [
+          393,
+          556
+        ],
+        "native": [
+          393.3671875,
+          555.6875
+        ],
+        "native_down_up_pairs": 1
+      }
+    ],
+    "mcp_atomic_drags": [
+      {
+        "button_mode": "relative (default)",
+        "screenshot_start": [
+          173,
+          666
+        ],
+        "screenshot_end": [
+          293,
+          666
+        ],
+        "native_start": [
+          172.52734375,
+          666.97265625
+        ],
+        "native_end": [
+          292.5546875,
+          666.97265625
+        ],
+        "selection_location": 35,
+        "selection_length_while_held": 7,
+        "buttons_at_endpoint": 1,
+        "buttons_after_release": 0
+      },
+      {
+        "button_mode": "absolute",
+        "screenshot_start": [
+          173,
+          700
+        ],
+        "screenshot_end": [
+          293,
+          700
+        ],
+        "native_start": [
+          172.52734375,
+          699.94921875
+        ],
+        "native_end": [
+          292.5546875,
+          699.94921875
+        ],
+        "selection_location": 103,
+        "selection_length_while_held": 7,
+        "buttons_at_endpoint": 1,
+        "buttons_after_release": 0
+      }
+    ],
+    "restoration": "All 50 original configuration bytes read back exactly after every completed original-adapter trial; official v0.7.1 daemon restored after candidate trial."
+  },
+  "limits": [
+    "No specific retail cable manufacturer is required; two adapters sharing a descriptor and chip vendor still behaved differently.",
+    "Mode 2 was validated only on GET_INFO version 38; it was not entered on version 34.",
+    "The optional refresh does not repair lost button holds or alter USB descriptors.",
+    "No extended-display reconfiguration was requested for these mouse checks.",
+    "USB/video restart temporarily changed primary logical dimensions; the first absolute sample in the final mode-2 run was taken before settlement and is not an exact-position pass.",
+    "Native text selection and sampled holds establish these gestures only, not all applications or drag/drop interactions.",
+    "No additional Windows/Linux physical run of refresh-enabled behavior; default-off report sequences retain legacy regression coverage.",
+    "Apple driver source suggests a report aggregation/digitizer interaction; that is an inference, not proof of the running macOS driver path."
+  ],
+  "references": [
+    "https://github.com/linkdata/autopaws/issues/106",
+    "https://github.com/linkdata/autopaws/issues/107",
+    "https://github.com/apple-oss-distributions/IOHIDFamily/blob/main/IOHIDFamily/IOHIDEventDriver.cpp",
+    "https://github.com/mofeng-git/One-KVM/issues/303",
+    "https://www.wch.cn/bbs/thread-120563-1.html",
+    "https://www.wch.cn/uploads/file/20190508/1557278355473027.pdf"
+  ],
+  "adapter_api_validation": {
+    "candidate_version": "v0.7.1+adapter-api-test",
+    "adapter": "original, GET_INFO version byte 38",
+    "startup_mouse_absolute_refresh": true,
+    "initial": {
+      "raw_mode": 128,
+      "mode": 0,
+      "source": "hardware_pins",
+      "firmware_version_byte": 56,
+      "usb_enumerated": true
+    },
+    "rejected_request": {
+      "raw_mode": 1,
+      "error": "invalid params",
+      "requested_mode_not_written": true
+    },
+    "temporary_mode": {
+      "raw_mode": 2,
+      "mode": 2,
+      "source": "software",
+      "firmware_version_byte": 56,
+      "usb_enumerated": true
+    },
+    "restored_mode": {
+      "raw_mode": 128,
+      "mode": 0,
+      "source": "hardware_pins",
+      "firmware_version_byte": 56,
+      "usb_enumerated": true
+    },
+    "mcp_actions_completed": 9,
+    "native_absolute_click": {
+      "point": [
+        303.3359375,
+        555.6875
+      ],
+      "down_up_pairs": 1
+    },
+    "native_default_relative_button_click": {
+      "point": [
+        393.3671875,
+        555.6875
+      ],
+      "down_up_pairs": 1
+    },
+    "native_atomic_drags": [
+      {
+        "button_mode": "relative (default)",
+        "endpoint": [
+          292.5546875,
+          666.97265625
+        ],
+        "selected_characters": 7,
+        "buttons_at_endpoint": 1
+      },
+      {
+        "button_mode": "absolute",
+        "endpoint": [
+          292.5546875,
+          699.94921875
+        ],
+        "selected_characters": 7,
+        "buttons_at_endpoint": 1
+      }
+    ],
+    "final_global_buttons": 0,
+    "native_probe_closed": true,
+    "dropped_native_events": 0,
+    "candidate_shutdown_exit_code": 0,
+    "independent_raw_serial_pre_post_all_50_bytes_equal": true,
+    "emergency_restore_needed": false,
+    "official_v0_7_1_service_restored": true,
+    "limits": "Persistent API changes were temporary for validation and exactly restored. API mode changes were physically tested only on firmware byte 38; other adapters may fail the no-op gate. No new target display arrangement was requested.",
+    "host_trial_duration_ms": 11576
+  }
+}

@@ -343,7 +343,7 @@ func TestNoEnvironmentOrAutomaticFiles(t *testing.T) {
 func TestUsageAndLoggers(t *testing.T) {
 	var usage bytes.Buffer
 	WriteUsage(&usage)
-	for _, setting := range []string{"config", "api", "web", "serial-device", "serial-baud", "screen-width", "screen-height", "target-layout", "layouts-dir", "mouse-button-mode", "capture-device", "capture-width", "capture-height", "autocrop", "web-fps", "audio-device", "log-level", "debug-keys"} {
+	for _, setting := range []string{"config", "api", "web", "serial-device", "serial-baud", "screen-width", "screen-height", "target-layout", "layouts-dir", "mouse-button-mode", "mouse-absolute-refresh", "capture-device", "capture-width", "capture-height", "autocrop", "web-fps", "audio-device", "log-level", "debug-keys"} {
 		if !strings.Contains(usage.String(), "-"+setting) {
 			t.Errorf("usage omitted %s: %s", setting, usage.String())
 		}

@@ -23,6 +23,8 @@ func (server *Server) methods() map[string]handler {
 		"get_mouse_mapping": server.getMouseMapping, "set_mouse_mapping": server.setMouseMapping,
 		"reset_mouse_mapping":   server.resetMouseMapping,
 		"get_device_info":       server.deviceInfo,
+		"get_adapter_usb_mode":  server.getAdapterUSBMode,
+		"set_adapter_usb_mode":  server.setAdapterUSBMode,
 		"set_keyboard_layout":   server.setKeyboardLayout,
 		"list_keyboard_layouts": server.listKeyboardLayouts,
 		"capture_frame":         server.captureFrame, "list_capture_devices": server.listCaptureDevices,
@@ -326,7 +328,8 @@ func (server *Server) deviceInfo(ctx context.Context, data json.RawMessage) (any
 		"config": map[string]any{
 			"screen_width": options.ScreenWidth, "screen_height": options.ScreenHeight,
 			"keyboard_layout": server.keyboardLayout(), "serial_baud": options.SerialBaud,
-			"mouse_button_mode": options.ButtonMode,
+			"mouse_button_mode":      options.ButtonMode,
+			"mouse_absolute_refresh": options.AbsoluteRefresh,
 		},
 		"capture": server.captureInfo(ctx),
 	}, nil

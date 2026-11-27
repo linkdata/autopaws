@@ -152,6 +152,7 @@ func daemonFlags(cfg *Config, path *string, output io.Writer) *flag.FlagSet {
 	settings.StringVar(&cfg.LayoutsDir, "layouts-dir", cfg.LayoutsDir, "Directory for custom keyboard layouts")
 	settings.StringVar(&cfg.MouseButtonMode, "mouse-button-mode", cfg.MouseButtonMode, "Default mouse button mode: relative or absolute")
 	settings.StringVar(&cfg.MouseMode, "mouse-mode", cfg.MouseMode, "Mouse mapping startup mode: legacy (default) or extended (requires display geometry)")
+	settings.BoolVar(&cfg.MouseAbsoluteRefresh, "mouse-absolute-refresh", cfg.MouseAbsoluteRefresh, "Refresh absolute positions for targets that cache unchanged reports (opt-in)")
 	settings.StringVar(&cfg.CaptureDevice, "capture-device", cfg.CaptureDevice, "Capture path, macOS avfoundation:NAME or Windows dshow:NAME; empty auto-detects (no numeric indexes)")
 	settings.IntVar(&cfg.CaptureWidth, "capture-width", cfg.CaptureWidth, "Requested capture width in pixels")
 	settings.IntVar(&cfg.CaptureHeight, "capture-height", cfg.CaptureHeight, "Requested capture height in pixels")

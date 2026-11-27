@@ -194,7 +194,7 @@ func TestClientServerM1RoundTrips(t *testing.T) {
 			ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0),
 			ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
 		}},
-		{"device_info", "get_device_info", `{}`, `{"serial":{"device":"/dev/fixture","baud":9600,"auto_detect":false},"config":{"screen_width":1920,"screen_height":1080,"keyboard_layout":"us104","serial_baud":9600,"mouse_button_mode":"relative"},"capture":{"error":"unavailable"}}`, nil},
+		{"device_info", "get_device_info", `{}`, `{"serial":{"device":"/dev/fixture","baud":9600,"auto_detect":false},"config":{"screen_width":1920,"screen_height":1080,"keyboard_layout":"us104","serial_baud":9600,"mouse_button_mode":"relative","mouse_absolute_refresh":false},"capture":{"error":"unavailable"}}`, nil},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			fixture := newIntegrationFixture(t)

@@ -78,6 +78,7 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	keyboard := hid.NewKeyboard(controller, layout)
 	mouse, err := hid.NewMouse(controller, hid.MouseOptions{
 		Width: cfg.ScreenWidth, Height: cfg.ScreenHeight, ButtonMode: cfg.MouseButtonMode, MappingMode: cfg.MouseMode,
+		AbsoluteRefresh: cfg.MouseAbsoluteRefresh,
 	})
 	if err != nil {
 		return errors.Join(err, controller.Close())
@@ -144,7 +145,9 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 			SerialDevice: cfg.SerialDevice, SerialBaud: cfg.SerialBaud,
 			ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
 			KeyboardLayout: cfg.TargetLayout, LayoutsDir: cfg.LayoutsDir, ButtonMode: cfg.MouseButtonMode,
-			Logger: logger, KeyLogger: keys,
+			AbsoluteRefresh: cfg.MouseAbsoluteRefresh,
+			Adapter:         controller,
+			Logger:          logger, KeyLogger: keys,
 			Capture: video, DiscoverCapture: factories.discoverCapture,
 		})
 	}

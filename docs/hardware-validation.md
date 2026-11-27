@@ -226,6 +226,25 @@ the same unsaved TextEdit window. These limits are tracked in
 confirmed absolute-button hold without a cursor jump; other mouse-release cases
 remain unestablished because their default-mode press did not register.
 
+The [mouse compatibility follow-up](validation/macos-mouse-compatibility-2026-11-27.json)
+tested two CH9329 adapters with different firmware version bytes but identical
+combined mouse descriptors. The optional `-mouse-absolute-refresh` behavior
+restored repeated absolute destinations after relative motion and positioned
+absolute clicks correctly. It defaults off, preserving existing report sequences
+for other targets; enabled Windows/Linux behavior was not physically retested.
+
+Button holds remained adapter-dependent. On the original adapter, temporary
+CH9329 USB working mode 2 exposed separate relative and absolute mouse devices.
+Both MCP button modes then clicked and selected text with a sampled hold at the
+drag endpoint; a separate sustained absolute drag also preserved the hold.
+The final candidate also switched modes through the new JSON API, passed both
+button modes with native held selection, and restored pin-selected mode 0. An
+independent serial read verified all 50 original bytes afterward. The
+replacement adapter passed absolute clicks but did not establish sustained holds
+in its original mode; its reset acknowledgement differed, so the mode-2 test
+stopped before changing mode. This is a documented compatibility limit, not a
+universal cable fix. The README gives the operational guidance.
+
 Linux serial reconnect restored fresh keyboard input in the same test window
 without restarting the daemon. With v0.7.0, capture USB reconnect required
 same-path reselection to resume video and audio. The recovery change enables
