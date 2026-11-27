@@ -18,20 +18,55 @@ HID keyboard/mouse support.
 
 1. Connect the target's HDMI output to the capture card, and the card's USB connection to the host.
 2. Connect the adapter's serial USB side to the host and its HID USB side to the target.
-3. Use a single or mirrored target display, or configure the captured display's mapping below. Configure its keyboard layout and coordinate dimensions separately from the capture resolution.
+3. Follow [Target display setup](#target-display-setup) before positioned input. Configure the target keyboard layout and coordinate dimensions separately from the capture resolution.
 
 Follow the board's pinout if its UART components are separate.
 
-The default identity mapping fits single or mirrored displays. A captured-primary
-display was also tested on Windows with its other display still extended.
-When absolute input spans a larger desktop, configure the optional
-[display mapping](#display-mapping). The tested GNOME Wayland target used its
-whole virtual desktop even with the captured display primary.
+## Target display setup
 
-The target OS/device determines which area absolute HID input reaches. Geometry
-maps into that area; it cannot make an unreachable display reachable. Selecting
-a capture input does not redirect HID input. Check the setup before sending
-positioned clicks or drags if the pointer does not match the image.
+For the most workspace without losing visual detail, use the highest resolution
+at which the target's HDMI output and the card's actual capture frame match
+pixel for pixel (1:1). Set both to that resolution. A card accepting a 4K signal
+but delivering 1080p capture loses detail; requesting a larger capture frame
+cannot recover it. Use `--list-devices` to inspect the card's formats, then
+check the negotiated dimensions with `get_device_info` and a fresh capture.
+Output/capture pixels can differ from scaled desktop coordinate units.
+When mirroring, optimize the output for the capture display so a different
+laptop panel does not force scaling or letterboxing. Keep text readable at the
+chosen workspace size.
+
+For an extended desktop, place the capture-card display at the **top-left of
+the display arrangement** and make it the **primary/main display** in the
+target OS's display settings. Put the other displays to its right or below it.
+Alternatively, use a single display or mirror/duplicate the displays.
+
+Before positioned clicks or drags, capture a fresh frame and move the pointer to
+two widely separated image points. Check the actual target cursor at both
+locations. If it stays on another display or moves by the wrong amount, correct
+the target display setup first. Relative movement may cross displays; it does
+not establish the absolute input range. autopaws does not detect the target's
+display arrangement.
+
+- **macOS:** In **System Settings → Displays**, select the captured display and
+  choose **Use as → Main display**, or mirror the displays.
+- **Windows:** In **Settings → System → Display**, select the captured display
+  and enable **Make this my main display**, or duplicate the displays.
+- **GNOME:** In **Settings → Displays**, choose **Mirror**, or keep the extended
+  desktop and configure [display mapping](#display-mapping) using the captured
+  display's bounds and the measured absolute input span.
+
+On the recorded CH9329 setup, macOS 27.2.1 absolute movement addressed only the
+primary display; making the captured display primary made its full range
+reachable. A captured-primary display also passed on Windows with its other
+display still extended. The tested GNOME Wayland target addressed its whole
+virtual desktop even with the captured display primary. Behavior can vary with
+hardware and OS version; recheck after layout, resolution or scaling changes.
+
+The default identity mapping fits single or mirrored displays, and a captured
+primary display when absolute input reaches only that display. When input spans
+a larger desktop, configure the optional [display mapping](#display-mapping).
+Geometry maps into the target's actual HID range; it cannot make an unreachable
+display reachable. Selecting a capture input does not redirect HID input.
 
 ## Installation
 

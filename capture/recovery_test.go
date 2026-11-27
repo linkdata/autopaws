@@ -186,7 +186,12 @@ func TestAutomaticRecoveryPreservesTenSecondHealthyIdle(t *testing.T) {
 		subscription, _ := manager.Subscribe()
 		<-source.reading
 		_ = subscription.Close()
-		time.Sleep(9 * time.Second)
+		for i := range 2 {
+			time.Sleep(4 * time.Second)
+			source.reads <- managerRead{frame: managerFrame(managerJPEG(t, false), int64(i+2), uint32(i+1))}
+			synctest.Wait()
+		}
+		time.Sleep(time.Second)
 		if source.closes.Load() != 0 {
 			t.Fatal("healthy source closed before the existing idle grace")
 		}
@@ -198,13 +203,68 @@ func TestAutomaticRecoveryPreservesTenSecondHealthyIdle(t *testing.T) {
 	})
 }
 
-func TestAutomaticRecoveryOnlyDefaultsForNativeMacOSSource(t *testing.T) {
+func TestAutomaticRecoveryRequiresValidFrameProgress(t *testing.T) {
+	for _, corrupt := range []bool{false, true} {
+		t.Run(map[bool]string{false: "blocked read", true: "corrupt frames"}[corrupt], func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				old, current := newManagerSource(), newManagerSource()
+				var attempts atomic.Int32
+				options := managerOptions(old, nil)
+				options.OpenSource = func(context.Context, string, v4l2.Options) (Source, error) {
+					if attempts.Add(1) == 1 {
+						return old, nil
+					}
+					return current, nil
+				}
+				manager := mustManager(t, options)
+				manager.recoveryDelay = time.Second
+				subscription, _ := manager.Subscribe()
+				<-old.reading
+				time.Sleep(4 * time.Second)
+				old.reads <- managerRead{frame: managerFrame(managerJPEG(t, false), 2, 1)}
+				if _, err := subscription.Next(context.Background()); err != nil {
+					t.Fatal(err)
+				}
+				synctest.Wait()
+				for i := range 4 {
+					time.Sleep(time.Second)
+					if corrupt {
+						old.reads <- managerRead{frame: managerFrame([]byte("corrupt JPEG"), int64(i+3), uint32(i+2))}
+						synctest.Wait()
+					}
+					if info := manager.Info(); !info.Running || info.Err != nil || attempts.Load() != 1 {
+						t.Fatalf("usable frame did not reset the progress budget: %+v", info)
+					}
+				}
+				time.Sleep(time.Second)
+				synctest.Wait()
+				if info := manager.Info(); info.Running || !errors.Is(info.Err, context.DeadlineExceeded) || old.closes.Load() != 1 {
+					t.Fatalf("source without usable video did not retire: %+v", info)
+				}
+				if _, err := subscription.Next(context.Background()); !errors.Is(err, ErrUnavailable) || !errors.Is(err, context.DeadlineExceeded) {
+					t.Fatalf("subscriber missed the progress failure: %v", err)
+				}
+				time.Sleep(time.Second)
+				synctest.Wait()
+				if info := manager.Info(); !info.Running || info.Generation != 2 || attempts.Load() != 2 {
+					t.Fatalf("source did not reopen after backoff: %+v", info)
+				}
+				current.reads <- managerRead{frame: managerFrame(managerJPEG(t, false), 7, 1)}
+				if frame, err := subscription.Next(context.Background()); err != nil || frame.Metadata().Generation != 2 {
+					t.Fatalf("existing subscriber did not receive recovered video: %v, %v", frame, err)
+				}
+			})
+		})
+	}
+}
+
+func TestAutomaticRecoveryOnlyDefaultsForNativeSource(t *testing.T) {
 	defaultManager := mustManager(t, Options{Width: 128, Height: 96})
-	if (defaultManager.recoveryDelay > 0) != recoverDefaultSource || defaultManager.options.IdleTimeout != 10*time.Second {
-		t.Fatal("native recovery policy changed the platform or idle default")
+	if defaultManager.recoveryDelay != time.Second || defaultManager.options.IdleTimeout != 10*time.Second {
+		t.Fatal("native recovery policy changed the retry or idle default")
 	}
 	customManager := mustManager(t, managerOptions(newManagerSource(), nil))
 	if customManager.recoveryDelay != 0 {
-		t.Fatal("injected source unexpectedly acquired a platform recovery policy")
+		t.Fatal("injected source unexpectedly acquired native recovery policy")
 	}
 }

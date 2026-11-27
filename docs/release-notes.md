@@ -1,3 +1,26 @@
+# v0.7.1
+
+Linux capture now retries automatically after USB reconnect. Native capture
+also reopens after five seconds without a successfully processed frame,
+including a stream of corrupt MJPEG frames. Source cleanup finishes before the
+one-second retry backoff; successful recovery advances the capture generation
+and rematches automatic audio. Reapply extended display geometry afterward,
+and use a stable capture-device path when USB reconnection can renumber nodes.
+
+The README now collects manual target display setup in one section: place the
+captured display top-left and make it primary, or use mirroring, and select the
+highest pixel-for-pixel matching output/capture resolution. macOS target
+measurements confirmed primary-display-only absolute input on the tested
+CH9329 setup. Mouse-button and repeat-after-relative defects remain tracked
+separately in [#106](https://github.com/linkdata/autopaws/issues/106) and
+[#107](https://github.com/linkdata/autopaws/issues/107).
+
+Validation includes the complete local CI gate, native Linux, macOS and Windows
+CI, and physical Linux USB recovery with sustained video and audio on the same
+WebSocket and daemon. See the
+[numerical record](https://github.com/linkdata/autopaws/blob/v0.7.1/docs/validation/macos-target-linux-recovery-2026-11-27.json)
+for exact builds and limits.
+
 # v0.7.0
 
 The viewer opens in View only mode. Turn it off to send keyboard/mouse input.

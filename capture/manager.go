@@ -32,8 +32,8 @@ type Source interface {
 }
 
 // Options contains selected settings and narrow source/clock seams. Nil hooks
-// use the platform capture backend and host monotonic clock. The FFmpeg source
-// retries failures while demand remains. Zero IdleTimeout uses ten seconds.
+// use the platform capture backend and host monotonic clock. Native sources
+// retry failures while demand remains. Zero IdleTimeout uses ten seconds.
 type Options struct {
 	Device                    string
 	Width, Height             uint32
@@ -112,9 +112,7 @@ func New(options Options) (*Manager, error) {
 	var recoveryDelay time.Duration
 	if options.OpenSource == nil {
 		options.OpenSource = openSource
-		if recoverDefaultSource {
-			recoveryDelay = time.Second
-		}
+		recoveryDelay = time.Second
 	}
 	if options.MonotonicNow == nil {
 		options.MonotonicNow = monotime.Now
@@ -529,8 +527,15 @@ func unavailableError(err error) error {
 func (manager *Manager) read(run *stream, source Source) error {
 	processor := newProcessor(run.settings.Autocrop, run.settings.ScreenWidth, run.settings.ScreenHeight)
 	format := source.Format()
+	deadline := time.Now().Add(snapshotTimeout)
 	for {
-		frame, err := source.ReadFrame(run.ctx)
+		readCtx, cancel := run.ctx, func() {}
+		if manager.recoveryDelay > 0 {
+			readCtx, cancel = context.WithDeadline(run.ctx, deadline)
+		}
+		frame, err := source.ReadFrame(readCtx)
+		err = errors.Join(err, readCtx.Err())
+		cancel()
 		if err != nil {
 			return err
 		}
@@ -584,6 +589,9 @@ func (manager *Manager) read(run *stream, source Source) error {
 		}
 		manager.idleLocked()
 		manager.mu.Unlock()
+		// Only usable video resets progress; corrupt warmup frames can continue
+		// arriving forever after a USB reconnect without a driver error.
+		deadline = time.Now().Add(snapshotTimeout)
 	}
 }
 

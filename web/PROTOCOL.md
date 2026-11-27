@@ -51,7 +51,7 @@ Audio is captured lazily while web clients are connected. On Linux, auto
 selection follows the current selected video USB device; an explicit PCM path
 stays fixed. macOS and Windows require explicit AVFoundation/DirectShow audio selectors. Each
 video generation reopens audio, including resolution changes and successful
-FFmpeg capture recovery. Selection/open/read failures make audio unavailable
+automatic capture recovery. Selection/open/read failures make audio unavailable
 without ending video or input. FFmpeg audio retries an explicit selector
 after one second while viewers remain connected. Every audio-generation change
 is sent as configuration before any samples belonging to that generation.

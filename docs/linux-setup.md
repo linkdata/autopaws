@@ -57,6 +57,23 @@ canonical [WirePlumber 0.5 per-card setup](../alsa/README.md#exclusive-access-wi
 Use the instructions for your installed WirePlumber version. There is no
 PipeWire/PulseAudio fallback.
 
+### USB capture recovery
+
+While a viewer or snapshot needs capture, the daemon retries a failed source
+after a one-second backoff. Five seconds without a successfully processed frame
+also triggers recovery, including a stream of corrupt MJPEG frames. The old
+source closes before another opens. A successful reopen advances the capture
+generation and rematches automatic audio; an existing viewer can resume without
+reselection or a daemon restart. Retries continue while a viewer needs video
+and the target is not producing usable frames, including during display sleep.
+
+Recovery reopens the selected path. Prefer a stable `/dev/v4l/by-id/` or
+`/dev/v4l/by-path/` capture path. If a raw `/dev/videoN` path changes, select the
+returned device with `set_capture_device` or update the daemon configuration.
+Reapply extended display geometry after capture recovery and take a fresh MCP
+screenshot before positioned input. Kernel calls can outlast these application
+deadlines; the daemon keeps ownership until cleanup completes.
+
 ## Optional system service
 
 After the foreground quick start works, create the dedicated service account

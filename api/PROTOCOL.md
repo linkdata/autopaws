@@ -173,8 +173,8 @@ Complete geometry uses this shape:
 
 `offset` is the captured display's signed desktop origin on either axis. `span`
 is the range actually addressed by absolute HID, which can differ from the
-virtual desktop on Windows. Dimensions and offsets must use the same desktop units; do not mix logical
-and physical coordinates.
+virtual desktop on Windows or macOS. Dimensions and offsets must use the same
+desktop units; do not mix logical and physical coordinates.
 Widths/heights must each be at least two and the display must fit in the span.
 Configured screen dimensions remain the API's local coordinate grid,
 independently of these desktop bounds.
@@ -316,9 +316,11 @@ without exposing it as a mouse-tool option.
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending
 old-generation snapshots fail with `capture changed`; callers retry explicitly.
-Idle opens retain that generation. On macOS and Windows, a stalled source is closed and
-retried while demand remains; a successful automatic recovery advances the
-generation and resets queued frames and crop detection. Failed attempts do not
+Idle opens retain that generation. Native sources on Linux, macOS and Windows
+are closed and retried while demand remains after a failure or five seconds
+without a successfully processed frame. Retries use a one-second backoff;
+a successful automatic recovery advances the generation and resets queued frames
+and crop detection. Failed attempts do not
 advance it. A device selection is accepted even with no source open, and a
 failed open preserves that selection.
 
