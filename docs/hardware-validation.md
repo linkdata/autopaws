@@ -95,8 +95,8 @@ mapping passed 25 API points within one native pixel, exact MCP click/drag
 endpoints, and actual Firefox viewer clicks/drags with one down/up pair per
 action. A separate mirrored baseline passed on November 26. The original mirror
 layout was restored and the display-test helper was removed. This does not
-establish Windows secondary-display support; macOS target validation remains
-[follow-up #103](https://github.com/linkdata/autopaws/issues/103).
+establish Windows secondary-display support; see the macOS target checks below
+for the separate [#103](https://github.com/linkdata/autopaws/issues/103) work.
 
 A [Linux recovery check](validation/linux-recovery-2026-11-27.json) confirmed
 that video and both capture setters keep working with HID unplugged, and exact
@@ -186,7 +186,7 @@ macOS and rejected 4K capture at both 30 and 5 fps. Pointer commands were
 acknowledged. The owner reported the cursor was on the primary display
 rather than the captured extended display. This check does not establish absolute
 input support for a captured secondary display. Use the documented
-[target display setup](../README.md#hardware-and-wiring).
+[target display setup](../README.md#target-display-setup).
 
 A [read-only autocrop check](validation/autocrop-windows-readonly-2026-11-26.json)
 verified that the new default and explicit opt-in preserve full 1920×1080
@@ -205,6 +205,34 @@ The separate Swedish layout check passed all 154 printable characters, Tab and
 Enter through MCP and physical HID into an unsaved test buffer. Linux mappings
 were checked against libxkbcommon and its compose table. See the
 [Swedish keyboard record](validation/swedish-keyboard-2026-11-18.json).
+
+## macOS target and Linux recovery checks
+
+The [November 27 record](validation/macos-target-linux-recovery-2026-11-27.json)
+uses a Linux amd64 host, macOS 27.2.1 target, CH340/CH9329 at 9600 baud, and
+UGREEN 15389 MJPG capture at 1920×1080 with autocrop off. Absolute input addressed
+the Mac's primary display: a captured secondary at `(1440,0)` was unreachable,
+while making it primary or mirroring passed 25-point grids with less than 0.25
+Cocoa logical points of error. See the README's
+[target display setup](../README.md#target-display-setup) for manual arrangement
+and 1:1 capture-resolution guidance.
+
+This is a position-range result. Default-mode MCP and actual Firefox clicks/drags
+did not establish a target button hold, and a repeated absolute position did not
+restore the cursor after relative movement. Physical dragging selected text in
+the same unsaved TextEdit window. These limits are tracked in
+[#106](https://github.com/linkdata/autopaws/issues/106) and
+[#107](https://github.com/linkdata/autopaws/issues/107). Shutdown released a
+confirmed absolute-button hold without a cursor jump; other mouse-release cases
+remain unestablished because their default-mode press did not register.
+
+Linux serial reconnect restored fresh keyboard input in the same test window
+without restarting the daemon. With v0.7.0, capture USB reconnect required
+same-path reselection to resume video and audio. The recovery change enables
+native retry and detects streams that stop producing successfully processed
+frames; the record separates released-binary observations from the tested
+candidate. Temporary target helpers and public transfer gists are removed after
+testing. No screenshots, OCR or audio recordings are retained.
 
 ## Coverage limits
 
