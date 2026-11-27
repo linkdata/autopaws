@@ -111,7 +111,7 @@ On macOS, reproduce the model-check table with:
 ```sh
 python3 experiments/cycle-time/splash_bench.py --task predicate \
   --condition modal_visible --samples 8 --fixture-offset 20000 \
-  --out /tmp/model-checks.json
+  --out /tmp/model-checks
 ```
 
 This defaults to Splash; use `--model qwen3-vl-2b-instruct` for Qwen and a new

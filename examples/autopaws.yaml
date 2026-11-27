@@ -1,6 +1,6 @@
 # Example for one Linux KVM host and one mirrored/single-display target.
 # Devices are selected automatically; override paths or target settings as needed.
-# For Windows device selectors and audio, see docs/windows-setup.md.
+# For device selectors and audio, see docs/windows-setup.md or docs/macos-setup.md.
 # Loopback API and web viewer, with relative mouse button reports.
 # Both binaries accept this file with -config ./autopaws.yaml.
 # To serve only the web viewer, set api: ""; MCP requires an enabled API.

@@ -90,8 +90,8 @@ automatically. `get_device_info` reports `config.mouse_absolute_refresh`.
 Refresh does not fix display geometry or adapter button compatibility.
 
 Some CH9329 firmware combines relative and absolute mice in one HID interface.
-On the tested macOS target, relative button presses did not register on this layout, and it
-released an absolute hold when coordinates changed. Positioned absolute clicks
+On the tested macOS target, relative button presses did not register on this layout,
+and changing absolute coordinates released an absolute hold. Positioned absolute clicks
 worked, but sustained absolute drags did not.
 
 ### Optional adapter USB mode

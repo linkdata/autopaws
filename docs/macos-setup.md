@@ -3,8 +3,8 @@
 ## Install and start
 
 Install the [release binaries](../README.md#install), or follow the
-[source build instructions](../README.md#build-and-develop). Intel and Apple
-silicon Macs are supported. Install FFmpeg separately and put it on the daemon's
+[source build instructions](../README.md#build-and-develop). Builds are available
+for Intel and Apple silicon Macs. Install FFmpeg separately and put it on the daemon's
 `PATH`:
 
 ```sh
