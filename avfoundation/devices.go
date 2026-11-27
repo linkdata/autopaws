@@ -99,9 +99,6 @@ func validateSelector(path string) error {
 }
 
 func selectDevice(devices []Device, path string, audio bool) (Device, error) {
-	if err := validateSelector(path); err != nil {
-		return Device{}, err
-	}
 	var result Device
 	count := 0
 	for _, device := range devices {
