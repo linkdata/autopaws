@@ -119,14 +119,35 @@ exactly onto HID 0 and 4095 in legacy mode; a one-pixel axis maps to zero. Exten
 mode applies the configured shared mapping after normalization. Screenshot pixels may
 have different dimensions: MCP performs that conversion using its latest screenshot.
 
+The KVM flag `-mouse-absolute-refresh` (YAML `mouse-absolute-refresh: true`) opts
+in to refreshing absolute positions; it defaults to `false`. With it enabled
+and no held or uncertain buttons, absolute positioning sends a neighboring HID
+coordinate followed by the exact requested point. This refreshes targets that
+suppress unchanged absolute axes after relative or physical movement. It also
+positions with the existing button mask before introducing new positioned
+presses. With refresh enabled, absolute-report button releases and cleanup send
+the exact release report without a neighboring move. Absolute moves to the
+origin retain the existing nonzero preposition with either setting. Default
+Windows/Linux input behavior is unchanged.
+
 Relative `mouse_move` uses unscaled signed deltas from −127 through 127 per axis;
-larger deltas are rejected. Scroll is clamped to −127…127 and preserves held buttons.
-Movement preserves held buttons in both button modes. Clicks preserve other held
-buttons and finish with the selected button released. Each held button stays on
-the absolute or relative report that pressed it. Movement and scrolling preserve
-that ownership; changing `button_mode` does not move an already held button to
-another report. Positioned relative presses send the absolute position before
-the relative button report.
+larger deltas are rejected. Scroll is clamped to −127…127. Movement and scrolling
+retain held button masks on the report that pressed each button; changing
+`button_mode` does not move an existing hold to another report. Clicks retain
+other held buttons and finish with the selected button released. Positioned
+relative presses send the absolute position before the relative button report.
+New position-free presses use relative reports; supply coordinates when an
+absolute button report is required.
+
+These rules describe the transmitted reports, not a guarantee that every target
+driver preserves the native hold. Some macOS combined relative/absolute mouse
+interfaces ignore relative buttons or release an absolute hold when coordinates
+change. Positioned `button_mode: "absolute"` clicks are a verified option; a
+successful response or one-hop text selection does not establish sustained
+drag-and-drop support. See [target mouse operation](../README.md#target-mouse-operation)
+for validation and the optional USB work mode 2 compatibility setting tested on
+one CH9329 firmware. It is distinct from serial protocol mode 0. Relative counts
+must not be treated as screenshot pixels.
 
 Releasing an absolute-report button without coordinates, including during
 cleanup, uses its last absolute position. That position can be stale after raw
@@ -241,19 +262,77 @@ Listing and selection work without hardware and emit no input. They preserve
 capture/screenshot state, physical browser keycodes, named special keys,
 hexadecimal HID usages and mouse behavior.
 
+## Adapter USB mode
+
+These explicit adapter operations are separate from `get_device_info`, which
+does not probe serial hardware. They require backend support and verified
+adapter replies: missing capability returns `unavailable`, and missing replies
+can return `timeout`. Reading a mode does not prove that the adapter supports
+the setter's reset and verification steps.
+
+| Method | Parameters | Successful result |
+|---|---|---|
+| `get_adapter_usb_mode` | none | Current adapter mode object below |
+| `set_adapter_usb_mode` | required integer `raw_mode`: `0`, `2`, `128` or `130` | Current mode, verified after any change |
+
+```json
+{"raw_mode":128,"mode":0,"source":"hardware_pins","firmware_version_byte":56,"usb_enumerated":true}
+```
+
+`raw_mode` preserves both the USB work mode and how it is selected. The setter
+accepts these values:
+
+| Raw value | Selection |
+|---|---|
+| `0` (`0x00`) | Software-selected USB work mode 0 |
+| `2` (`0x02`) | Software-selected USB work mode 2 |
+| `128` (`0x80`) | Hardware-pin-selected USB work mode 0 |
+| `130` (`0x82`) | Hardware-pin-selected USB work mode 2 |
+
+`mode` is the decoded mode number; `source` is `software` or `hardware_pins`.
+Read and save the exact `raw_mode` before changing it so the selection source
+can be restored. These are CH9329 working modes, not USB-standard modes and not
+serial communication modes. Requesting `{"raw_mode":2}` leaves serial protocol
+mode and baud unchanged. `firmware_version_byte` is the adapter's reported
+version byte; `usb_enumerated` is its reported USB enumeration state, not proof
+that native mouse actions work on the target.
+
+The setter is a persistent maintenance operation. It releases held keyboard
+and mouse input, then returns without writing if the raw mode already matches.
+Otherwise it preserves the other 49 configuration bytes, verifies an
+unchanged configuration round trip before changing the mode, and checks
+acknowledgements, USB re-enumeration and full configuration readback. A failure
+while applying the requested mode triggers bounded best-effort restoration of
+the saved configuration. A failed unchanged-configuration gate reports whether
+the original readback matches and aborts the requested write. Failure and
+restoration errors are returned; an unverified change is not reported as
+success. Startup, the getter and MCP `setup` never write adapter configuration.
+No additional MCP tools are provided.
+
+After parameter and backend checks, each setter attempt invalidates the shared
+mouse mapping before calling the mode setter, including attempts that later
+fail. Extended mapping requires reapplication; legacy mapping retains identity
+with a new revision. If input release or mapping invalidation fails, the setter
+stops before adapter configuration. Capture again and verify pointer alignment
+and actual click/hold/drag behavior after every attempt. Geometry is not
+corrected automatically. See [target mouse operation](../README.md#target-mouse-operation)
+for the measured macOS compatibility limits.
+
 ## Device information and capture
 
 `get_device_info` takes no parameters and succeeds without opening serial hardware
 or finding a capture card. Serial/config fields describe **configured settings**,
 not a claim that the device is connected. `config.keyboard_layout` is the active
-runtime selection, initially the CLI/YAML startup layout:
+runtime selection, initially the CLI/YAML startup layout.
+`config.mouse_absolute_refresh` reports the startup refresh setting:
 
 ```json
 {
   "serial":{"device":"","baud":9600,"auto_detect":true},
   "config":{
     "screen_width":1920,"screen_height":1080,"keyboard_layout":"us104",
-    "serial_baud":9600,"mouse_button_mode":"relative"
+    "serial_baud":9600,"mouse_button_mode":"relative",
+    "mouse_absolute_refresh":false
   },
   "capture":{
     "device":"","requested_width":1920,"requested_height":1080,
@@ -379,7 +458,7 @@ minimal `{"error":"unavailable"}` capture object.
 | `unsupported character` | A text/key character is absent from the target layout |
 | `canceled` | Request context was cancelled |
 | `timeout` | Context deadline or snapshot acquisition deadline |
-| `unavailable` | Service/device unavailable, disconnected or closing; selected layout cannot be read |
+| `unavailable` | Service/device unavailable, disconnected or closing; selected layout cannot be read; adapter commands unsupported |
 | `device busy` | Another cooperating process owns the serial port |
 | `capture changed` | Pending snapshot cancelled by a capture selection/resolution change |
 | `mouse mapping changed` | Positioned input refers to an obsolete mapping revision |

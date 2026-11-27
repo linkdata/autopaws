@@ -20,6 +20,8 @@ screen-height: 1080
 target-layout: us104
 layouts-dir: ""
 mouse-button-mode: relative
+# Opt in for targets that cache unchanged absolute coordinates.
+mouse-absolute-refresh: false
 # Empty selects the discovery default; use a stable /dev/v4l/by-id or by-path
 # symlink for an explicit card when available. Numeric indexes are unsupported.
 capture-device: ""

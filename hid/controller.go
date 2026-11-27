@@ -158,6 +158,14 @@ func (current *action) write(frame []byte) error {
 	return current.controller.writeFrame(current.ctx, frame)
 }
 
+func (current *action) writeExact(frame []byte) error {
+	if err := current.ctx.Err(); err != nil {
+		return err
+	}
+	current.dirty = true // A failed send may already have reached the target.
+	return current.controller.writeReport(current.ctx, frame)
+}
+
 // Failed writes may already have reached the chip. Retain both the previous
 // and attempted holds until that report ID is successfully updated or reset.
 func (controller *Controller) writeFrame(ctx context.Context, frame []byte) error {

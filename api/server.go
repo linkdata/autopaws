@@ -19,6 +19,7 @@ import (
 
 	"github.com/linkdata/autopaws/apiwire"
 	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/ch9329"
 	"github.com/linkdata/autopaws/devices"
 	"github.com/linkdata/autopaws/hid"
 	"github.com/linkdata/autopaws/internal/token"
@@ -28,6 +29,7 @@ import (
 // loggers. Nil loggers disable their records. This does not probe serial devices.
 // Capture is a shared manager owned by the caller. A nil manager/discovery hook
 // leaves that service unavailable; no implicit hardware discovery is performed.
+// Adapter is optional and called only by explicit USB-mode operations.
 type Options struct {
 	Token                     string
 	SerialDevice              string
@@ -36,9 +38,14 @@ type Options struct {
 	KeyboardLayout            string
 	LayoutsDir                string
 	ButtonMode                string
-	Logger, KeyLogger         *slog.Logger
-	Capture                   *capture.Manager
-	DiscoverCapture           func(context.Context) ([]devices.VideoDevice, error)
+	AbsoluteRefresh           bool
+	Adapter                   interface {
+		GetUSBMode(context.Context) (ch9329.USBMode, error)
+		SetUSBMode(context.Context, byte) (ch9329.USBMode, error)
+	}
+	Logger, KeyLogger *slog.Logger
+	Capture           *capture.Manager
+	DiscoverCapture   func(context.Context) ([]devices.VideoDevice, error)
 }
 
 type handler func(context.Context, json.RawMessage) (any, error)

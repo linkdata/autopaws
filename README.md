@@ -68,6 +68,64 @@ a larger desktop, configure the optional [display mapping](#display-mapping).
 Geometry maps into the target's actual HID range; it cannot make an unreachable
 display reachable. Selecting a capture input does not redirect HID input.
 
+## Target mouse operation
+
+Use absolute coordinates from the latest screenshot for ordinary movement,
+positioned clicks and drags on every target OS. `button_mode` chooses the button
+report; it does not change coordinate units. Start with the default relative
+button reports on Windows and Linux. On macOS, first use `mouse_move` to reach
+the click point or drag start, then test harmless positioned `mouse_click` and
+`mouse_drag` actions with `button_mode: "absolute"`. Verify actual clicks and
+sustained drag-and-drop in the target application. A successful API response or
+one-hop text selection does not prove that the target maintained the hold.
+
+If a repeated absolute destination is ignored after relative or physical
+movement, restart KVM with `-mouse-absolute-refresh` (YAML:
+`mouse-absolute-refresh: true`). This opt-in setting defaults to `false`, leaving
+existing Windows/Linux behavior unchanged. It refreshes an unheld absolute move
+through a neighboring HID coordinate, then sends the exact destination, and
+positions automatically before new positioned presses. `get_device_info` reports the
+setting as `config.mouse_absolute_refresh`. It does not repair display layouts
+or adapter button compatibility.
+
+On macOS 27.2.1, the original CH9329 adapter in USB work mode 0 exposed relative
+and absolute mouse collections through one HID interface. Relative button
+presses were ignored, and changing absolute coordinates released an
+absolute-report hold. Positioned absolute-button clicks worked, but that does
+not establish general drag-and-drop support. Relative movement can maintain a
+hold on this layout, but target acceleration/scaling means relative counts are
+not screenshot pixels; autopaws does not substitute that approximate movement
+for an absolute destination.
+
+An optional adapter setting helped one tested CH9329 firmware: **USB work mode
+2** exposed separate relative and absolute mouse interfaces and passed MCP
+screenshot-coordinate clicks and native text-selection drags with both button
+modes. This is a measured compatibility option, not a cable-brand requirement or
+a guarantee for every firmware:
+
+1. Call API `get_adapter_usb_mode` and save its exact `raw_mode`. For example,
+   `128` means hardware-pin-selected mode 0; restoring decoded `mode: 0` instead
+   would change the selection source.
+2. Call `set_adapter_usb_mode` with `{"raw_mode":2}` to request USB work mode 2.
+   This explicit operation preserves the other adapter settings, including
+   **serial communication protocol mode 0** and baud rate (normally 9600), and
+   verifies reset/re-enumeration and configuration readback when a change is
+   needed. USB work mode and serial communication mode are different settings.
+3. After every setter attempt, capture again and recheck pointer alignment and
+   real click/hold/drag-and-drop behavior. Reapply extended display mapping if
+   needed. Restore the saved raw value through the same setter when wanted.
+
+These [API methods](api/PROTOCOL.md#adapter-usb-mode) require backend support and
+verified adapter replies. Use a supported configuration utility if probing
+fails. Startup and MCP `setup` never change adapter configuration; the setter is
+persistent and has best-effort rollback if applying the requested mode fails.
+A second tested adapter exposed the same combined mouse layout and ignored
+relative button presses. It was left unchanged when its
+reset command was not acknowledged, so work mode 2 remains unverified on that
+firmware. See the
+[macOS mouse validation record](docs/validation/macos-mouse-compatibility-2026-11-27.json)
+for exact descriptors, firmware and test limits.
+
 ## Installation
 
 Download the ZIP for your host from the [latest release](https://github.com/linkdata/autopaws/releases/latest)
@@ -196,6 +254,7 @@ on another host, override it for MCP, for example
 | `target-layout` | `us104` | Target text layout |
 | `layouts-dir` | empty | Custom layouts, searched before built-ins |
 | `mouse-button-mode` | `relative` | `relative` or `absolute` button reports |
+| `mouse-absolute-refresh` | `false` | Opt in to refreshing absolute positions before input; see [target mouse operation](#target-mouse-operation) |
 | `mouse-mode` | `legacy` | Identity mapping, or `extended` to require display geometry before positioned input |
 | `capture-device` | empty | Linux video path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; empty auto-selects |
 | `capture-width` | `1920` | Requested width, 1–4294967295 |

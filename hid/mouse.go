@@ -30,6 +30,8 @@ type MouseOptions struct {
 	Width, Height int
 	ButtonMode    string
 	MappingMode   string
+	// AbsoluteRefresh refreshes cached axes before positioning and new presses.
+	AbsoluteRefresh bool
 }
 
 // ButtonOptions optionally positions a button action and overrides its mode.
@@ -41,10 +43,11 @@ type ButtonOptions struct {
 
 // Mouse shares its controller's held input and complete-action gate.
 type Mouse struct {
-	controller    *Controller
-	width, height int
-	relative      bool
-	mapping       *mouseMapping
+	controller      *Controller
+	width, height   int
+	relative        bool
+	absoluteRefresh bool
+	mapping         *mouseMapping
 }
 
 // NewMouse validates target dimensions and mode without opening hardware.
@@ -70,7 +73,7 @@ func NewMouse(controller *Controller, options MouseOptions) (*Mouse, error) {
 		mapping.state.Transform = nil
 		mapping.state.Message = "apply display geometry"
 	}
-	return &Mouse{controller: controller, width: options.Width, height: options.Height, relative: relative, mapping: mapping}, nil
+	return &Mouse{controller: controller, width: options.Width, height: options.Height, relative: relative, absoluteRefresh: options.AbsoluteRefresh, mapping: mapping}, nil
 }
 
 func buttonMode(mode string) (bool, error) {
@@ -176,7 +179,18 @@ func (mouse *Mouse) runButton(ctx context.Context, plan buttonPlan, execute func
 }
 
 func (mouse *Mouse) moveAbs(current *action, position Point) error {
-	return current.write(ch9329.MouseAbsolute(mouse.controller.absoluteButtons, position.X, position.Y, 0))
+	controller := mouse.controller
+	if mouse.absoluteRefresh && position != (Point{}) && controller.buttons|controller.absolutePending|controller.relativePending == 0 {
+		// Some targets cache absolute axes even after relative or physical motion.
+		neighbor := Point{position.X, position.Y ^ 1}
+		if neighbor == (Point{}) {
+			neighbor.X = 1
+		}
+		if err := current.write(ch9329.MouseAbsolute(0, neighbor.X, neighbor.Y, 0)); err != nil {
+			return err
+		}
+	}
+	return current.write(ch9329.MouseAbsolute(controller.absoluteButtons, position.X, position.Y, 0))
 }
 
 // MoveRel moves by -127..127 on each axis, preserving held buttons.
@@ -198,6 +212,10 @@ func (mouse *Mouse) Scroll(ctx context.Context, amount int) error {
 
 func (mouse *Mouse) setButtons(current *action, buttons byte, plan buttonPlan) error {
 	controller := mouse.controller
+	write := current.write
+	if mouse.absoluteRefresh {
+		write = current.writeExact
+	}
 	absOld := controller.absoluteButtons | controller.absolutePending
 	relOld := controller.relativeButtons | controller.relativePending
 	absNew, relNew := absOld&buttons, relOld&buttons
@@ -209,21 +227,30 @@ func (mouse *Mouse) setButtons(current *action, buttons byte, plan buttonPlan) e
 	}
 	absSent := false
 	if plan.positioned {
-		if err := current.write(ch9329.MouseAbsolute(absNew, plan.position.X, plan.position.Y, 0)); err != nil {
-			return err
+		// Position before new presses; release-only updates must stay exact.
+		if mouse.absoluteRefresh && (absNew == absOld || absNew&^absOld != 0) {
+			if err := mouse.moveAbs(current, plan.position); err != nil {
+				return err
+			}
+		}
+		// A possible hold can differ from the mask successfully positioned above.
+		if !mouse.absoluteRefresh || absNew != absOld || absNew != controller.absoluteButtons {
+			if err := write(ch9329.MouseAbsolute(absNew, plan.position.X, plan.position.Y, 0)); err != nil {
+				return err
+			}
 		}
 		absSent = true
 	} else if absNew != absOld {
 		// No target cursor feedback exists: release at the last absolute report.
 		// Raw relative or external movement can make that position stale.
 		point := controller.absolutePosition
-		if err := current.write(ch9329.MouseAbsolute(absNew, point.X, point.Y, 0)); err != nil {
+		if err := write(ch9329.MouseAbsolute(absNew, point.X, point.Y, 0)); err != nil {
 			return err
 		}
 		absSent = true
 	}
 	if !absSent || plan.relative || relNew != relOld {
-		return current.write(ch9329.MouseRelative(relNew, 0, 0, 0))
+		return write(ch9329.MouseRelative(relNew, 0, 0, 0))
 	}
 	return nil
 }

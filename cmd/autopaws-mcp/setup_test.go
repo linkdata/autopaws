@@ -18,18 +18,26 @@ func TestSetupReturnsChecklistWithoutCallingAPI(t *testing.T) {
 	}
 	result := sdkTool(t, session, "setup", map[string]any{}, false)
 	text := sdkText(result)
-	if words := len(strings.Fields(text)); words > 140 {
+	if words := len(strings.Fields(text)); words > 150 {
 		t.Errorf("setup checklist too long: %d words", words)
 	}
 	for _, required := range []string{
 		"get_device_info", "get_mouse_mapping", "capture_screen", "two separated image points",
-		"real target cursor", "before clicking", "wait_for", "poll fresh captures", "stop positioned actions", "mirror/reposition",
-		"captured offset", "absolute input bounds", "set_mouse_mapping",
-		"list_keyboard_layouts", "set_keyboard_layout", "unless asked", "harmless sample",
-		"window visible", "Maximize", "unless the user requests another layout", "repeat after target/display/layout changes",
+		"real target cursor", "before clicking", "absolute screenshot coordinates",
+		"Windows:", "Linux:", "relative button reports (default)", "macOS:", "first call mouse_move to the click point or drag start",
+		"positioned mouse_click", "mouse_drag", "button_mode=absolute",
+		"sustained drag/drop", "Stop if holds fail", "after relative movement", "restart KVM with -mouse-absolute-refresh",
+		"wait_for", "poll fresh captures", "stop positioned actions", "primary/top-left", "reachable displays", "set_mouse_mapping",
+		"list_keyboard_layouts", "set_keyboard_layout", "unless asked", "harmless typing",
+		"window visible", "maximize", "repeat after target/display/layout changes",
 	} {
 		if !strings.Contains(text, required) {
 			t.Errorf("setup checklist missing %q", required)
+		}
+	}
+	for _, omitted := range []string{"CH9329", "USB work mode", "serial protocol"} {
+		if strings.Contains(text, omitted) {
+			t.Errorf("setup checklist includes adapter configuration detail: %q", omitted)
 		}
 	}
 }

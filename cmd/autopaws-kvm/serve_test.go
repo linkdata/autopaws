@@ -174,6 +174,45 @@ func TestRuntimeInfoIsLazyAndShutdownClosesIdleConnection(t *testing.T) {
 	}
 }
 
+func TestRuntimeMouseAbsoluteRefresh(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		enabled bool
+	}{{"default", false}, {"enabled", true}} {
+		t.Run(test.name, func(t *testing.T) {
+			cfg := runtimeConfig()
+			cfg.MouseAbsoluteRefresh = test.enabled
+			port := &runtimeTransport{}
+			run := startCaptureRuntime(t, cfg, port, nil, nil)
+			var info struct {
+				Config struct {
+					AbsoluteRefresh *bool `json:"mouse_absolute_refresh"`
+				} `json:"config"`
+			}
+			if err := runtimeCall(run.client, "get_device_info", nil, &info); err != nil {
+				t.Fatal(err)
+			}
+			if info.Config.AbsoluteRefresh == nil || *info.Config.AbsoluteRefresh != test.enabled {
+				t.Fatalf("device info omitted or misreported absolute refresh: %+v; want %t", info.Config, test.enabled)
+			}
+			if err := runtimeCall(run.client, "mouse_move", map[string]int{"x": 1279, "y": 719}, nil); err != nil {
+				t.Fatal(err)
+			}
+			_, _, frames := port.snapshot()
+			want := [][]byte{ch9329.MouseAbsolute(0, 4095, 4095, 0)}
+			if test.enabled {
+				want = append([][]byte{ch9329.MouseAbsolute(0, 4095, 4094, 0)}, want...)
+			}
+			if !slices.EqualFunc(frames, want, bytes.Equal) {
+				t.Fatalf("absolute refresh %t: frames=%x; want %x", test.enabled, frames, want)
+			}
+			if err := stopCaptureRuntime(t, run); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func TestRuntimeMouseModeAndCaptureBindingWithoutDemand(t *testing.T) {
 	for _, mode := range []string{"legacy", "extended"} {
 		t.Run(mode, func(t *testing.T) {
