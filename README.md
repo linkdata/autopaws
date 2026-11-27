@@ -3,146 +3,48 @@
 
 # autopaws
 
-autopaws controls a computer through a CH9329 USB HID emulator and a USB HDMI
-capture card. Use a browser for keyboard, mouse, video and audio, or an MCP client
-for agent access.
+autopaws controls a computer through a CH9329 USB HID adapter and a USB HDMI
+capture card. It provides a browser KVM viewer with keyboard, mouse, video and
+audio, plus a JSON Lines API and an MCP server for automation. The target needs
+no installed software.
 
-- `autopaws-kvm`: Linux/macOS/Windows 11 daemon serving the hardware, JSON Lines API and web viewer.
-- `autopaws-mcp`: Linux/macOS/Windows stdio MCP server connecting to the daemon, with optional Tesseract OCR.
+- `autopaws-kvm` runs on the host connected to the hardware and serves the API and viewer.
+- `autopaws-mcp` connects MCP clients to the daemon over TCP, with optional Tesseract OCR and visual waits through a configured vision service.
 
-## Hardware and wiring
+Hosts: Linux, macOS and Windows 11 on amd64 or arm64. Physical coverage and
+known limits are listed in [hardware validation](docs/hardware-validation.md).
 
-Use an amd64 or arm64 Linux/macOS/Windows 11 host, a CH9329 behind a CH340/CH341 USB-UART,
-and a UVC HDMI capture card with USB audio. The target needs HDMI output and USB
-HID keyboard/mouse support.
+## Hardware
+
+You need a CH9329 adapter with a CH340/CH341 USB-UART interface and a UVC HDMI
+capture card. USB audio is needed for sound. The target needs HDMI output and
+USB HID keyboard/mouse support.
 
 1. Connect the target's HDMI output to the capture card, and the card's USB connection to the host.
 2. Connect the adapter's serial USB side to the host and its HID USB side to the target.
-3. Follow [Target display setup](#target-display-setup) before positioned input. Configure the target keyboard layout and coordinate dimensions separately from the capture resolution.
+3. Use a single or mirrored target display to start. For an extended desktop, follow [target setup](docs/target-setup.md).
 
-Follow the board's pinout if its UART components are separate.
+Follow the board's pinout if its UART components are separate. Match target
+output and capture resolution where possible, and set the target keyboard
+layout and coordinate dimensions separately from capture dimensions.
 
-## Target display setup
+## Install
 
-For the most workspace without losing visual detail, use the highest resolution
-at which the target's HDMI output and the card's actual capture frame match
-pixel for pixel (1:1). Set both to that resolution. A card accepting a 4K signal
-but delivering 1080p capture loses detail; requesting a larger capture frame
-cannot recover it. Use `--list-devices` to inspect the card's formats, then
-check the negotiated dimensions with `get_device_info` and a fresh capture.
-Output/capture pixels can differ from scaled desktop coordinate units.
-When mirroring, optimize the output for the capture display so a different
-laptop panel does not force scaling or letterboxing. Keep text readable at the
-chosen workspace size.
+Download and extract the archive for your host from the
+[latest release](https://github.com/linkdata/autopaws/releases/latest).
+ZIP files contain both commands; checksums are in `SHA256SUMS`.
 
-For an extended desktop, place the capture-card display at the **top-left of
-the display arrangement** and make it the **primary/main display** in the
-target OS's display settings. Put the other displays to its right or below it.
-Alternatively, use a single display or mirror/duplicate the displays.
-
-Before positioned clicks or drags, capture a fresh frame and move the pointer to
-two widely separated image points. Check the actual target cursor at both
-locations. If it stays on another display or moves by the wrong amount, correct
-the target display setup first. Relative movement may cross displays; it does
-not establish the absolute input range. autopaws does not detect the target's
-display arrangement.
-
-- **macOS:** In **System Settings → Displays**, select the captured display and
-  choose **Use as → Main display**, or mirror the displays.
-- **Windows:** In **Settings → System → Display**, select the captured display
-  and enable **Make this my main display**, or duplicate the displays.
-- **GNOME:** In **Settings → Displays**, choose **Mirror**, or keep the extended
-  desktop and configure [display mapping](#display-mapping) using the captured
-  display's bounds and the measured absolute input span.
-
-On the recorded CH9329 setup, macOS 27.2.1 absolute movement addressed only the
-primary display; making the captured display primary made its full range
-reachable. A captured-primary display also passed on Windows with its other
-display still extended. The tested GNOME Wayland target addressed its whole
-virtual desktop even with the captured display primary. Behavior can vary with
-hardware and OS version; recheck after layout, resolution or scaling changes.
-
-The default identity mapping fits single or mirrored displays, and a captured
-primary display when absolute input reaches only that display. When input spans
-a larger desktop, configure the optional [display mapping](#display-mapping).
-Geometry maps into the target's actual HID range; it cannot make an unreachable
-display reachable. Selecting a capture input does not redirect HID input.
-
-## Target mouse operation
-
-Use absolute coordinates from the latest screenshot for ordinary movement,
-positioned clicks and drags on every target OS. `button_mode` chooses the button
-report; it does not change coordinate units. Start with the default relative
-button reports on Windows and Linux. On macOS, first use `mouse_move` to reach
-the click point or drag start, then test harmless positioned `mouse_click` and
-`mouse_drag` actions with `button_mode: "absolute"`. Verify actual clicks and
-sustained drag-and-drop in the target application. A successful API response or
-one-hop text selection does not prove that the target maintained the hold.
-
-If a repeated absolute destination is ignored after relative or physical
-movement, restart KVM with `-mouse-absolute-refresh` (YAML:
-`mouse-absolute-refresh: true`). This opt-in setting defaults to `false`, leaving
-existing Windows/Linux behavior unchanged. It refreshes an unheld absolute move
-through a neighboring HID coordinate, then sends the exact destination, and
-positions automatically before new positioned presses. `get_device_info` reports the
-setting as `config.mouse_absolute_refresh`. It does not repair display layouts
-or adapter button compatibility.
-
-On macOS 27.2.1, the original CH9329 adapter in USB work mode 0 exposed relative
-and absolute mouse collections through one HID interface. Relative button
-presses were ignored, and changing absolute coordinates released an
-absolute-report hold. Positioned absolute-button clicks worked, but that does
-not establish general drag-and-drop support. Relative movement can maintain a
-hold on this layout, but target acceleration/scaling means relative counts are
-not screenshot pixels; autopaws does not substitute that approximate movement
-for an absolute destination.
-
-An optional adapter setting helped one tested CH9329 firmware: **USB work mode
-2** exposed separate relative and absolute mouse interfaces and passed MCP
-screenshot-coordinate clicks and native text-selection drags with both button
-modes. This is a measured compatibility option, not a cable-brand requirement or
-a guarantee for every firmware:
-
-1. Call API `get_adapter_usb_mode` and save its exact `raw_mode`. For example,
-   `128` means hardware-pin-selected mode 0; restoring decoded `mode: 0` instead
-   would change the selection source.
-2. Call `set_adapter_usb_mode` with `{"raw_mode":2}` to request USB work mode 2.
-   This explicit operation preserves the other adapter settings, including
-   **serial communication protocol mode 0** and baud rate (normally 9600), and
-   verifies reset/re-enumeration and configuration readback when a change is
-   needed. USB work mode and serial communication mode are different settings.
-3. After every setter attempt, capture again and recheck pointer alignment and
-   real click/hold/drag-and-drop behavior. Reapply extended display mapping if
-   needed. Restore the saved raw value through the same setter when wanted.
-
-These [API methods](api/PROTOCOL.md#adapter-usb-mode) require backend support and
-verified adapter replies. Use a supported configuration utility if probing
-fails. Startup and MCP `setup` never change adapter configuration; the setter is
-persistent and has best-effort rollback if applying the requested mode fails.
-A second tested adapter exposed the same combined mouse layout and ignored
-relative button presses. It was left unchanged when its
-reset command was not acknowledged, so work mode 2 remains unverified on that
-firmware. See the
-[macOS mouse validation record](docs/validation/macos-mouse-compatibility-2026-11-27.json)
-for exact descriptors, firmware and test limits.
-
-## Installation
-
-Download the ZIP for your host from the [latest release](https://github.com/linkdata/autopaws/releases/latest)
-and extract it. Each `autopaws_TAG_OS_ARCH.zip` contains both `autopaws-kvm` and
-`autopaws-mcp` (`.exe` files on Windows).
-
-| Host | OS/architecture |
+| Host | Archive suffix |
 |---|---|
-| Linux | `linux_amd64` or `linux_arm64` |
-| macOS (Apple silicon) | `darwin_arm64` |
-| Windows | `windows_amd64` or `windows_arm64` |
+| Linux | `linux_amd64.zip` or `linux_arm64.zip` |
+| macOS (Apple silicon) | `darwin_arm64.zip` |
+| Windows | `windows_amd64.zip` or `windows_arm64.zip` |
 
 Intel Macs have standalone `autopaws-kvm_TAG_darwin_amd64` and
-`autopaws-mcp_TAG_darwin_amd64` downloads; rename them to `autopaws-kvm` and
-`autopaws-mcp`. Checksums for all downloads are in the release's `SHA256SUMS` file.
+`autopaws-mcp_TAG_darwin_amd64` downloads. Rename them to `autopaws-kvm` and
+`autopaws-mcp`.
 
-On Linux/macOS, run this from the folder containing the extracted binaries:
+On Linux/macOS, install from the extracted directory:
 
 ```sh
 sudo install -d /usr/local/bin
@@ -150,27 +52,13 @@ sudo install -m 0755 autopaws-kvm autopaws-mcp /usr/local/bin/
 autopaws-kvm --version
 ```
 
-On Windows, keep the extracted files in a permanent folder and add it to `PATH`.
-Use the MCP executable's absolute path in GUI clients.
+On Windows, keep the executables in a permanent folder and add it to `PATH`.
+macOS and Windows also require FFmpeg on the daemon's `PATH`. See host setup:
+[Linux](docs/linux-setup.md), [macOS](docs/macos-setup.md),
+[Windows](docs/windows-setup.md).
 
-macOS and Windows require FFmpeg on the daemon's `PATH`; see
-[macOS setup](docs/macos-setup.md) or [Windows setup](docs/windows-setup.md) for
-device selectors and permissions. macOS binaries are not notarized; if quarantine blocks a verified download, run
-`xattr -d com.apple.quarantine /absolute/path/to/binary`.
-
-### Build from source
-
-With Go 1.27.4 or newer:
-
-```sh
-git clone https://github.com/linkdata/autopaws.git
-cd autopaws
-CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
-```
-
-On Windows PowerShell, use `$env:CGO_ENABLED = "0"` before `go build`.
-All supported hosts build both commands. Source builds report version `devel`.
-On Linux/macOS, run the installation commands above from `dist/`.
+macOS binaries are not notarized. If quarantine blocks a verified download,
+run `xattr -d com.apple.quarantine /absolute/path/to/binary` for each binary.
 
 ## Quick start
 
@@ -180,479 +68,52 @@ On Debian/Ubuntu, grant device access, then sign out and back in:
 sudo usermod --append --groups dialout,video,audio "$USER"
 ```
 
-See [Linux setup](docs/linux-setup.md) for permissions, stable device paths and
-systemd, [macOS setup](docs/macos-setup.md) for AVFoundation, or
-[Windows setup](docs/windows-setup.md) for COM ports and DirectShow selectors.
-List devices, then start the daemon with the target's actual settings:
+Run `autopaws-kvm` to start with defaults and API access. To enable the browser
+viewer, add `-web`:
 
 ```sh
-autopaws-kvm --list-devices
-autopaws-kvm \
-  -serial-device /dev/serial/by-id/REPLACE_WITH_YOUR_CH340_OR_CH341 \
-  -screen-width 1920 -screen-height 1080 -target-layout us104 \
-  -web 127.0.0.1:9330
+autopaws-kvm -web
 ```
 
-Open `http://127.0.0.1:9330`, turn off View only to control the target, and click
-the image to focus input. Use one operator at a time. For remote access and
-authentication, see [Security](#security).
-If capture audio is busy, follow the [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).
+Open [the viewer](http://127.0.0.1:9330), turn off **View only**, then click the
+image to focus input. Check pointer alignment before clicking target controls.
+Use one operator at a time. See [mouse compatibility](docs/target-setup.md#mouse-compatibility)
+for macOS targets.
 
-## Commands and configuration
+Serial and video devices are selected automatically. Override paths, dimensions or
+keyboard layout only when needed; see [configuration](docs/configuration.md).
+The API listens on `127.0.0.1:9329` and the viewer on `127.0.0.1:9330`.
+For remote access, use [authentication and SSH forwarding](docs/security.md).
+If Linux audio is busy, follow the [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).
+
+## Build and develop
+
+With Go 1.27.4 or newer:
 
 ```sh
-autopaws-kvm --help
-autopaws-kvm --version
-autopaws-kvm --list-devices
+git clone https://github.com/linkdata/autopaws.git
+cd autopaws
+CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
 ```
 
-With no arguments, the daemon serves the API at `127.0.0.1:9329` with relative
-mouse button reports. The viewer is disabled by default. Enable it with `-web`
-to listen on `127.0.0.1:9330`, or `-web host:port` to choose an address.
-Use `-web=` to disable it, including when enabled in a configuration file.
-For a viewer without the API, add `-api ''`. At least one listener must be enabled.
-Use `--version` and `--list-devices` separately from daemon flags.
-
-`--list-devices` marks automatic defaults with `*`. It probes video formats on
-Linux without starting a stream or opening serial/audio devices. Multiple serial
-adapters require `-serial-device`. Prefer stable `/dev/serial/by-id` or
-`/dev/serial/by-path` paths over `ttyUSBn`.
-
-### Configuration file
-
-Precedence is defaults, an explicitly selected YAML file, then explicit flags.
-There are no environment overrides, automatic file searches or live reloads:
-
-```sh
-autopaws-kvm -config ./autopaws.yaml -web-fps 30
-autopaws-mcp -config ./autopaws.yaml
-```
-
-See [the example configuration](examples/autopaws.yaml). Flag names and YAML keys
-match, except `token` is YAML-only. Both binaries accept the same file, sharing
-`api`, `token` and `token-file`.
-Each uses its own remaining settings. Relative file paths resolve from the
-process's working directory. Explicit false, empty and zero values override the
-file. Use `=false` for boolean flags, such as `-autocrop=false`. YAML must be one
-scalar-valued mapping; unknown/duplicate keys, nulls, aliases and extra documents
-are rejected.
-
-Use a connectable `api` address for MCP. If KVM binds a wildcard address or runs
-on another host, override it for MCP, for example
-`autopaws-mcp -config ./autopaws.yaml -api kvm-host:9329`.
-
-| Setting | Default | Meaning |
-|---|---|---|
-| `api` | `127.0.0.1:9329` | JSON Lines API `host:port`; empty disables it |
-| `web` | empty | Viewer `host:port`; empty disables it |
-| `token` | empty | Inline shared secret for API, web and MCP; alternative to `token-file` |
-| `token-file` | empty | Read the shared secret from a UTF-8 file instead |
-| `serial-device` | empty | Serial path or Windows `COMn`; empty auto-detects CH340/CH341 |
-| `serial-baud` | `9600` | Supported baud rate below |
-| `screen-width` | `1920` | Positive target coordinate width |
-| `screen-height` | `1080` | Positive target coordinate height |
-| `target-layout` | `us104` | Target text layout |
-| `layouts-dir` | empty | Custom layouts, searched before built-ins |
-| `mouse-button-mode` | `relative` | `relative` or `absolute` button reports |
-| `mouse-absolute-refresh` | `false` | Opt in to refreshing absolute positions before input; see [target mouse operation](#target-mouse-operation) |
-| `mouse-mode` | `legacy` | Identity mapping, or `extended` to require display geometry before positioned input |
-| `capture-device` | empty | Linux video path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; empty auto-selects |
-| `capture-width` | `1920` | Requested width, 1–4294967295 |
-| `capture-height` | `1080` | Requested height, 1–4294967295 |
-| `autocrop` | `false` | Opt in to cropping verified bars matching the configured target output aspect |
-| `web-fps` | `20` | Viewer frame rate, 1–120 |
-| `audio-device` | empty | Linux PCM path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; `off` disables audio |
-| `log-level` | `info` | `debug`, `info`, `warn` or `error` |
-| `debug-keys` | `false` | Log input/packet records regardless of log level |
-
-Supported baud rates: 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600 and 115200.
-Screen dimensions describe target coordinates; capture dimensions describe the
-video stream. A one-pixel target axis maps to HID zero. See
-[keyboard layouts](CREATING_LAYOUTS.md) for built-in and custom text maps.
-
-Listen addresses accept hostnames, IPv4 and bracketed IPv6. An empty host binds
-all interfaces; ports are 0–65535, with zero selecting an ephemeral port.
-Logs go to stderr. SIGINT/SIGTERM stop the daemon and attempt input release;
-use Ctrl+C in a Windows console. Kernel device calls can outlast application cleanup deadlines.
-
-## Capture and browser viewer
-
-Linux capture uses V4L2 MJPG. Automatic video selection prefers non-webcam names;
-automatic audio matches the selected video's USB device. An explicit PCM path
-stays fixed. macOS uses FFmpeg/AVFoundation; Windows uses FFmpeg/DirectShow.
-Both share one FFmpeg media pipeline and require explicit audio selection.
-
-Cropping is disabled by default: the full capture frame is preserved without
-requiring the target's aspect ratio. Capture cards do not universally report
-the incoming target geometry, and dark screen content can resemble black bars.
-
-Optional `-autocrop` uses `screen-width` and `screen-height` to find the centered
-target area, then verifies the surrounding bars are black. When opting in,
-these dimensions must match the target's output aspect. Dark content within
-that area does not change the crop. Keep cropping disabled for captures that
-do not use centered, aspect-preserving scaling.
-
-Capture starts on demand and stops after ten seconds without video demand.
-Snapshots wait up to five seconds for a fresh decodable frame and optionally crop
-validated black bars. Linux timestamps reflect device capture; macOS/Windows
-timing estimates pipe receipt and cannot account for FFmpeg/OS buffering. A fresh frame does not
-prove the target finished processing input. Missing capture hardware leaves input
-usable. Device/resolution changes invalidate pending snapshots with `capture changed`.
-
-The viewer opens in View only mode. Turn it off and click the video to focus
-physical keyboard and mouse input, independent of the text layout.
-The toolbar offers Ctrl+Alt+Delete, Alt+Tab, view-only mode, cursor,
-sizing and fullscreen controls. Focus loss, view-only mode and stream changes
-release held input. Connections reconnect automatically without replaying input.
-Keyboard Lock depends on browser support; toolbar shortcuts remain available.
-The installable viewer caches no assets or media.
-
-### Display mapping
-
-Leave the default `legacy` mode for an identity mapping. If absolute input spans
-more than the captured display, open **Pointer setup**, select extended display
-mapping, enter its signed desktop offset and native size plus the full area
-reached by absolute HID input, then click **Apply**. Screenshot coordinates stay
-local to the captured image; callers do not add the offset to each mouse action.
-Display geometry and capture resolution can differ.
-
-For example, a Linux desktop may place a 1920×1080 captured display at `(1920,0)`
-within an absolute input span of `(0,0,3840,1200)`. Enter those values in the web
-form, or call the API/MCP `set_mouse_mapping` with:
-
-```json
-{
-  "geometry": {
-    "offset": {"x": 1920, "y": 0}, "width": 1920, "height": 1080,
-    "span": {"x": 0, "y": 0, "width": 3840, "height": 1200}
-  }
-}
-```
-
-Use the same desktop coordinate system and units for every geometry value.
-Geometry activates after bounds validation. `get_mouse_mapping` reports the
-shared geometry, transform and readiness;
-web and MCP use the same KVM state. **Reset** / `reset_mouse_mapping` clears the
-geometry while retaining the mode. Select legacy and Apply, or call
-`set_mouse_mapping` with `{"mode":"legacy"}`, to restore identity.
-
-Mappings last for the daemon's current run and are not saved to YAML. Capture
-context changes invalidate extended mappings until geometry is reapplied; take
-a fresh screenshot after changes. For a daemon that must block positioned input
-until configured, start with `-mouse-mode extended` and apply geometry before
-work. View only remains enabled until explicitly turned off.
-
-### Browser audio
-
-Click Audio to play and mute to stop. Playback requires AudioWorklet and a secure
-context; use localhost or an [SSH tunnel](#security). Errors leave video and input
-usable. macOS and Windows convert audio to 48 kHz stereo; Linux uses the negotiated PCM rate.
-Audio choices persist across reconnects. Recovery flushes buffered samples;
-configuration changes reopen the selected source. The server/browser application
-queues total at most 200 ms, excluding capture, network and output-device latency.
-See [ALSA setup](alsa/README.md) and [measured results](docs/audio-measurement.md).
-
-For wire formats and input rules, see the [API reference](api/PROTOCOL.md) and
-[browser protocol](web/PROTOCOL.md). Go clients can use `apiclient`.
-
-## MCP server
-
-Configure each MCP client to start its own local stdio process against the daemon:
-
-```sh
-autopaws-mcp -config ./autopaws.yaml
-```
-
-MCP flags below use their names without the leading `-` in the
-[shared configuration file](#configuration-file); `config` is command-line only.
-With no `-config`, MCP uses defaults and explicit flags only.
-
-| Flag | Default | Meaning |
-|---|---|---|
-| `-config PATH` | off | Read the shared KVM/MCP YAML file |
-| `-api host:port` | `127.0.0.1:9329` | KVM JSON Lines address, port 1–65535 |
-| `-capture-log DIR` | off | Save screenshot JPEGs; no retention limit |
-| `-token-file PATH` | off | Read the API secret from a UTF-8 file |
-| `-tesseract PATH` | automatic | Optional OCR engine; an invalid explicit path disables OCR |
-| `-vision-api URL` | off | OpenAI-compatible base URL or full `chat/completions` endpoint for `wait_for` |
-| `-vision-model NAME` | off | Model used to evaluate visual conditions; configure with `-vision-api` |
-| `-vision-token-file PATH` | off | UTF-8 bearer-token file for the vision endpoint; separate from the KVM token |
-| `-vision-max-width N` | `960` | Maximum width sent to vision, 64–4096; returned screenshots keep their original size |
-| `-vision-request-json JSON` | `{"reasoning_effort":"none"}` | Provider options; may override sampling/output settings, but not `model`, `messages` or `stream` |
-
-| Tools | Purpose |
-|---|---|
-| `setup` | Pre-work pointer/layout/window checklist |
-| `type_text`, `send_key`, `send_key_sequence` | Keyboard actions |
-| `list_keyboard_layouts`, `set_keyboard_layout` | Inspect or select target text maps |
-| `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions |
-| `get_mouse_mapping`, `set_mouse_mapping`, `reset_mouse_mapping` | Shared display geometry; configure before work when needed |
-| `capture_screen` | Fresh JPEG and image dimensions |
-| `get_screen_text`, `execute_and_read` | Local Tesseract OCR; optionally type a command first |
-| `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Device information and capture settings |
-
-Call `setup` before controlling the target. For an extended desktop, inspect
-`get_mouse_mapping` and configure the
-[display mapping](#display-mapping) before work when needed.
-Before absolute movement, positioned clicks or drags, call `capture_screen`.
-Coordinates are integer pixels in that session's latest screenshot, including
-cropping. Relative deltas are unscaled; clicks at the current pointer need no
-screenshot. Mapping changes and capture-setting attempts invalidate screenshot coordinates; layout
-changes preserve them. Cancelling a tool closes its API call and allows input
-release cleanup. Use one operator; sessions do not merge held input.
-
-Select a layout with `set_keyboard_layout({"layout":"se105"})` after setting the
-target OS layout. Custom YAML names override built-ins; selecting the same name
-reloads its file. Invalid selections keep the working map. Restarting restores
-the startup layout. See [layout selection](CREATING_LAYOUTS.md#changing-the-active-layout).
-
-OCR requires Tesseract, discovered at startup through
-`-tesseract`, `PATH`, or Windows `ProgramFiles`/`ProgramFiles(x86)` installations.
-Restart MCP after installing it. OCR calls time out after 15 seconds and do not
-set screenshot coordinates. `execute_and_read` types a raw command plus Enter,
-waits `wait_seconds` (default 1, range 0–60), then captures OCR output; the wait
-does not establish command completion. Capture logs contain complete screenshots.
-
-Both OCR tools accept `language`, defaulting to English (`eng`) when omitted or
-empty. Use combinations such as `eng+swe` for English and Swedish. The matching
-Tesseract traineddata must be installed on the MCP host; missing models produce
-an OCR error and are not installed automatically. This setting is independent of
-the HID keyboard layout and target OS input source.
-
-Both OCR tools accept an optional `region: {x, y, width, height}` in original
-captured screenshot pixels with a top-left origin. Choose the rectangle from
-`capture_screen` and add padding around the text. For example, call
-`get_screen_text` with:
-
-```json
-{"language": "eng+swe", "region": {"x": 100, "y": 180, "width": 300, "height": 80}}
-```
-
-Each call captures a fresh full frame, then crops before the existing 2× OCR
-preprocessing. Omit `region` for full-frame OCR. Positions must be nonnegative
-and sizes positive. Invalid geometry, malformed language names and empty `+`
-components are rejected before `execute_and_read` types. The rectangle must fit
-the fresh capture; bounds and missing-model errors can occur after command input.
-Results remain plain text and do not set mouse coordinates.
-
-The [recorded OCR comparison](docs/validation/ocr-region-comparison-2026-11-24.json)
-includes latency, text accuracy and region measurements.
-
-See the [implemented flow and cycle measurements](docs/cycle-time-implementation.md)
-and [initial research](docs/cycle-time.md) for KVM/MCP latency benchmarks and
-local UI-analysis experiments.
-
-### Input with a visual condition
-
-Configure an OpenAI-compatible vision service to enable `wait_for`. For a local
-LM Studio server (use its actual port and installed model name):
-
-```sh
-autopaws-mcp -api 127.0.0.1:9329 \
-  -vision-api http://127.0.0.1:11434/v1 \
-  -vision-model qwen3-vl-2b-instruct
-```
-
-For an authenticated service, add `-vision-token-file /path/to/vision.token`.
-The client sends `Authorization: Bearer TOKEN`. When vision is enabled, omitted
-`vision-request-json` sends `{"reasoning_effort":"none"}`. An explicit JSON object
-replaces that default: use `'{}'` to omit `reasoning_effort` and let the provider
-choose. Include `"reasoning_effort":"none"` when adding sampling or output options
-to keep reasoning disabled. A service without JSON-schema support can override
-`response_format` while MCP still validates the returned boolean object.
-
-With vision disabled, `wait_for` and `wait_timeout_ms` are absent from tool
-schemas and rejected if supplied. When vision is configured, the seven
-keyboard/mouse tools advertise these optional arguments:
-
-```json
-{
-  "key": "enter",
-  "wait_for": "A separate floating confirmation dialog with Continue and Cancel is visible over a dimmed page",
-  "wait_timeout_ms": 5000
-}
-```
-
-MCP validates the wait configuration before sending input. After successful
-input it captures and checks candidate frames, returning JSON metadata and the
-original JPEG whose resized copy the model evaluated. That image establishes
-the session's mouse coordinates. The metadata includes the original input
-result, observation status, model result/timing, a unique observation ID,
-original-image SHA-256 and image age measured from host receipt. It never
-attaches a model decision to a newer unchecked screenshot.
-
-The observation budget includes capture and inference, starts after successful
-input, defaults to 5000 ms and accepts 1–60000 ms. `wait_timeout_ms` requires a
-nonblank `wait_for` prompt of at most 2048 bytes. The first fresh frame is always
-checked; later candidates use a small pixel-change gate and recheck unchanged
-content once 500 ms have elapsed since the previous completed inference. Capture and
-inference stay sequential, with no queued screenshots.
-
-`condition_met` reports the model's decision, not guaranteed task completion.
-On `timeout`, `capture_error`, `analysis_error` or `invalid_output`,
-`input.sent: true` preserves the successful input outcome: do not replay it
-automatically. The last successfully checked image and its boolean result are
-returned when available, even if a later check times out. No checked image
-means `predicate.satisfied` is null and no image is returned. Capture-setting
-changes invalidate the pending image and report `capture_changed`. Cancellation
-stops the request without committing new screenshot coordinates.
-
-Input and observation calls serialize within one MCP session. Other sessions,
-the browser and direct API calls still require one operator. Screenshots and
-conditions go to the configured vision service; `-capture-log` also logs wait
-candidate screenshots. With no `wait_for`, existing action results are unchanged
-and no capture or vision request is made.
-
-Checks sample individual frames, so a short-lived state between checks can be
-missed. Prefer conditions that remain visible until the next action, and verify
-the returned image before continuing.
-
-### Client configuration
-
-For Claude Code:
-
-```sh
-claude mcp add --transport stdio --scope user autopaws -- \
-  /absolute/path/to/autopaws-mcp -config /absolute/path/to/autopaws.yaml
-```
-
-For Claude Desktop, add this to its MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "autopaws": {
-      "command": "/absolute/path/to/autopaws-mcp",
-      "args": ["-config", "/absolute/path/to/autopaws.yaml"]
-    }
-  }
-}
-```
-
-On Windows, use absolute paths such as `C:\\Tools\\autopaws\\autopaws-mcp.exe` in
-JSON. Set `token-file` or `token` in the shared YAML when authentication is enabled.
-Restart the client after configuration changes. The API address is a JSON Lines
-TCP service; see [local MCP client setup](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
-
-## Security
-
-API and viewer access allow keyboard/mouse control of the target. Bind to loopback
-and leave `debug-keys` disabled unless diagnosing input. Browser view-only mode
-only affects that viewer.
-
-Keep the shared secret in a private file so it can be updated separately:
-
-```sh
-umask 077
-openssl rand -hex 32 > ./autopaws.token
-```
-
-Set `token-file: /absolute/path/to/autopaws.token` in the shared YAML file.
-Alternatively, store the secret directly as `token: "REPLACE_WITH_A_RANDOM_SECRET"`.
-Token values must be nonempty UTF-8; surrounding whitespace is trimmed.
-Both processes read the configuration and secret once at startup; restart them
-after changing either. Nonempty `token` and `token-file` together are rejected.
-Leaving both empty disables authentication.
-
-Open `http://127.0.0.1:9330/#token=ENCODED_SECRET`, using `encodeURIComponent(secret)`.
-The viewer removes the fragment and stores the token in origin-scoped
-`sessionStorage` for that tab. New tabs and installed-app launches may need the
-token URL again; open it in a browser tab, then use the browser's Open in app
-action where available. The viewer sends the token in a WebSocket subprotocol
-offer, which the daemon verifies before opening capture or accepting input.
-API clients send the `token` field or use `apiclient.NewWithToken`.
-
-Tokens do not encrypt traffic. For a remote daemon bound to loopback, forward
-both ports:
-
-```sh
-ssh -L 9329:127.0.0.1:9329 -L 9330:127.0.0.1:9330 kvmhost
-```
-
-Connect MCP to local port 9329 and open `http://127.0.0.1:9330` for the viewer.
-The loopback IP provides a secure context for AudioWorklet. Plain HTTP to a LAN
-address does not; built-in HTTPS and reverse-proxy deployments are unsupported.
-
-Without a token, the viewer accepts WebSocket requests only for `localhost` or
-IP-literal hosts. Configure a token when accessing it by another hostname.
-Viewer responses deny framing by other pages. HTTP requests have 10-second
-header/read/write deadlines and a 60-second idle timeout, with a 64 KiB header
-limit. Upgraded WebSockets use the viewer's own write deadlines.
-
-## Tested configurations
-
-The [hardware validation record](docs/hardware-validation.md) lists tested setups,
-results and limits. Linux input, capture/audio recovery and Chromium/Firefox
-playback passed on the recorded hardware. A limited Windows target smoke covered
-capture and safe keyboard/pointer actions. An Apple silicon macOS host passed
-input, capture and reconnect checks against Ubuntu; acoustic browser playback
-and latency remain unvalidated on macOS. A Windows 11 amd64 host passed input,
-MCP coordinates, recovery and Chromium video/audio checks against Linux, with
-the limits documented in the record. Cross-builds cover supported OS/architecture
-pairs and do not establish hardware coverage.
-
-## Development
-
-Use Go 1.27.4+, Node.js 26.13.1, the golangci-lint version pinned in
-[CI](.github/workflows/ci.yml), actionlint, ShellCheck, zip/unzip and a C compiler for race tests.
-The local gate is the same on Linux, macOS and Windows: run the development
-host's native builds, tests and linters, plus all supported-platform cross-builds
-and release checks. Run it after final edits and before pushing or manually
-starting CI. Cross-builds check compilation; they do not run another OS's tests.
-No host needs WSL, a VM or another machine to run other-platform native tests
-before opening a PR.
-
-Run these commands in Bash, using Git Bash or MSYS2 on Windows with native
-Windows Go, Node.js and a compatible MinGW-w64 GCC on `PATH`. Install FFmpeg for
-the generated media fixtures on every host. Tesseract is optional:
-the real OCR corpus test skips when it is absent.
-
-```bash
-(
-  set -euo pipefail
-  GOOS=$(go env GOHOSTOS)
-  GOARCH=$(go env GOHOSTARCH)
-  export GOOS GOARCH
-  autopaws_checks=$(mktemp -d)
-  trap 'rm -r "$autopaws_checks"' EXIT
-  command -v ffmpeg >/dev/null
-  export AUTOPAWS_FFMPEG_TEST=1
-  actionlint
-  bash -n .github/scripts/build-release.sh
-  shellcheck .github/scripts/build-release.sh
-  node --check web/assets/viewer-helpers.mjs
-  node --check web/assets/viewer.mjs
-  node --check web/assets/mapping.mjs
-  node --check web/assets/sw.js
-  node --check web/assets/audio-playback.mjs
-  node --check web/assets/audio-worklet.mjs
-  node --test web/*.test.mjs
-  CGO_ENABLED=0 go build ./...
-  golangci-lint run
-  CGO_ENABLED=1 go test -race -coverprofile=coverage.out ./...
-  go tool cover -func=coverage.out
-  go tool cover -html=coverage.out -o=coveragereport.html.out
-  for autopaws_platform in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
-    CGO_ENABLED=0 GOOS="${autopaws_platform%/*}" GOARCH="${autopaws_platform#*/}" go build ./...
-  done
-  bash .github/scripts/build-release.sh ci "$autopaws_checks/dist"
-  (
-    cd "$autopaws_checks/dist"
-    if command -v sha256sum >/dev/null 2>&1; then
-      sha256sum --check SHA256SUMS
-    else
-      shasum -a 256 --check SHA256SUMS
-    fi
-  )
-  for archive in "$autopaws_checks"/dist/*.zip; do unzip -tq "$archive"; done
-)
-```
-
-Native tests for other operating systems belong on matching CI runners. Require
-all applicable CI jobs to pass before merging. The workflow runs native Linux,
-macOS and Windows tests, including generated media fixtures without hardware.
-Physical KVM acceptance is performed locally with hardware, outside GitHub Actions.
+In PowerShell, set `$env:CGO_ENABLED = '0'` before `go build`.
+Both commands build on all supported hosts. Source builds report version `devel`.
+Install the binaries from `dist/` using the steps above.
+
+Before submitting changes, run the [local CI gate](docs/development.md#local-ci-gate).
+It includes native race tests, viewer JavaScript tests, linters, builds for all
+six supported platforms and release checks.
+
+## Documentation
+
+- [Configuration](docs/configuration.md): flags, defaults and shared YAML settings.
+- [Target setup](docs/target-setup.md): display geometry, pointer alignment and adapter compatibility.
+- [Browser and capture](docs/browser.md): viewer controls, cropping and audio.
+- [MCP server](docs/mcp.md): client setup, tools, OCR and visual waits.
+- [JSON Lines API](api/PROTOCOL.md) and [browser protocol](web/PROTOCOL.md).
+- [Keyboard layouts](CREATING_LAYOUTS.md): built-in maps and custom layouts.
+- [Development](docs/development.md), [performance measurements](docs/cycle-time.md) and [release notes](docs/release-notes.md).
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE).

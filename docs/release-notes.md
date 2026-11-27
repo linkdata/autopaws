@@ -1,119 +1,52 @@
-# v0.7.2
+# Release notes
 
-Optional `-mouse-absolute-refresh` restores absolute cursor destinations that
-macOS can ignore after relative motion. It also positions the cursor before
-new absolute button presses. The setting defaults off, preserving existing
-report sequences for Windows/Linux targets, and `get_device_info` reports its
-active value. With refresh enabled, button releases and cleanup keep exact
-release coordinates.
+## v0.7.2
 
-The MCP `setup` checklist now gives concise Windows, Linux and macOS mouse
-instructions. The README documents adapter-dependent macOS button holds and an
-optional, physically verified CH9329 USB-mode workaround. It does not require a
-specific cable manufacturer or change adapter configuration automatically.
+- Add opt-in `-mouse-absolute-refresh` for targets that ignore repeated absolute
+  destinations after relative motion. Default remains off. With refresh enabled,
+  button releases retain exact coordinates.
+- Add API `get_adapter_usb_mode` / `set_adapter_usb_mode` for supported adapters.
+  The persistent setter preserves other settings and verifies reset/readback,
+  with best-effort rollback. Save the exact raw mode before changing it.
+- Setter attempts invalidate mouse mapping. Reapply geometry, recapture and check
+  pointer/click/hold behavior. Startup and MCP `setup` never change adapter settings.
+- Update the MCP `setup` checklist with per-OS mouse instructions.
+- Document adapter-dependent macOS holds and optional USB mode 2. See
+  [mouse compatibility](https://github.com/linkdata/autopaws/blob/v0.7.2/README.md#target-mouse-operation) and its
+  [validation record](https://github.com/linkdata/autopaws/blob/v0.7.2/docs/validation/macos-mouse-compatibility-2026-11-27.json).
 
-The JSON Lines API adds `get_adapter_usb_mode` and `set_adapter_usb_mode` for
-supported adapters. The explicit setter preserves other configuration bytes,
-releases held input, and verifies reset/re-enumeration and readback, with
-best-effort rollback on failure. Save the exact raw mode before changing it to
-retain hardware-pin selection when restoring. Setter attempts invalidate mouse
-mapping; recapture and recheck afterward. MCP `setup` does not change adapter
-settings.
+## v0.7.1
 
-Physical checks used two adapters against a mirrored macOS target. The
-[compatibility record](validation/macos-mouse-compatibility-2026-11-27.json)
-separates repeat-position fixes, native clicks and held text selection from
-unverified combinations. The complete local CI gate checks default and enabled
-behavior, cancellation, report failures, configuration and supported-platform
-cross-builds. Refresh-enabled Windows/Linux behavior was not physically tested.
+- Retry Linux capture after USB reconnect. Native capture on all hosts reopens
+  after five seconds without a successfully processed frame. Cleanup precedes
+  the one-second retry backoff; recovery
+  advances capture generation and rematches automatic audio.
+- Reapply extended geometry after recovery. Prefer stable capture-device paths
+  when reconnecting USB can renumber nodes.
+- Document primary/mirrored target display setup and matching output/capture
+  resolution. [Validation record](https://github.com/linkdata/autopaws/blob/v0.7.1/docs/validation/macos-target-linux-recovery-2026-11-27.json).
 
-# v0.7.1
+## v0.7.0
 
-Linux capture now retries automatically after USB reconnect. Native capture
-also reopens after five seconds without a successfully processed frame,
-including a stream of corrupt MJPEG frames. Source cleanup finishes before the
-one-second retry backoff; successful recovery advances the capture generation
-and rematches automatic audio. Reapply extended display geometry afterward,
-and use a stable capture-device path when USB reconnection can renumber nodes.
+- Open the viewer in **View only** mode; turn it off to send input.
+- Add shared display geometry through **Pointer setup** and API/MCP mapping tools.
+  Geometry lasts for the daemon run and must be reapplied after capture changes.
+  `-mouse-mode extended` blocks positioned input until geometry is configured;
+  default legacy identity mapping remains available.
+- Preserve held buttons across absolute/relative report types.
+- Add the read-only MCP `setup` checklist.
+- Keep capture usable when HID is unavailable. Reconnect checks against a Linux
+  target passed without daemon restart. [Validation](https://github.com/linkdata/autopaws/blob/v0.7.0/docs/hardware-validation.md).
 
-The README now collects manual target display setup in one section: place the
-captured display top-left and make it primary, or use mirroring, and select the
-highest pixel-for-pixel matching output/capture resolution. macOS target
-measurements confirmed primary-display-only absolute input on the tested
-CH9329 setup. Mouse-button and repeat-after-relative defects remain tracked
-separately in [#106](https://github.com/linkdata/autopaws/issues/106) and
-[#107](https://github.com/linkdata/autopaws/issues/107).
+## v0.6.0
 
-Validation includes the complete local CI gate, native Linux, macOS and Windows
-CI, and physical Linux USB recovery with sustained video and audio on the same
-WebSocket and daemon. See the
-[numerical record](https://github.com/linkdata/autopaws/blob/v0.7.1/docs/validation/macos-target-linux-recovery-2026-11-27.json)
-for exact builds and limits.
-
-# v0.7.0
-
-The viewer opens in View only mode. Turn it off to send keyboard/mouse input.
-
-Optional shared display geometry maps captured-image coordinates into the
-target's actual absolute HID input span. Configure signed offset, native display
-size and span through web **Pointer setup → Apply** or API/MCP
-`get_mouse_mapping`, `set_mouse_mapping` and `reset_mouse_mapping`. Geometry
-activates directly after bounds validation; image coordinates remain local.
-It lives in the running daemon and must be reapplied after capture changes.
-Optional `-mouse-mode extended` blocks positioned input until configured;
-default legacy identity behavior remains available for single/mirrored displays
-and the tested Windows captured-primary layout. Geometry cannot redirect input
-to a display outside the target's absolute HID range.
-
-Mouse reports preserve each held button on its absolute or relative report,
-avoiding duplicate presses when dragging across report types.
-
-MCP adds a read-only `setup` checklist for pointer alignment, condition-based
-waiting, keyboard layout and maximizing the working window.
-
-Capture remains usable when the HID adapter is unavailable. Physical Linux
-unplug/replug checks passed with fresh keyboard output and drag selection in
-the same normal terminal, without restarting the terminal or daemon. See the
-[hardware validation](https://github.com/linkdata/autopaws/blob/v0.7.0/docs/hardware-validation.md)
-for tested configurations and limits.
-
-# v0.6.0
-
-Cropping is now **disabled by default**, preserving the full capture frame
-without requiring the target's aspect ratio. Explicit `-autocrop` remains
-available for centered, aspect-preserving capture: configure `screen-width` and
-`screen-height` to match the target's output aspect. Opt-in cropping validates
-the expected bars instead of shrinking to bright screen content, so dark edges
-and letterboxed applications no longer redefine the target area. Bars too
-narrow to verify remain visible.
-
-macOS capture discovery now handles the UID and serial metadata appended by
-FFmpeg 9.1, fixing devices that appeared in the inventory but could not open.
-
-The inline `-token` command-line flag has been removed. Use `-token-file` or the
-YAML `token` setting. Viewer credentials use tab-session storage and WebSocket
-subprotocols rather than cookies. Reopen the viewer using its token URL if an
-existing session needs authentication.
-
-Network admission and request deadlines are bounded. Concurrent keyboard-layout
-changes are synchronized, and Linux video opens no longer acquire a controlling
-terminal.
-
-Validation includes the complete local CI gate, all six supported-platform
-cross-builds and native Linux, macOS and Windows CI. Read-only capture checks
-against an attached Windows target confirmed that the new default and explicit
-`-autocrop` both preserve full frames at matching aspect. Tests changed no target
-files or settings, and no screenshots or OCR were retained. Synthetic
-capture-to-MCP-to-HID tests cover dark-content and scaling-bar click mapping.
-
-In the recorded extended-desktop test, pointer commands were acknowledged, but
-the owner reported the cursor on the primary display rather than the captured
-one. That check did not establish absolute input support for a captured secondary
-display; see the
-[hardware validation](https://github.com/linkdata/autopaws/blob/v0.6.0/docs/hardware-validation.md)
-for the extended-4K capture and input limits.
-
-Existing configurations with `autocrop: true` remain opted in. Set it to `false`
-to preserve full frames.
-
-See [usage and configuration](https://github.com/linkdata/autopaws/blob/v0.6.0/README.md).
+- Disable cropping by default. Explicit `-autocrop` validates centered scaling bars
+  using the configured target aspect. Existing `autocrop: true` remains opted in;
+  set it to `false` to preserve full frames.
+- Handle FFmpeg 9.1 AVFoundation UID/serial metadata during capture discovery.
+- Remove the inline `-token` flag. Use `-token-file` or YAML `token`. Viewer
+  credentials use tab-session storage and WebSocket subprotocols; reopen the
+  token URL when authentication is needed.
+- Bound network admission and request deadlines, synchronize layout changes,
+  and prevent Linux video opens from acquiring a controlling terminal.
+- [Validation and limits](https://github.com/linkdata/autopaws/blob/v0.6.0/docs/hardware-validation.md).

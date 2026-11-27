@@ -13,15 +13,9 @@ For a release, run `git checkout YOUR_INSTALLED_TAG`. Source builds can use thei
 existing checkout. The README's foreground quick start needs neither service
 installation nor custom udev rules.
 
-Single/mirrored displays use the default identity mapping. The tested GNOME
-Wayland target mapped absolute HID input across its full virtual desktop, even
-with the captured display primary. For that layout, configure the captured
-display's signed offset, native size and actual absolute input span through web
-**Pointer setup → Apply** or API/MCP `set_mouse_mapping`; see
-[display mapping](../README.md#display-mapping) for a numeric example.
-This concerns the target, independently of the Linux host. Geometry lives in
-the running daemon; capture changes require reapplying it. Optional
-`-mouse-mode extended` blocks positioned input until geometry is configured.
+Configure the controlled computer using [target setup](target-setup.md),
+including display mapping and mouse compatibility. These settings are
+independent of the host OS.
 
 ## Device access
 
@@ -43,8 +37,8 @@ sudo udevadm control --reload-rules
 ```
 
 Keep the system's video/audio rules. Do not replace device permissions with a
-world-writable mode. Run `autopaws-kvm --list-devices` as the eventual daemon user
-to confirm inventory and permissions. It queries V4L2 capabilities but starts no
+world-writable mode. If device access fails, run `autopaws-kvm --list-devices`
+as the daemon user to check inventory and permissions. It queries V4L2 capabilities but starts no
 stream and opens neither tty nor PCM devices.
 
 Use `/dev/serial/by-id/...` for `serial-device` when available. If an adapter has
@@ -86,8 +80,8 @@ sudo install -d -o root -g autopaws -m 0750 /etc/autopaws
 sudo install -o root -g autopaws -m 0640 examples/autopaws.yaml /etc/autopaws/autopaws.yaml
 ```
 
-Edit `/etc/autopaws/autopaws.yaml`: set the serial path, target layout and target
-screen size. The example's API/web listeners bind to loopback. Confirm `dialout`,
+Edit `/etc/autopaws/autopaws.yaml` only when device paths, target layout or
+screen size need overrides. The example's API/web listeners bind to loopback. Confirm `dialout`,
 `video` and `audio` exist; the unit grants them as supplementary groups.
 
 Optional authentication uses `token-file` in this YAML file for API, web and MCP.
@@ -108,7 +102,7 @@ the configuration with `-config /etc/autopaws/autopaws.yaml` when its user can
 read both the configuration and token files, for example as a member of the
 `autopaws` group. Restart both processes after changing either file.
 The viewer bootstraps its tab's origin-scoped session storage from
-the URL fragment; see the canonical [Security instructions](../README.md#security)
+the URL fragment; see the canonical [Security instructions](security.md)
 for that URL, SSH forwarding and token handling.
 
 ```sh
