@@ -1,0 +1,536 @@
+{
+  "date": "2026-11-26",
+  "result": "PASS: captured-primary Windows positioning and direct API/Firefox click-and-drag checks",
+  "privacy": "Actions, numeric pass/fail and host/capture metadata only; no screenshots, OCR or arbitrary target screen contents retained.",
+  "base_commit": "6e9fd1ef02a976dfa1758017414d13c61b99fc98",
+  "tested_binary_sha256": "f410fb75e3b32e3844caf8dd578a5b137e89c2918f2546da16c034b2c6d4d241",
+  "host": {
+    "os": "macOS 27.2.1",
+    "architecture": "arm64",
+    "ffmpeg_version": "9.1"
+  },
+  "target": {
+    "os": "Windows, as identified by owner",
+    "display_mode": "extended; captured display primary",
+    "primary_bounds": {
+      "x": 0,
+      "y": 0,
+      "width": 2560,
+      "height": 1440
+    },
+    "secondary_bounds": {
+      "x": -1920,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "active_displays": 2,
+    "primary_change_authorized_by_owner": true,
+    "target_script_files_created_for_this_primary_test": false,
+    "instrumentation": "Temporary inert WinForms program loaded through PowerShell into RAM; numeric telemetry decoded from HDMI in memory. No released target-software dependency."
+  },
+  "capture": {
+    "name": "UGREEN 15389",
+    "backend": "AVFoundation",
+    "frame_size": [
+      2560,
+      1440
+    ],
+    "requested_fps": 30,
+    "autocrop": false
+  },
+  "input": {
+    "adapter": "CH9329 behind CH340",
+    "baud": 9600,
+    "button_mode": "relative (default)",
+    "test_coordinate_space": "4096x4096 host grid maps API coordinates directly to HID 0..4095; not the target pixel resolution"
+  },
+  "before_fix": {
+    "origin_motion": "ABS(0,0) ignored; neighboring ABS(0,1) and ABS(1,0) reached native origin",
+    "positioned_click": {
+      "downs": 1,
+      "ups": 1,
+      "buttons": 0,
+      "last_down": {
+        "x": 1535,
+        "y": 1007
+      },
+      "last_up": {
+        "x": 1535,
+        "y": 1007
+      }
+    },
+    "positioned_drag": {
+      "downs": 2,
+      "ups": 2,
+      "buttons": 0,
+      "last_down": {
+        "x": 2047,
+        "y": 1151
+      },
+      "last_up": {
+        "x": 2047,
+        "y": 1151
+      }
+    },
+    "interpretation": "Duplicate down/up edges while mixing relative-owned buttons into absolute movement reports"
+  },
+  "checks": [
+    {
+      "action": "5x5 absolute normalized grid including all corners",
+      "result": "pass",
+      "samples": [
+        {
+          "normalized_hid": {
+            "x": 0,
+            "y": 0
+          },
+          "observed": {
+            "x": 0,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 1024,
+            "y": 0
+          },
+          "observed": {
+            "x": 640,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 2048,
+            "y": 0
+          },
+          "observed": {
+            "x": 1280,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 3071,
+            "y": 0
+          },
+          "observed": {
+            "x": 1919,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 4095,
+            "y": 0
+          },
+          "observed": {
+            "x": 2559,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 0,
+            "y": 1024
+          },
+          "observed": {
+            "x": 0,
+            "y": 360
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 1024,
+            "y": 1024
+          },
+          "observed": {
+            "x": 640,
+            "y": 360
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 2048,
+            "y": 1024
+          },
+          "observed": {
+            "x": 1280,
+            "y": 360
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 3071,
+            "y": 1024
+          },
+          "observed": {
+            "x": 1919,
+            "y": 360
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 4095,
+            "y": 1024
+          },
+          "observed": {
+            "x": 2559,
+            "y": 360
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 0,
+            "y": 2048
+          },
+          "observed": {
+            "x": 0,
+            "y": 720
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 1024,
+            "y": 2048
+          },
+          "observed": {
+            "x": 640,
+            "y": 720
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 2048,
+            "y": 2048
+          },
+          "observed": {
+            "x": 1280,
+            "y": 720
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 3071,
+            "y": 2048
+          },
+          "observed": {
+            "x": 1919,
+            "y": 720
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 4095,
+            "y": 2048
+          },
+          "observed": {
+            "x": 2559,
+            "y": 720
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 0,
+            "y": 3071
+          },
+          "observed": {
+            "x": 0,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 1024,
+            "y": 3071
+          },
+          "observed": {
+            "x": 640,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 2048,
+            "y": 3071
+          },
+          "observed": {
+            "x": 1280,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 3071,
+            "y": 3071
+          },
+          "observed": {
+            "x": 1919,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 4095,
+            "y": 3071
+          },
+          "observed": {
+            "x": 2559,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 0,
+            "y": 4095
+          },
+          "observed": {
+            "x": 0,
+            "y": 1439
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 1024,
+            "y": 4095
+          },
+          "observed": {
+            "x": 640,
+            "y": 1439
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 2048,
+            "y": 4095
+          },
+          "observed": {
+            "x": 1280,
+            "y": 1439
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 3071,
+            "y": 4095
+          },
+          "observed": {
+            "x": 1919,
+            "y": 1439
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "normalized_hid": {
+            "x": 4095,
+            "y": 4095
+          },
+          "observed": {
+            "x": 2559,
+            "y": 1439
+          },
+          "max_error_px": 0,
+          "pass": true
+        }
+      ],
+      "maximum_error_native_px": 0
+    },
+    {
+      "action": "API positioned click",
+      "result": "pass",
+      "observed": {
+        "downs": 1,
+        "ups": 1,
+        "buttons": 0,
+        "last_down": {
+          "x": 1535,
+          "y": 1007
+        },
+        "last_up": {
+          "x": 1535,
+          "y": 1007
+        }
+      }
+    },
+    {
+      "action": "API positioned drag",
+      "result": "pass",
+      "observed": {
+        "downs": 1,
+        "ups": 1,
+        "buttons": 0,
+        "last_down": {
+          "x": 1535,
+          "y": 1007
+        },
+        "last_up": {
+          "x": 2047,
+          "y": 1151
+        }
+      }
+    },
+    {
+      "action": "Actual Firefox viewer image click and drag, fit view",
+      "result": "pass",
+      "viewer": {
+        "width": 2560,
+        "height": 1440,
+        "rect": {
+          "left": 12,
+          "top": 129,
+          "width": 1256,
+          "height": 706
+        },
+        "focused": true,
+        "visible": true,
+        "connected": true
+      },
+      "observed": [
+        {
+          "type": "image_click",
+          "one_down_up_pair": true,
+          "routed_to_capture": true,
+          "last_down": {
+            "x": 1664,
+            "y": 935
+          },
+          "last_up": {
+            "x": 1664,
+            "y": 935
+          },
+          "final_buttons": 0
+        },
+        {
+          "type": "image_drag",
+          "one_down_up_pair": true,
+          "routed_to_capture": true,
+          "last_down": {
+            "x": 1407,
+            "y": 935
+          },
+          "last_up": {
+            "x": 2176,
+            "y": 1151
+          },
+          "final_buttons": 0
+        }
+      ]
+    },
+    {
+      "case": "origin_click_relative",
+      "downs": 1,
+      "ups": 1,
+      "last_down": {
+        "x": 0,
+        "y": 0
+      },
+      "last_up": {
+        "x": 0,
+        "y": 0
+      },
+      "buttons": 0,
+      "pass": true
+    },
+    {
+      "case": "origin_click_absolute",
+      "downs": 1,
+      "ups": 1,
+      "last_down": {
+        "x": 0,
+        "y": 0
+      },
+      "last_up": {
+        "x": 0,
+        "y": 0
+      },
+      "buttons": 0,
+      "pass": true
+    },
+    {
+      "case": "absolute_owner_scroll_move_unpositioned_release",
+      "downs": 1,
+      "ups": 1,
+      "held_checks": [
+        true,
+        true,
+        true
+      ],
+      "final_buttons": 0,
+      "pass": true
+    },
+    {
+      "case": "disconnect_releases_held_drag",
+      "held": true,
+      "downs": 1,
+      "ups": 1,
+      "final_buttons": 0,
+      "pass": true
+    }
+  ],
+  "cleanup": {
+    "inert_windows_closed": true,
+    "powershell_exit_after_inert_app": true,
+    "target_script_files_created_by_primary_test": false,
+    "primary_display_setting_retained_as_requested": true,
+    "screenshots_or_ocr_retained": false,
+    "public_helper_deleted": true,
+    "host_daemon_stopped": true,
+    "headless_firefox_closed": true,
+    "temporary_browser_profile_removed": true
+  },
+  "limits": [
+    "Native target telemetry was temporary test instrumentation, not a production control path.",
+    "The grid checks sample 25 points; they do not prove pixel-perfect positioning for every resolution, device or OS.",
+    "Firefox was headless with an isolated profile; child-process/graphics warnings did not prevent the recorded DOM/input and target-counter checks.",
+    "No screenshots, browser traces or OCR were recorded. Native-size/fullscreen web modes, sustained capture rate, latency and macOS target hardware were not tested in this run.",
+    "Later release-only cleanup adjustment removes origin prepositioning from cleanup; ordinary positioning/button paths match this binary. Linux physical regression is recorded separately."
+  ]
+}

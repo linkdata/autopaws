@@ -75,7 +75,7 @@ func TestScreenStateCommitAndInvalidation(t *testing.T) {
 	if _, err := state.snapshot(); err == nil {
 		t.Fatal("empty state supplied coordinates")
 	}
-	dimensions := screenDimensions{5, 3, 1920, 1080}
+	dimensions := screenDimensions{5, 3, 1920, 1080, nil}
 	epoch := state.beginCapture()
 	if err := state.commit(context.Background(), epoch, dimensions); err != nil {
 		t.Fatal(err)
@@ -104,7 +104,7 @@ func TestScreenStateConcurrentAccess(t *testing.T) {
 		workers.Go(func() {
 			for range 100 {
 				epoch := state.beginCapture()
-				_ = state.commit(context.Background(), epoch, screenDimensions{i + 1, i + 1, i + 2, i + 2})
+				_ = state.commit(context.Background(), epoch, screenDimensions{i + 1, i + 1, i + 2, i + 2, nil})
 				_, _ = state.snapshot()
 				state.invalidate()
 			}

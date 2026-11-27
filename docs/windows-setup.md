@@ -19,6 +19,16 @@ Connect the capture card's USB and the CH340/CH341 serial side to the Windows
 host. Connect the target's HDMI output to the capture card and its USB input to
 the CH9329 HID side. The target can run Linux or another operating system.
 
+Single/mirrored displays use the default identity mapping. A Windows target
+with the captured display primary was also tested with its other display still
+extended. If the target's absolute HID range spans a larger desktop, configure
+the captured display's signed offset, native size and actual input span through
+web **Pointer setup → Apply** or API/MCP `set_mouse_mapping`; see
+[display mapping](../README.md#display-mapping). The Windows host does not choose
+which target displays HID reaches, and geometry cannot reach a display outside
+that range. Geometry lives only in the running daemon; reapply it after capture
+changes. Optional `-mouse-mode extended` blocks positioned input until configured.
+
 Use the release ZIP containing both executables, or build from PowerShell with
 Go 1.27.4 or newer:
 
@@ -66,7 +76,8 @@ $audio = 'dshow:PASTE_AUDIO_ALTERNATIVE_NAME'
   -target-layout us104 -web 127.0.0.1:9330
 ```
 
-Open <http://127.0.0.1:9330>. The API defaults to `127.0.0.1:9329`, and mouse
+Open <http://127.0.0.1:9330> and turn off View only to control the target.
+The API defaults to `127.0.0.1:9329`, and mouse
 buttons default to relative reports. Target keyboard layout and coordinate
 dimensions are independent of the Windows host and capture resolution. The
 same YAML configuration, MCP tools, browser controls and shared-token settings

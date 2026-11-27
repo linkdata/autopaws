@@ -30,11 +30,11 @@ func TestOCREnabledToolsGolden(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.SortFunc(result.Tools, func(a, b *mcp.Tool) int { return cmp.Compare(a.Name, b.Name) })
-	if len(result.Tools) != 16 {
+	if len(result.Tools) != 20 {
 		t.Fatalf("OCR tool count=%d", len(result.Tools))
 	}
 	for _, tool := range result.Tools {
-		readOnly := slices.Contains([]string{"capture_screen", "get_screen_text", "get_device_info", "list_capture_devices", "list_keyboard_layouts"}, tool.Name)
+		readOnly := slices.Contains([]string{"capture_screen", "get_screen_text", "get_device_info", "get_mouse_mapping", "list_capture_devices", "list_keyboard_layouts", "setup"}, tool.Name)
 		if (tool.Annotations != nil && tool.Annotations.ReadOnlyHint) != readOnly {
 			t.Errorf("%s annotations=%+v", tool.Name, tool.Annotations)
 		}
@@ -206,9 +206,9 @@ func TestOCRRuntimeAvailabilityAndStderrWarning(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			want := 14
+			want := 18
 			if available {
-				want = 16
+				want = 20
 			}
 			if len(tools.Tools) != want {
 				t.Fatalf("available%t tools%d want%d", available, len(tools.Tools), want)

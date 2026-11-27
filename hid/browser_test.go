@@ -111,11 +111,9 @@ func TestBrowserMouseWireModesAndNormalizedCoordinates(t *testing.T) {
 			}
 			var want [][]byte
 			if mode == "absolute" {
-				want = [][]byte{ch9329.MouseAbsolute(1, 2048, 1024, 0), ch9329.MouseAbsolute(1, 1, 4095, 0), ch9329.MouseRelative(1, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0)}
+				want = [][]byte{ch9329.MouseAbsolute(1, 2048, 1024, 0), ch9329.MouseAbsolute(1, 1, 4095, 0), ch9329.MouseRelative(0, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0)}
 			} else {
-				// Relative moves intentionally carry held ABS bits to match the
-				// verified shared Mouse.
-				want = [][]byte{ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseAbsolute(1, 1, 4095, 0), ch9329.MouseRelative(1, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(0, 0, 0, 0)}
+				want = [][]byte{ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseAbsolute(0, 1, 4095, 0), ch9329.MouseRelative(1, 0, 0, -127), ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(0, 0, 0, 0)}
 			}
 			if got := browserFrames(transport); !reflect.DeepEqual(got, want) {
 				t.Fatalf("%s browser reports=%x; want %x", mode, got, want)
@@ -163,7 +161,8 @@ func TestBrowserPassiveReleaseAndGenerationReset(t *testing.T) {
 	if err := browser.Move(t.Context(), 4095, 0); err != nil {
 		t.Fatal(err)
 	}
-	if browser.modifier != 0 || len(browser.keys) != 0 || browser.buttons != 0 || !bytes.Equal(browserFrames(transport)[4], ch9329.MouseAbsolute(0, 4095, 0, 0)) {
+	frames := browserFrames(transport)
+	if browser.modifier != 0 || len(browser.keys) != 0 || browser.buttons != 0 || !bytes.Equal(frames[len(frames)-1], ch9329.MouseAbsolute(0, 4095, 0, 0)) {
 		t.Fatal("Prepare reset did not reconcile per-browser held state")
 	}
 	prepares, _, _, _ := transport.snapshot()

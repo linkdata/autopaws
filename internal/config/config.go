@@ -36,6 +36,7 @@ type Config struct {
 	TargetLayout    string
 	LayoutsDir      string
 	MouseButtonMode string
+	MouseMode       string
 	CaptureDevice   string
 	CaptureWidth    int
 	CaptureHeight   int
@@ -89,6 +90,9 @@ func (cfg Config) Validate() error {
 	}
 	if cfg.MouseButtonMode != "absolute" && cfg.MouseButtonMode != "relative" {
 		problems = append(problems, fmt.Errorf("mouse-button-mode: expected absolute or relative, got %q", cfg.MouseButtonMode))
+	}
+	if cfg.MouseMode != "" && cfg.MouseMode != "legacy" && cfg.MouseMode != "extended" {
+		problems = append(problems, errors.New("mouse-mode: expected legacy or extended"))
 	}
 	if numericDevice(cfg.CaptureDevice) {
 		problems = append(problems, errors.New("capture-device: expected a device path, not a numeric index"))

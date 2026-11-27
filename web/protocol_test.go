@@ -59,6 +59,7 @@ func TestMediaHeaderFieldsAndClockDomain(t *testing.T) {
 func TestInputValidationBeforeHardware(t *testing.T) {
 	fixture := newFixture(t, Options{})
 	browser := hid.NewBrowser(fixture.controller, fixture.mouse)
+	input := fixture.server.newBrowserInput(browser)
 	for _, data := range []string{"", `null`, `[]`, `{`, `{} {}`, `{"type":"scroll","unexpected":1}`, `{"type":"mousemove","x":1.0}`} {
 		if _, err := decodeInput([]byte(data)); !errors.Is(err, ErrInput) {
 			t.Errorf("invalid JSON shape%s accepted: %v", data, err)
@@ -77,12 +78,34 @@ func TestInputValidationBeforeHardware(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := applyInput(t.Context(), browser, event); err == nil {
+		if err := input.apply(t.Context(), event); err == nil {
 			t.Errorf("invalid event accepted:%s", data)
 		}
 	}
 	if prepares, frames := fixture.transport.snapshot(); prepares != 0 || len(frames) != 0 {
 		t.Fatal("invalid event emitted input")
+	}
+}
+
+func TestMappingJSONRequiresExplicitDisplayAndSpanOrigins(t *testing.T) {
+	valid := `{"offset":{"x":0,"y":0},"width":1920,"height":1080,"span":{"x":0,"y":0,"width":3840,"height":1200}}`
+	for _, test := range []struct {
+		name, geometry string
+	}{
+		{"missing_offset", strings.Replace(valid, `"offset":{"x":0,"y":0},`, "", 1)},
+		{"missing_offset_x", strings.Replace(valid, `"offset":{"x":0,"y":0}`, `"offset":{"y":0}`, 1)},
+		{"null_offset_y", strings.Replace(valid, `"offset":{"x":0,"y":0}`, `"offset":{"x":0,"y":null}`, 1)},
+		{"missing_span_x", strings.Replace(valid, `"span":{"x":0,"y":0,`, `"span":{"y":0,`, 1)},
+		{"missing_span_y", strings.Replace(valid, `"span":{"x":0,"y":0,`, `"span":{"x":0,`, 1)},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := decodeInput([]byte(`{"type":"mapping_set","mapping":{"geometry":` + test.geometry + `}}`)); !errors.Is(err, ErrInput) {
+				t.Fatalf("incomplete geometry was accepted: %v", err)
+			}
+		})
+	}
+	if _, err := decodeInput([]byte(`{"type":"mapping_set","mapping":{"geometry":` + valid + `}}`)); err != nil {
+		t.Fatalf("explicit zero origins were rejected: %v", err)
 	}
 }
 
@@ -93,7 +116,7 @@ func TestInputReaderErrorsAndDedicatedLogging(t *testing.T) {
 	for _, message := range []socketMessage{{websocket.MessageBinary, []byte("binary")}, {websocket.MessageText, []byte(`null`)}, {websocket.MessageText, []byte(`{"type":"unknown"}`)}} {
 		conn := newFakeSocket()
 		done := make(chan error, 1)
-		go func() { done <- fixture.server.read(t.Context(), conn, browser) }()
+		go func() { done <- fixture.server.read(t.Context(), conn, fixture.server.newBrowserInput(browser)) }()
 		conn.input <- message
 		if err := receive(t, done); !errors.Is(err, ErrInput) {
 			t.Fatalf("invalid input=%v", err)
@@ -101,7 +124,7 @@ func TestInputReaderErrorsAndDedicatedLogging(t *testing.T) {
 	}
 	conn := newFakeSocket()
 	done := make(chan error, 1)
-	go func() { done <- fixture.server.read(t.Context(), conn, browser) }()
+	go func() { done <- fixture.server.read(t.Context(), conn, fixture.server.newBrowserInput(browser)) }()
 	conn.input <- socketMessage{websocket.MessageText, []byte(`{"type":"keydown","code":"KeyA"}`)}
 	_ = conn.CloseNow()
 	if err := receive(t, done); !errors.Is(err, io.EOF) {
@@ -144,6 +167,7 @@ func TestStaticAssetsAndAdmission(t *testing.T) {
 		{"/index.html", "index.html", "text/html; charset=utf-8"},
 		{"/app.js", "index.html", "text/html; charset=utf-8"},
 		{"/viewer.mjs", "viewer.mjs", "text/javascript; charset=utf-8"},
+		{"/mapping.mjs", "mapping.mjs", "text/javascript; charset=utf-8"},
 		{"/viewer-helpers.mjs", "viewer-helpers.mjs", "text/javascript; charset=utf-8"},
 		{"/viewer.css", "viewer.css", "text/css; charset=utf-8"},
 		{"/audio-playback.mjs", "audio-playback.mjs", "text/javascript; charset=utf-8"},

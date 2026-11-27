@@ -30,7 +30,7 @@ func TestTokenProtectsWebSocketAndLeavesBootstrapPublic(t *testing.T) {
 			return audio, nil
 		}},
 	})
-	for _, path := range []string{"/", "/viewer.mjs", "/viewer-helpers.mjs", "/viewer.css", "/manifest.json", "/sw.js", "/icon.svg", "/audio-playback.mjs", "/audio-worklet.mjs"} {
+	for _, path := range []string{"/", "/viewer.mjs", "/viewer-helpers.mjs", "/mapping.mjs", "/viewer.css", "/manifest.json", "/sw.js", "/icon.svg", "/audio-playback.mjs", "/audio-worklet.mjs"} {
 		output := httptest.NewRecorder()
 		fixture.server.ServeHTTP(output, httptest.NewRequest(http.MethodGet, path, nil))
 		if output.Code != http.StatusOK || output.Body.Len() == 0 {

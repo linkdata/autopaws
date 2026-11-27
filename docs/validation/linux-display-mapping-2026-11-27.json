@@ -1,0 +1,734 @@
+{
+  "date": "2026-11-27",
+  "result": "PASS: Linux extended-display API, MCP and Firefox image-coordinate routing",
+  "base_commit": "6e9fd1ef02a976dfa1758017414d13c61b99fc98",
+  "tested_binary_sha256": "ed552686331ac994f156937160b4d580ac4156339abc2302d555513543a1eb77",
+  "build_note": "Development binary used for the new extended checks. Frame/unit string labels were subsequently removed from the interface; they had no numeric scaling semantics.",
+  "host": {
+    "os": "macOS 27.2.1",
+    "architecture": "arm64",
+    "ffmpeg": "9.1"
+  },
+  "target": {
+    "os": "Linux, GNOME Wayland",
+    "coordinate_space": "X/Tk desktop coordinates, scale 1",
+    "captured_display": {
+      "x": 1920,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "absolute_input_span": {
+      "x": 0,
+      "y": 0,
+      "width": 3840,
+      "height": 1200
+    }
+  },
+  "capture": {
+    "device": "UGREEN 15389",
+    "backend": "AVFoundation",
+    "width": 2560,
+    "height": 1440,
+    "autocrop": false
+  },
+  "input": {
+    "adapter": "CH9329",
+    "baud": 9600,
+    "button_mode": "relative (default)",
+    "api_test_coordinates": "4096 by 4096 planning grid, 0 through 4095 on each axis; not native display pixels"
+  },
+  "native_span_evidence": {
+    "setup": "Captured display primary and right of laptop, confirmed by owner",
+    "probes": [
+      {
+        "hid": {
+          "x": 2048,
+          "y": 2048
+        },
+        "observed": {
+          "x": 1920,
+          "y": 600
+        }
+      },
+      {
+        "hid": {
+          "x": 3071,
+          "y": 2048
+        },
+        "observed": {
+          "x": 2879,
+          "y": 600
+        }
+      },
+      {
+        "hid": {
+          "x": 4095,
+          "y": 2048
+        },
+        "observed": {
+          "x": 3839,
+          "y": 600
+        }
+      }
+    ],
+    "conclusion": "Absolute input addressed the full 3840 by 1200 desktop, rather than primary-display-local bounds. These initial probes were not an image-coordinate routing pass.",
+    "button_hold_preserved": true,
+    "downs": 1,
+    "ups": 1,
+    "held_buttons": 0
+  },
+  "mirror_baseline": {
+    "date": "2026-11-26",
+    "build": "Earlier development build; separate from the new extended checks",
+    "captured_display": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "grid_points": 25,
+    "grid_pass": true,
+    "max_error_px": 0,
+    "click": {
+      "downs": 1,
+      "ups": 1,
+      "last_down": {
+        "x": 1151,
+        "y": 755
+      },
+      "last_up": {
+        "x": 1151,
+        "y": 755
+      },
+      "held_buttons": 0
+    },
+    "drag_scroll": {
+      "downs": 1,
+      "ups": 1,
+      "last_down": {
+        "x": 1151,
+        "y": 755
+      },
+      "last_up": {
+        "x": 1535,
+        "y": 863
+      },
+      "held_checks": [
+        true,
+        true,
+        true
+      ],
+      "held_buttons": 0
+    },
+    "mcp_actions": {
+      "click": {
+        "downs": 1,
+        "ups": 1,
+        "last_down": {
+          "x": 1151,
+          "y": 755
+        },
+        "last_up": {
+          "x": 1151,
+          "y": 755
+        },
+        "expected_down": {
+          "x": 1151,
+          "y": 755
+        },
+        "expected_up": {
+          "x": 1151,
+          "y": 755
+        },
+        "max_error_px": 0,
+        "pass": true,
+        "held_buttons": 0
+      },
+      "drag": {
+        "downs": 1,
+        "ups": 1,
+        "last_down": {
+          "x": 1151,
+          "y": 755
+        },
+        "last_up": {
+          "x": 1535,
+          "y": 863
+        },
+        "expected_down": {
+          "x": 1151,
+          "y": 755
+        },
+        "expected_up": {
+          "x": 1535,
+          "y": 863
+        },
+        "max_error_px": 0,
+        "pass": true,
+        "held_buttons": 0
+      }
+    },
+    "mcp_pass": true
+  },
+  "extended_checks": {
+    "geometry": {
+      "offset": {
+        "x": 1920,
+        "y": 0
+      },
+      "width": 1920,
+      "height": 1080,
+      "span": {
+        "x": 0,
+        "y": 0,
+        "width": 3840,
+        "height": 1200
+      }
+    },
+    "api_grid": {
+      "points": 25,
+      "max_error_px": 1,
+      "pass": true,
+      "samples": [
+        {
+          "input": {
+            "x": 0,
+            "y": 0
+          },
+          "actual": {
+            "x": 1920,
+            "y": 0
+          },
+          "expected": {
+            "x": 1920,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 1024,
+            "y": 0
+          },
+          "actual": {
+            "x": 2400,
+            "y": 0
+          },
+          "expected": {
+            "x": 2400,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 2048,
+            "y": 0
+          },
+          "actual": {
+            "x": 2880,
+            "y": 0
+          },
+          "expected": {
+            "x": 2880,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 3071,
+            "y": 0
+          },
+          "actual": {
+            "x": 3359,
+            "y": 0
+          },
+          "expected": {
+            "x": 3359,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 4095,
+            "y": 0
+          },
+          "actual": {
+            "x": 3839,
+            "y": 0
+          },
+          "expected": {
+            "x": 3839,
+            "y": 0
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 0,
+            "y": 1024
+          },
+          "actual": {
+            "x": 1920,
+            "y": 270
+          },
+          "expected": {
+            "x": 1920,
+            "y": 270
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 1024,
+            "y": 1024
+          },
+          "actual": {
+            "x": 2400,
+            "y": 270
+          },
+          "expected": {
+            "x": 2400,
+            "y": 270
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 2048,
+            "y": 1024
+          },
+          "actual": {
+            "x": 2880,
+            "y": 270
+          },
+          "expected": {
+            "x": 2880,
+            "y": 270
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 3071,
+            "y": 1024
+          },
+          "actual": {
+            "x": 3359,
+            "y": 270
+          },
+          "expected": {
+            "x": 3359,
+            "y": 270
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 4095,
+            "y": 1024
+          },
+          "actual": {
+            "x": 3839,
+            "y": 270
+          },
+          "expected": {
+            "x": 3839,
+            "y": 270
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 0,
+            "y": 2048
+          },
+          "actual": {
+            "x": 1920,
+            "y": 539
+          },
+          "expected": {
+            "x": 1920,
+            "y": 540
+          },
+          "max_error_px": 1,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 1024,
+            "y": 2048
+          },
+          "actual": {
+            "x": 2400,
+            "y": 539
+          },
+          "expected": {
+            "x": 2400,
+            "y": 540
+          },
+          "max_error_px": 1,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 2048,
+            "y": 2048
+          },
+          "actual": {
+            "x": 2880,
+            "y": 539
+          },
+          "expected": {
+            "x": 2880,
+            "y": 540
+          },
+          "max_error_px": 1,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 3071,
+            "y": 2048
+          },
+          "actual": {
+            "x": 3359,
+            "y": 539
+          },
+          "expected": {
+            "x": 3359,
+            "y": 540
+          },
+          "max_error_px": 1,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 4095,
+            "y": 2048
+          },
+          "actual": {
+            "x": 3839,
+            "y": 539
+          },
+          "expected": {
+            "x": 3839,
+            "y": 540
+          },
+          "max_error_px": 1,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 0,
+            "y": 3071
+          },
+          "actual": {
+            "x": 1920,
+            "y": 809
+          },
+          "expected": {
+            "x": 1920,
+            "y": 809
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 1024,
+            "y": 3071
+          },
+          "actual": {
+            "x": 2400,
+            "y": 809
+          },
+          "expected": {
+            "x": 2400,
+            "y": 809
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 2048,
+            "y": 3071
+          },
+          "actual": {
+            "x": 2880,
+            "y": 809
+          },
+          "expected": {
+            "x": 2880,
+            "y": 809
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 3071,
+            "y": 3071
+          },
+          "actual": {
+            "x": 3359,
+            "y": 809
+          },
+          "expected": {
+            "x": 3359,
+            "y": 809
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 4095,
+            "y": 3071
+          },
+          "actual": {
+            "x": 3839,
+            "y": 809
+          },
+          "expected": {
+            "x": 3839,
+            "y": 809
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 0,
+            "y": 4095
+          },
+          "actual": {
+            "x": 1920,
+            "y": 1079
+          },
+          "expected": {
+            "x": 1920,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 1024,
+            "y": 4095
+          },
+          "actual": {
+            "x": 2400,
+            "y": 1079
+          },
+          "expected": {
+            "x": 2400,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 2048,
+            "y": 4095
+          },
+          "actual": {
+            "x": 2880,
+            "y": 1079
+          },
+          "expected": {
+            "x": 2880,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 3071,
+            "y": 4095
+          },
+          "actual": {
+            "x": 3359,
+            "y": 1079
+          },
+          "expected": {
+            "x": 3359,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        },
+        {
+          "input": {
+            "x": 4095,
+            "y": 4095
+          },
+          "actual": {
+            "x": 3839,
+            "y": 1079
+          },
+          "expected": {
+            "x": 3839,
+            "y": 1079
+          },
+          "max_error_px": 0,
+          "pass": true
+        }
+      ]
+    },
+    "mcp": {
+      "capture": {
+        "width": 2560,
+        "height": 1440
+      },
+      "protocol": "2025-11-25",
+      "actions": {
+        "click": {
+          "downs": 1,
+          "ups": 1,
+          "last_down": {
+            "x": 3071,
+            "y": 755
+          },
+          "last_up": {
+            "x": 3071,
+            "y": 755
+          },
+          "expected_down": {
+            "x": 3071,
+            "y": 755
+          },
+          "expected_up": {
+            "x": 3071,
+            "y": 755
+          },
+          "max_error_px": 0,
+          "pass": true,
+          "held_buttons": 0
+        },
+        "drag": {
+          "downs": 1,
+          "ups": 1,
+          "last_down": {
+            "x": 3071,
+            "y": 755
+          },
+          "last_up": {
+            "x": 3455,
+            "y": 863
+          },
+          "expected_down": {
+            "x": 3071,
+            "y": 755
+          },
+          "expected_up": {
+            "x": 3455,
+            "y": 863
+          },
+          "max_error_px": 0,
+          "pass": true,
+          "held_buttons": 0
+        }
+      },
+      "pass": true
+    },
+    "firefox": {
+      "mode": "Headless Firefox, isolated temporary profile, actual viewer DOM pointer actions",
+      "default_view_only": true,
+      "canvas_size": {
+        "width": 2560,
+        "height": 1440
+      },
+      "displayed_css_rectangle": {
+        "left": 12,
+        "top": 129,
+        "width": 1256,
+        "height": 706
+      },
+      "actions": [
+        {
+          "type": "image_click",
+          "image_fraction": {
+            "x": 0.65,
+            "y": 0.65
+          },
+          "pointer_events_received": true,
+          "routed_to_captured_display": true,
+          "downs": 1,
+          "ups": 1,
+          "held_buttons": 0,
+          "last_down": {
+            "x": 3167,
+            "y": 701
+          },
+          "last_up": {
+            "x": 3167,
+            "y": 701
+          }
+        },
+        {
+          "type": "image_drag",
+          "start_fraction": {
+            "x": 0.55,
+            "y": 0.65
+          },
+          "end_fraction": {
+            "x": 0.85,
+            "y": 0.8
+          },
+          "pointer_events_received": true,
+          "routed_to_captured_display": true,
+          "buttons_released": true,
+          "downs": 1,
+          "ups": 1,
+          "held_buttons": 0,
+          "last_down": {
+            "x": 2974,
+            "y": 701
+          },
+          "last_up": {
+            "x": 3552,
+            "y": 863
+          }
+        }
+      ],
+      "pass": true
+    }
+  },
+  "cleanup": {
+    "scope": "Display-mapping test; subsequent latency-test cleanup is recorded separately",
+    "original_mirrored_layout_restored": true,
+    "display_test_app_ended": true,
+    "target_display_test_source_absent": true,
+    "published_display_helper_deleted": true,
+    "observed_marker": "AP_LAYOUT_RESTORED_AND_TEST_CLEAN"
+  },
+  "retention": {
+    "screenshots": false,
+    "ocr": false,
+    "description": "Only numeric telemetry and action results are retained in this record; no screenshots or OCR text."
+  },
+  "limits": [
+    "One Linux target/compositor and this capture/input setup; other signed layouts have synthetic coverage only.",
+    "No claim of Windows captured-secondary-display support.",
+    "macOS target validation remains follow-up issue #103.",
+    "This record does not measure capture rate or end-to-end latency."
+  ]
+}

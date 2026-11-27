@@ -608,7 +608,7 @@ func TestWaitActiveCancellationPreservesScreenshotState(t *testing.T) {
 				defer owner.mu.Unlock()
 				for _, state := range owner.sessions {
 					dimensions, err := state.snapshot()
-					if priorImage && (err != nil || dimensions != (screenDimensions{5, 3, 9, 7})) {
+					if priorImage && (err != nil || dimensions != (screenDimensions{5, 3, 9, 7, nil})) {
 						t.Fatalf("cancellation changed prior coordinates: %+v, %v", dimensions, err)
 					}
 					if !priorImage && err == nil {
