@@ -1,4 +1,4 @@
-# Unreleased
+# v0.7.0
 
 The viewer opens in View only mode. Turn it off to send keyboard/mouse input.
 
@@ -15,6 +15,15 @@ to a display outside the target's absolute HID range.
 
 Mouse reports preserve each held button on its absolute or relative report,
 avoiding duplicate presses when dragging across report types.
+
+MCP adds a read-only `setup` checklist for pointer alignment, condition-based
+waiting, keyboard layout and maximizing the working window.
+
+Capture remains usable when the HID adapter is unavailable. Physical Linux
+unplug/replug checks passed with fresh keyboard output and drag selection in
+the same normal terminal, without restarting the terminal or daemon. See the
+[hardware validation](https://github.com/linkdata/autopaws/blob/v0.7.0/docs/hardware-validation.md)
+for tested configurations and limits.
 
 # v0.6.0
 

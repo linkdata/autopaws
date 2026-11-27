@@ -1,4 +1,4 @@
-//go:build linux && (amd64 || arm64)
+//go:build (linux || darwin || windows) && (amd64 || arm64)
 
 package main
 
@@ -323,15 +323,15 @@ func TestRealMCPDragUsesOneAtomicAPIAction(t *testing.T) {
 		t.Fatalf("second public caller interleaved with MCP drag: %v", err)
 	case <-time.After(20 * time.Millisecond):
 	}
-	realMCPRequireFrames(t, fixture.transport, ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0))
+	realMCPRequireFrames(t, fixture.transport, ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0))
 	close(proceed)
 	realMCPSuccess(t, realMCPReceive(t, dragged))
 	if err := realMCPReceive(t, queued); err != nil {
 		t.Fatal(err)
 	}
 	realMCPRequireFrames(t, fixture.transport,
-		ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0),
-		ch9329.MouseAbsolute(1, 4095, 4095, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
+		ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0),
+		ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
 		ch9329.Keyboard(0, 0x1d), ch9329.Keyboard(0),
 	)
 	realMCPRequireInputMethods(t, fixture, "mouse_drag")
@@ -363,7 +363,7 @@ func TestRealMCPDragCleanupPrecedesNextInput(t *testing.T) {
 						return ctx.Err()
 					}
 				}
-				if kind == "failed move" && bytes.Equal(frame, ch9329.MouseAbsolute(1, 4095, 4095, 0)) {
+				if kind == "failed move" && bytes.Equal(frame, ch9329.MouseAbsolute(0, 4095, 4095, 0)) {
 					return errors.New("forced move failure")
 				}
 				var err error
@@ -403,9 +403,9 @@ func TestRealMCPDragCleanupPrecedesNextInput(t *testing.T) {
 				t.Fatalf("next input bypassed release cleanup: %+v", reply)
 			case <-time.After(20 * time.Millisecond):
 			}
-			want := [][]byte{ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0)}
+			want := [][]byte{ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0)}
 			if kind == "failed move" {
-				want = append(want, ch9329.MouseAbsolute(1, 4095, 4095, 0))
+				want = append(want, ch9329.MouseAbsolute(0, 4095, 4095, 0))
 			}
 			want = append(want, ch9329.MouseRelative(0, 0, 0, 0))
 			realMCPRequireFrames(t, fixture.transport, want...)
