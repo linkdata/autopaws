@@ -215,6 +215,18 @@ func sdkContext(t *testing.T) context.Context {
 	return ctx
 }
 
+func sdkReceive[T any](t *testing.T, values <-chan T) T {
+	t.Helper()
+	select {
+	case value := <-values:
+		return value
+	case <-sdkContext(t).Done():
+		t.Fatal("timed out waiting for MCP test")
+		var zero T
+		return zero
+	}
+}
+
 func sdkTool(t *testing.T, session sdkSession, name string, arguments any, wantError bool) *mcp.CallToolResult {
 	t.Helper()
 	result, err := session.client.CallTool(sdkContext(t), &mcp.CallToolParams{Name: name, Arguments: arguments})

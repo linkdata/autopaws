@@ -32,7 +32,7 @@ func TestManagerSwitchFlushesOldGenerationAndWaitsForOwnedClose(t *testing.T) {
 			return old, nil
 		}
 		manager := mustManager(t, options)
-		t.Cleanup(unblock)
+		t.Cleanup(func() { unblock(); close(old.reads) })
 		subscription, _ := manager.Subscribe()
 		<-opened
 		old.reads <- managerRead{frame: managerFrame(managerJPEG(t, true), 2, 1)}

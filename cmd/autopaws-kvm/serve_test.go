@@ -117,9 +117,12 @@ func startRuntime(t *testing.T, port *runtimeTransport) (context.CancelFunc, <-c
 	}
 	cfg := runtimeConfig()
 	cfg.DebugKeys = true
-	go func() { done <- serveWith(ctx, cfg, io.Discard, factories) }()
+	t.Cleanup(func() { cancel(); receiveRuntime(t, done) })
+	go func() {
+		done <- serveWith(ctx, cfg, io.Discard, factories)
+		close(done)
+	}()
 	listener := receiveRuntime(t, bound)
-	t.Cleanup(cancel)
 	return cancel, done, listener
 }
 
