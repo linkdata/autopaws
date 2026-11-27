@@ -13,13 +13,25 @@ for agent access.
 ## Hardware and wiring
 
 Use an amd64 or arm64 Linux/macOS/Windows 11 host, a CH9329 behind a CH340/CH341 USB-UART,
-and a UVC HDMI capture card with USB audio. The target can run any OS.
+and a UVC HDMI capture card with USB audio. The target needs HDMI output and USB
+HID keyboard/mouse support.
 
 1. Connect the target's HDMI output to the capture card, and the card's USB connection to the host.
 2. Connect the adapter's serial USB side to the host and its HID USB side to the target.
-3. Set the target to a single or mirrored display. Configure its keyboard layout and coordinate dimensions separately from the capture resolution.
+3. Use a single or mirrored target display, or configure the captured display's mapping below. Configure its keyboard layout and coordinate dimensions separately from the capture resolution.
 
 Follow the board's pinout if its UART components are separate.
+
+The default identity mapping fits single or mirrored displays. A captured-primary
+display was also tested on Windows with its other display still extended.
+When absolute input spans a larger desktop, configure the optional
+[display mapping](#display-mapping). The tested GNOME Wayland target used its
+whole virtual desktop even with the captured display primary.
+
+The target OS/device determines which area absolute HID input reaches. Geometry
+maps into that area; it cannot make an unreachable display reachable. Selecting
+a capture input does not redirect HID input. Check the setup before sending
+positioned clicks or drags if the pointer does not match the image.
 
 ## Installation
 
@@ -88,8 +100,9 @@ autopaws-kvm \
   -web 127.0.0.1:9330
 ```
 
-Open `http://127.0.0.1:9330` and click the image to focus input. Use one operator
-at a time. For remote access and authentication, see [Security](#security).
+Open `http://127.0.0.1:9330`, turn off View only to control the target, and click
+the image to focus input. Use one operator at a time. For remote access and
+authentication, see [Security](#security).
 If capture audio is busy, follow the [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).
 
 ## Commands and configuration
@@ -148,6 +161,7 @@ on another host, override it for MCP, for example
 | `target-layout` | `us104` | Target text layout |
 | `layouts-dir` | empty | Custom layouts, searched before built-ins |
 | `mouse-button-mode` | `relative` | `relative` or `absolute` button reports |
+| `mouse-mode` | `legacy` | Identity mapping, or `extended` to require display geometry before positioned input |
 | `capture-device` | empty | Linux video path, macOS `avfoundation:NAME` or Windows `dshow:NAME`; empty auto-selects |
 | `capture-width` | `1920` | Requested width, 1–4294967295 |
 | `capture-height` | `1080` | Requested height, 1–4294967295 |
@@ -191,12 +205,48 @@ timing estimates pipe receipt and cannot account for FFmpeg/OS buffering. A fres
 prove the target finished processing input. Missing capture hardware leaves input
 usable. Device/resolution changes invalidate pending snapshots with `capture changed`.
 
-Click the video for physical keyboard and mouse input, independent of the text
-layout. The toolbar offers Ctrl+Alt+Delete, Alt+Tab, view-only mode, cursor,
+The viewer opens in View only mode. Turn it off and click the video to focus
+physical keyboard and mouse input, independent of the text layout.
+The toolbar offers Ctrl+Alt+Delete, Alt+Tab, view-only mode, cursor,
 sizing and fullscreen controls. Focus loss, view-only mode and stream changes
 release held input. Connections reconnect automatically without replaying input.
 Keyboard Lock depends on browser support; toolbar shortcuts remain available.
 The installable viewer caches no assets or media.
+
+### Display mapping
+
+Leave the default `legacy` mode for an identity mapping. If absolute input spans
+more than the captured display, open **Pointer setup**, select extended display
+mapping, enter its signed desktop offset and native size plus the full area
+reached by absolute HID input, then click **Apply**. Screenshot coordinates stay
+local to the captured image; callers do not add the offset to each mouse action.
+Display geometry and capture resolution can differ.
+
+For example, a Linux desktop may place a 1920×1080 captured display at `(1920,0)`
+within an absolute input span of `(0,0,3840,1200)`. Enter those values in the web
+form, or call the API/MCP `set_mouse_mapping` with:
+
+```json
+{
+  "geometry": {
+    "offset": {"x": 1920, "y": 0}, "width": 1920, "height": 1080,
+    "span": {"x": 0, "y": 0, "width": 3840, "height": 1200}
+  }
+}
+```
+
+Use the same desktop coordinate system and units for every geometry value.
+Geometry activates after bounds validation. `get_mouse_mapping` reports the
+shared geometry, transform and readiness;
+web and MCP use the same KVM state. **Reset** / `reset_mouse_mapping` clears the
+geometry while retaining the mode. Select legacy and Apply, or call
+`set_mouse_mapping` with `{"mode":"legacy"}`, to restore identity.
+
+Mappings last for the daemon's current run and are not saved to YAML. Capture
+context changes invalidate extended mappings until geometry is reapplied; take
+a fresh screenshot after changes. For a daemon that must block positioned input
+until configured, start with `-mouse-mode extended` and apply geometry before
+work. View only remains enabled until explicitly turned off.
 
 ### Browser audio
 
@@ -238,17 +288,22 @@ With no `-config`, MCP uses defaults and explicit flags only.
 
 | Tools | Purpose |
 |---|---|
+| `setup` | Pre-work pointer/layout/window checklist |
 | `type_text`, `send_key`, `send_key_sequence` | Keyboard actions |
 | `list_keyboard_layouts`, `set_keyboard_layout` | Inspect or select target text maps |
 | `mouse_move`, `mouse_click`, `mouse_drag`, `mouse_scroll` | Pointer actions |
+| `get_mouse_mapping`, `set_mouse_mapping`, `reset_mouse_mapping` | Shared display geometry; configure before work when needed |
 | `capture_screen` | Fresh JPEG and image dimensions |
 | `get_screen_text`, `execute_and_read` | Local Tesseract OCR; optionally type a command first |
 | `get_device_info`, `list_capture_devices`, `set_capture_device`, `set_capture_resolution` | Device information and capture settings |
 
+Call `setup` before controlling the target. For an extended desktop, inspect
+`get_mouse_mapping` and configure the
+[display mapping](#display-mapping) before work when needed.
 Before absolute movement, positioned clicks or drags, call `capture_screen`.
 Coordinates are integer pixels in that session's latest screenshot, including
 cropping. Relative deltas are unscaled; clicks at the current pointer need no
-screenshot. Capture-setting attempts invalidate screenshot coordinates; layout
+screenshot. Mapping changes and capture-setting attempts invalidate screenshot coordinates; layout
 changes preserve them. Cancelling a tool closes its API call and allows input
 release cleanup. Use one operator; sessions do not merge held input.
 
@@ -473,6 +528,7 @@ the real OCR corpus test skips when it is absent.
   shellcheck .github/scripts/build-release.sh
   node --check web/assets/viewer-helpers.mjs
   node --check web/assets/viewer.mjs
+  node --check web/assets/mapping.mjs
   node --check web/assets/sw.js
   node --check web/assets/audio-playback.mjs
   node --check web/assets/audio-worklet.mjs

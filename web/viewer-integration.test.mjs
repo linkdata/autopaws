@@ -228,7 +228,9 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   document.activeElement = document.body;
   document.createElement = () => new Element(document);
   const ids = ["toolbar", "viewport", "screen", "message", "status", "ctrl-alt-del", "alt-tab",
-    "view-only", "cursor", "scaling", "fullscreen", "toolbar-handle", "capability-list", "capabilities", "fps", "audio"];
+    "view-only", "cursor", "scaling", "fullscreen", "toolbar-handle", "capability-list", "capabilities", "fps", "audio",
+    ...["mode", "reset", "status", "instructions", "apply",
+      "offset-x", "offset-y", "width", "height", "span-x", "span-y", "span-width", "span-height"].map(id => `mapping-${id}`)];
   const elements = Object.fromEntries(ids.map(id => [id, new Element(document, id)]));
   for (const element of Object.values(elements)) element.parent = document.body;
   elements.screen.parent = elements.viewport;
@@ -318,6 +320,10 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   await import(`./assets/viewer.mjs?integration=${++instance}`);
   assert.equal(sockets.length, 1);
   await sockets[0].open();
+  assert.equal(elements["view-only"].getAttribute("aria-pressed"), "true");
+  assert.equal(elements["ctrl-alt-del"].disabled, true);
+  assert.equal(elements["alt-tab"].disabled, true);
+  assert.deepEqual(sockets[0].sent, [], "opening a viewer must not send input");
   const h = {
     clock, window, document, elements, sockets, decodes, draws, clears, dimensions, audioContexts, audioNodes,
     cookies, historyChanges, storage,
@@ -329,6 +335,10 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
     },
     async config(audio) {
       await this.socket.message(JSON.stringify({type: "config", audio}));
+      await settle();
+    },
+    async mapping(mapping) {
+      await this.socket.message(JSON.stringify({type: "config", audio: {status: "unavailable", generation: "0"}, mapping}));
       await settle();
     },
     async pcm(generation, sequence, options) {
@@ -364,8 +374,92 @@ async function viewer(t, {nativeAudio = false, secureContext = nativeAudio,
   return h;
 }
 
+function pointerMapping(revision, options = {}) {
+  return {mode: "legacy", revision: String(revision), ready: true,
+    frame_generation: "1", after_sequence: "0", ...options};
+}
+
+test("mapping changes discard queued hover, invalidate old decodes and gate goals on fresh configured frames", async t => {
+  const h = await viewer(t);
+  await h.mapping(pointerMapping(1));
+  await h.show();
+  await h.click("view-only");
+  h.mouse("mousedown", {buttons: 1});
+  h.mouse("mousemove", {clientX: 200});
+  await h.frame(1, 2);
+  await h.mapping(pointerMapping(2, {mode: "extended", ready: false, after_sequence: "2"}));
+  assert.deepEqual(h.sent, [
+    {type: "mousedown", x: 0, y: 0, buttons: 1, revision: "1", frame_sequence: "1", frame_generation: "1"},
+    {type: "release_all"},
+  ]);
+  await h.image(1);
+  assert.equal(h.draws.length, 1, "a decode started before the mapping change cannot draw");
+  await h.frame(1, 2);
+  assert.equal(h.decodes.length, 2, "a pre-barrier frame must not decode");
+  await h.show(1, 3);
+  h.mouse("mousedown", {buttons: 1});
+  h.clock.advance(100);
+  assert.equal(h.sent.length, 2, "unconfigured geometry cannot position or click");
+  await h.mapping(pointerMapping(3, {mode: "extended", after_sequence: "3"}));
+  await h.show(1, 4);
+  h.mouse("mousedown", {buttons: 1});
+  h.mouse("mouseup");
+  assert.deepEqual(h.sent.slice(-2), [
+    {type: "mousedown", x: 0, y: 0, buttons: 1, revision: "3", frame_sequence: "4", frame_generation: "1"},
+    {type: "mouseup", x: 0, y: 0, buttons: 0, revision: "3", frame_sequence: "4", frame_generation: "1"},
+  ]);
+});
+
+test("manual geometry applies signed offsets without enabling target input", async t => {
+  const h = await viewer(t);
+  await h.mapping(pointerMapping(1));
+  await h.show();
+  h.elements["mapping-mode"].value = "extended";
+  for (const [id, value] of Object.entries({"offset-x": -1920, "offset-y": 200, width: 1920, height: 1080,
+    "span-x": -1920, "span-y": 0, "span-width": 3840, "span-height": 1280})) {
+    h.elements[`mapping-${id}`].value = String(value);
+  }
+  await h.click("mapping-apply");
+  assert.deepEqual(h.sent, [{type: "mapping_set", mapping: {geometry: {
+    offset: {x: -1920, y: 200}, width: 1920, height: 1080,
+    span: {x: -1920, y: 0, width: 3840, height: 1280},
+  }}}]);
+  h.mouse("mousedown", {buttons: 1});
+  h.mouse("mouseup");
+  h.key("keydown", "KeyA");
+  h.key("keyup", "KeyA");
+  h.clock.advance(100);
+  assert.equal(h.sent.length, 1, "applying geometry must preserve View only");
+  await h.click("mapping-reset");
+  assert.deepEqual(h.sent.at(-1), {type: "mapping_reset"});
+});
+
+test("a new page displays video in view-only mode until input is enabled", async t => {
+  const h = await viewer(t);
+  await h.show();
+  h.mouse("pointerdown", {pointerId: 1});
+  assert.equal(h.key("keydown", "KeyA").defaultPrevented, false);
+  h.key("keyup", "KeyA");
+  h.mouse("mousemove", {clientX: 200});
+  h.mouse("mousedown", {buttons: 1});
+  h.mouse("mouseup");
+  assert.equal(h.mouse("wheel", {deltaY: 1}).defaultPrevented, false);
+  await h.click("ctrl-alt-del");
+  await h.click("alt-tab");
+  h.clock.advance(100);
+  assert.equal(h.draws.length, 1);
+  assert.deepEqual(h.sent, []);
+
+  await h.click("view-only");
+  assert.equal(h.elements["view-only"].getAttribute("aria-pressed"), "false");
+  h.key("keydown", "KeyA");
+  h.key("keyup", "KeyA");
+  assert.deepEqual(h.sent, [{type: "keydown", code: "KeyA"}, {type: "keyup", code: "KeyA"}]);
+});
+
 test("new generation releases a held mouse before slow or failed replacement JPEGs", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   h.mouse("mousedown", {buttons: 1});
   assert.deepEqual(h.sent, [{type: "mousedown", x: 0, y: 0, buttons: 1}]);
@@ -390,6 +484,7 @@ test("new generation releases a held mouse before slow or failed replacement JPE
 
 test("mouseup with temporarily empty layout releases ownership without coordinates", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   h.key("keydown", "ControlLeft");
   h.mouse("mousedown", {buttons: 1});
@@ -402,6 +497,7 @@ test("mouseup with temporarily empty layout releases ownership without coordinat
 
 test("normal mouseup preserves modifiers and every mouse-button mask transition", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   h.mouse("pointerdown", {pointerId: 3});
   assert.equal(h.document.activeElement, h.elements.viewport);
@@ -424,6 +520,7 @@ test("normal mouseup preserves modifiers and every mouse-button mask transition"
 
 test("slow same-generation decoding retains usable coordinates and rejects dimension mismatches", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   const assignments = h.dimensions.length;
   h.mouse("mousedown", {buttons: 1});
@@ -476,6 +573,7 @@ test("a newer generation invalidates an in-flight decode before it can draw", as
 
 test("reconnect ignores old image and delayed Blob work, with no held input replay", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   h.key("keydown", "ShiftLeft");
   await h.frame(1, 2);
@@ -489,6 +587,7 @@ test("reconnect ignores old image and delayed Blob work, with no held input repl
   h.clock.advance(1);
   assert.equal(h.sockets.length, 2);
   await h.socket.open();
+  assert.equal(h.elements["view-only"].getAttribute("aria-pressed"), "false", "reconnect preserves the input choice");
   h.key("keyup", "ShiftLeft");
   assert.deepEqual(h.sent, []);
   resolveBuffer(video(99, 99, 99));
@@ -506,6 +605,7 @@ test("reconnect ignores old image and delayed Blob work, with no held input repl
 
 test("view-only, focus and visibility gates release only owned state and gate shortcuts", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   await h.click("ctrl-alt-del");
   await h.click("alt-tab");
@@ -553,6 +653,7 @@ test("view-only, focus and visibility gates release only owned state and gate sh
 
 test("local focus loss, pointer cancellation and pagehide release held input once", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   h.mouse("pointerdown", {pointerId: 1});
   h.key("keydown", "ControlLeft");
@@ -578,6 +679,7 @@ test("local focus loss, pointer cancellation and pagehide release held input onc
 
 test("discrete input flushes the latest move, wheel is nonpassive, passive mode stays local", async t => {
   const h = await viewer(t);
+  await h.click("view-only");
   await h.show();
   assert.equal(h.elements.screen.listeners.get("wheel")[0].options.passive, false);
   h.mouse("mousemove", {clientX: 200});
@@ -736,6 +838,7 @@ test("audio capability failures leave page video and keyboard/mouse input usable
   for (const options of [{nativeAudio: true, missingWorklet: true}, {nativeAudio: true, secureContext: false}]) {
     await t.test(JSON.stringify(options), async t => {
       const h = await viewer(t, options);
+      await h.click("view-only");
       await h.show();
       await h.config({status: "available", generation: "1", sampleRate: 48000, channels: 2});
       assert.equal(h.elements.audio.hidden, false);

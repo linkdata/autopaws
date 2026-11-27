@@ -275,7 +275,7 @@ func TestControllerCloseReusesActiveCleanupBudget(t *testing.T) {
 		if err := <-done; !errors.Is(err, context.Canceled) || !errors.Is(err, context.DeadlineExceeded) {
 			t.Fatalf("action lost original/cleanup errors: %v", err)
 		}
-		if len(deadlines) != 2 || deadlines[0] != deadlines[1] || time.Since(transport.start) != time.Second+5*time.Millisecond {
+		if len(deadlines) != 1 || deadlines[0] != transport.start.Add(time.Second+5*time.Millisecond) || time.Since(transport.start) != time.Second+5*time.Millisecond {
 			t.Fatalf("shutdown started another cleanup budget: deadlines=%v elapsed=%s", deadlines, time.Since(transport.start))
 		}
 	})

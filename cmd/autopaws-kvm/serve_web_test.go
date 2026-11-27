@@ -175,6 +175,9 @@ func TestRuntimeOptionalListenersShareCaptureAndInput(t *testing.T) {
 				}
 				conn := dialRuntimeViewer(t, run.web)
 				kind, frame, err := conn.Read(ctx)
+				for err == nil && kind == websocket.MessageText && bytes.Contains(frame, []byte(`"type":"config"`)) {
+					kind, frame, err = conn.Read(ctx)
+				}
 				if err != nil || kind != websocket.MessageBinary || len(frame) != 64+len(jpegData) || !bytes.Equal(frame[64:], jpegData) || binary.LittleEndian.Uint32(frame[32:]) != 128 {
 					t.Fatalf("runtime did not share pipeline frame:%dbytes,%v", len(frame), err)
 				}
@@ -187,12 +190,16 @@ func TestRuntimeOptionalListenersShareCaptureAndInput(t *testing.T) {
 					}
 				}
 				runtimeViewerInput(t, conn, `{"type":"mousemove","x":1,"y":1,"buttons":0}`)
-				button := byte(0)
-				if client != nil {
-					button = 2
+				if got := receiveRuntime(t, changes); !bytes.Equal(got, ch9329.MouseAbsolute(0, 1, 1, 0)) {
+					t.Fatalf("web pointer was double-scaled or copied relative holds to the absolute report:%x", got)
 				}
-				if got := receiveRuntime(t, changes); !bytes.Equal(got, ch9329.MouseAbsolute(button, 1, 1, 0)) {
-					t.Fatalf("web pointer was double-scaled or lost actual held bits:%x", got)
+				if client != nil {
+					if err := runtimeCall(client, "mouse_scroll", map[string]int{"amount": 0}, nil); err != nil {
+						t.Fatal(err)
+					}
+					if got := receiveRuntime(t, changes); !bytes.Equal(got, ch9329.MouseRelative(2, 0, 0, 0)) {
+						t.Fatalf("web absolute motion lost the API's relative hold:%x", got)
+					}
 				}
 				_ = conn.CloseNow()
 			}
@@ -402,10 +409,12 @@ func TestRuntimeShutdownSharesBrowserDisconnectCleanupBudget(t *testing.T) {
 	pressed, cleaning := make(chan struct{}), make(chan struct{})
 	var pressOnce, cleanOnce sync.Once
 	var deadlines []time.Time
+	var cleanupStarted time.Time
 	port.write = func(ctx context.Context, frame []byte) error {
 		if bytes.Equal(frame, ch9329.Keyboard(0, 4)) {
 			pressOnce.Do(func() { close(pressed) })
 		} else if bytes.Equal(frame, ch9329.Keyboard(0)) {
+			cleanupStarted = time.Now()
 			deadline, _ := ctx.Deadline()
 			deadlines = append(deadlines, deadline)
 			cleanOnce.Do(func() { close(cleaning) })
@@ -427,10 +436,10 @@ func TestRuntimeShutdownSharesBrowserDisconnectCleanupBudget(t *testing.T) {
 	if err := stopViewerRuntime(t, run); !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("disconnect cleanup failure lost: %v", err)
 	}
-	if len(deadlines) != 2 || deadlines[0].IsZero() || deadlines[0] != deadlines[1] {
+	if len(deadlines) != 1 || !deadlines[0].After(cleanupStarted) || deadlines[0].Sub(cleanupStarted) > time.Second || time.Now().Before(deadlines[0]) {
 		t.Fatalf("shutdown added another disconnect cleanup budget: %v", deadlines)
 	}
-	if _, closes, frames := port.snapshot(); closes != 1 || len(frames) != 3 {
+	if _, closes, frames := port.snapshot(); closes != 1 || len(frames) != 2 || !bytes.Equal(frames[1], ch9329.Keyboard(0)) {
 		t.Fatalf("disconnect cleanup retried or lost ownership: closes%d frames%x", closes, frames)
 	}
 }

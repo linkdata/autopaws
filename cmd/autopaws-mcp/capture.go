@@ -20,11 +20,12 @@ type capturedScreen struct {
 // coordinates. Only a tool that successfully returns an image may commit them.
 func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScreen, error) {
 	var frame struct {
-		JPEG         []byte          `json:"jpeg_b64"`
-		Width        int             `json:"width"`
-		Height       int             `json:"height"`
-		TargetWidth  json.RawMessage `json:"target_width"`
-		TargetHeight json.RawMessage `json:"target_height"`
+		JPEG            []byte          `json:"jpeg_b64"`
+		Width           int             `json:"width"`
+		Height          int             `json:"height"`
+		TargetWidth     json.RawMessage `json:"target_width"`
+		TargetHeight    json.RawMessage `json:"target_height"`
+		MappingRevision *uint64         `json:"mapping_revision"`
 	}
 	if err := owner.caller.Call(ctx, "capture_frame", struct{}{}, &frame); err != nil {
 		return capturedScreen{}, err
@@ -67,7 +68,7 @@ func (owner *toolServer) capture(ctx context.Context, tool string) (capturedScre
 			return capturedScreen{}, err
 		}
 	}
-	return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, targetWidth, targetHeight}}, nil
+	return capturedScreen{jpeg: frame.JPEG, dimensions: screenDimensions{frame.Width, frame.Height, targetWidth, targetHeight, frame.MappingRevision}}, nil
 }
 
 func (owner *toolServer) captureScreen(ctx context.Context, request *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, error) {

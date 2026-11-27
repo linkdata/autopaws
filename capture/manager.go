@@ -42,6 +42,7 @@ type Options struct {
 	OpenSource                func(context.Context, string, v4l2.Options) (Source, error)
 	MonotonicNow              func() (int64, error)
 	IdleTimeout               time.Duration
+	OnFrame                   func(device string, metadata Metadata) // Before publication, outside the manager lock; must return promptly.
 }
 
 // Info reports selected/requested settings separately from negotiated Format.
@@ -61,23 +62,24 @@ type Info struct {
 // source calls or JPEG processing. Close joins the worker rather than abandoning
 // an executing kernel call when a caller's application deadline expires.
 type Manager struct {
-	mu            sync.Mutex
-	options       Options
-	generation    uint64
-	format        v4l2.Format
-	lastErr       error
-	cleanupErr    error
-	recoveryDelay time.Duration
-	run           *stream
-	subscribers   map[*Subscription]struct{}
-	pending       map[*snapshotWaiter]struct{}
-	idle          *time.Timer
-	changed       chan struct{}
-	openResultGen uint64
-	openErr       error
-	closed        bool
-	closeOnce     sync.Once
-	closeErr      error
+	mu               sync.Mutex
+	options          Options
+	generation       uint64
+	format           v4l2.Format
+	lastErr          error
+	cleanupErr       error
+	recoveryDelay    time.Duration
+	run              *stream
+	subscribers      map[*Subscription]struct{}
+	pending          map[*snapshotWaiter]struct{}
+	idle             *time.Timer
+	changed          chan struct{}
+	openResultGen    uint64
+	openErr          error
+	deliverySequence uint64
+	closed           bool
+	closeOnce        sync.Once
+	closeErr         error
 }
 
 type stream struct {
@@ -549,8 +551,10 @@ func (manager *Manager) read(run *stream, source Source) error {
 		for waiter := range manager.pending {
 			needSnapshot = needSnapshot || timestamp > waiter.arrival
 		}
+		manager.deliverySequence++
+		deliverySequence := manager.deliverySequence
 		manager.mu.Unlock()
-		processed, err := processor.process(frame.Data, Metadata{Width: int(format.Width), Height: int(format.Height), Generation: run.generation, TimestampNS: timestamp, TimestampFlags: frame.Flags, Sequence: frame.Sequence}, needSnapshot)
+		processed, err := processor.process(frame.Data, Metadata{Width: int(format.Width), Height: int(format.Height), Generation: run.generation, TimestampNS: timestamp, TimestampFlags: frame.Flags, Sequence: frame.Sequence, DeliverySequence: deliverySequence}, needSnapshot)
 		if err != nil {
 			continue // Corrupt warmup/candidates do not terminate capture.
 		}
@@ -560,6 +564,9 @@ func (manager *Manager) read(run *stream, source Source) error {
 			if err != nil {
 				continue
 			}
+		}
+		if observe := run.settings.OnFrame; observe != nil {
+			observe(run.settings.Device, processed.Metadata())
 		}
 		manager.mu.Lock()
 		if run.ctx.Err() != nil || manager.generation != run.generation {

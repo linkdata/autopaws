@@ -26,6 +26,16 @@ Use the `/dev/cu.*` serial path shown in the inventory, or leave it empty when
 exactly one supported adapter is attached. Discovery filters USB VID/PID
 `1a86:7523` and `1a86:7522`, rather than guessing from serial filenames.
 
+Single/mirrored displays use the default identity mapping. If the target's
+absolute HID range spans a larger desktop, configure the captured display's
+signed offset, native size and actual input span through web **Pointer setup →
+Apply** or API/MCP `set_mouse_mapping`; see
+[display mapping](../README.md#display-mapping). This concerns the target,
+independently of the Mac host. Geometry is kept only in the running daemon and
+must be reapplied after capture changes. Optional `-mouse-mode extended` blocks
+positioned input until configured. Geometry cannot redirect input to a display
+the target's HID range does not reach.
+
 Copy the exact `avfoundation:NAME` selectors printed by `--list-devices`, quoting
 names containing spaces. For example, substitute your inventory's values here:
 
@@ -39,7 +49,8 @@ names containing spaces. For example, substitute your inventory's values here:
   -target-layout us104 -web 127.0.0.1:9330
 ```
 
-Open <http://127.0.0.1:9330>. The same API, MCP tools, browser controls, layouts,
+Open <http://127.0.0.1:9330> and turn off View only to control the target.
+The same API, MCP tools, browser controls, layouts,
 autocrop and shared-token settings work on both hosts. The target's keyboard
 layout determines `-target-layout`, independently of the host OS.
 

@@ -6,19 +6,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/coder/websocket"
 	"github.com/linkdata/autopaws/alsa"
 	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/hid"
 )
 
-func audioConfigMessage(config audioConfig) []byte {
-	// All fields are primitive strings/uint32, so marshaling cannot fail.
+func audioConfigMessage(config audioConfig, mapping mappingConfig) []byte {
+	// HID validates mapping numbers before publishing a snapshot.
 	data, _ := json.Marshal(struct {
-		Type  string      `json:"type"`
-		Audio audioConfig `json:"audio"`
-	}{Type: "config", Audio: config})
+		Type    string        `json:"type"`
+		Audio   audioConfig   `json:"audio"`
+		Mapping mappingConfig `json:"mapping"`
+	}{Type: "config", Audio: config, Mapping: mapping})
 	return data
 }
 
@@ -30,7 +33,7 @@ func validAudioBlock(block alsa.Block) bool {
 
 // write is the connection's sole application writer. Audio is dequeued only
 // immediately before its write: no PCM bridge goroutine or extra queue exists.
-func (server *Server) write(ctx context.Context, conn socket, videoSubscription *capture.Subscription) error {
+func (server *Server) write(ctx context.Context, conn socket, videoSubscription *capture.Subscription, input *browserInput) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -48,6 +51,10 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 	var configured bool
 	var lastConfig audioConfig
 	var sequence uint64
+	var mappingRevision, mappingGeneration, barrierSequence uint64
+	var mappingReady bool
+	var lastDetail string
+	var lastMapping string
 	var nextVideo time.Time
 	var pendingVideo *capture.Frame
 	timer := time.NewTimer(0)
@@ -58,6 +65,31 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 			return err
 		}
 		video, videoChanged := server.capture.Watch()
+		state, mappingChanged := server.mouse.WatchMapping()
+		stable := state
+		stable.Capture = hid.MappingCapture{} // Ordinary capture sequence advances are not config changes.
+		encoded, _ := json.Marshal(stable)
+		mappingState := string(encoded)
+		var detail string
+		var statusChanged <-chan struct{}
+		if input != nil {
+			detail, statusChanged = input.statusWatch()
+		}
+		pointer := pointerConfig(state, video.Generation, barrierSequence, detail)
+		mappingChange := !configured || state.Revision != mappingRevision || video.Generation != mappingGeneration ||
+			pointer.Ready != mappingReady
+		if mappingChange {
+			barrierSequence = sequence
+			if sequence != 0 {
+				barrierSequence = max(barrierSequence, state.Capture.Sequence)
+			}
+			pointer.AfterSequence = strconv.FormatUint(barrierSequence, 10)
+			if input != nil {
+				input.mu.Lock()
+				input.barrier.revision, input.barrier.generation, input.barrier.sequence = state.Revision, video.Generation, barrierSequence
+				input.mu.Unlock()
+			}
+		}
 		view, audioChanged := server.audio.view(video)
 		if view.run != attached {
 			if audioSubscription != nil {
@@ -69,11 +101,15 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 				audioSubscription = attached.source.Subscribe()
 			}
 		}
-		if !configured || view.config != lastConfig {
-			if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config)); err != nil {
+		if !configured || view.config != lastConfig || mappingChange || mappingState != lastMapping || detail != lastDetail {
+			if err := server.writeMessage(ctx, conn, websocket.MessageText, audioConfigMessage(view.config, pointer)); err != nil {
 				return err
 			}
 			lastConfig, configured = view.config, true
+			mappingRevision, mappingGeneration = state.Revision, video.Generation
+			mappingReady = pointer.Ready
+			lastDetail = detail
+			lastMapping = mappingState
 			continue // Recheck recovery/config changes after the bounded send.
 		}
 		var audioReady <-chan struct{}
@@ -114,11 +150,33 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 				continue
 			}
 			metadata := pendingVideo.Metadata()
-			if metadata.Generation != server.capture.Info().Generation {
+			currentVideo := server.capture.Info()
+			if metadata.Generation != currentVideo.Generation {
 				pendingVideo = nil
 				continue
 			}
-			sequence++
+			if err := server.mouse.SetMappingCapture(ctx, hid.MappingCapture{
+				Device: currentVideo.Device,
+				Width:  metadata.Width, Height: metadata.Height, Crop: metadata.Crop,
+				Generation: metadata.Generation, Sequence: metadata.DeliverySequence,
+			}); err != nil && ctx.Err() != nil {
+				return ctx.Err()
+			}
+			// A failed HID release can still bind healthy video. Verify its context below.
+			bound := server.mouse.Mapping()
+			if bound.Capture.Device != currentVideo.Device || bound.Capture.Generation != metadata.Generation ||
+				bound.Capture.Width != metadata.Width || bound.Capture.Height != metadata.Height || bound.Capture.Crop != metadata.Crop {
+				pendingVideo = nil
+				continue
+			}
+			if bound.Revision != state.Revision {
+				continue
+			}
+			if metadata.DeliverySequence <= barrierSequence {
+				pendingVideo = nil
+				continue
+			}
+			sequence = metadata.DeliverySequence
 			header := videoHeader(metadata, sequence)
 			started := time.Now()
 			if err := server.writeMessage(ctx, conn, websocket.MessageBinary, header[:], pendingVideo.JPEG()); err != nil {
@@ -147,6 +205,8 @@ func (server *Server) write(ctx context.Context, conn socket, videoSubscription 
 			timer.Stop()
 			return ctx.Err()
 		case <-videoChanged:
+		case <-mappingChanged:
+		case <-statusChanged:
 		case <-audioChanged:
 		case <-audioReady:
 		case <-due:

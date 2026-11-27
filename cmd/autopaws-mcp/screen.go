@@ -13,6 +13,7 @@ import (
 type screenDimensions struct {
 	width, height             int
 	targetWidth, targetHeight int
+	mappingRevision           *uint64
 }
 
 type screenState struct {
@@ -118,6 +119,10 @@ func (owner *toolServer) mouseMove(ctx context.Context, request *mcp.CallToolReq
 		if err != nil {
 			return nil, err
 		}
+		return owner.call(ctx, "mouse_move", struct {
+			moveInput
+			MappingRevision *uint64 `json:"mapping_revision,omitempty"`
+		}{input, dimensions.mappingRevision})
 	}
 	return owner.call(ctx, "mouse_move", input)
 }
@@ -136,6 +141,10 @@ func (owner *toolServer) mouseClick(ctx context.Context, request *mcp.CallToolRe
 			return nil, err
 		}
 		input.X, input.Y = &x, &y
+		return owner.call(ctx, "mouse_click", struct {
+			clickInput
+			MappingRevision *uint64 `json:"mapping_revision,omitempty"`
+		}{input, dimensions.mappingRevision})
 	}
 	return owner.call(ctx, "mouse_click", input)
 }
@@ -153,5 +162,8 @@ func (owner *toolServer) mouseDrag(ctx context.Context, request *mcp.CallToolReq
 	if err != nil {
 		return nil, err
 	}
-	return owner.call(ctx, "mouse_drag", input)
+	return owner.call(ctx, "mouse_drag", struct {
+		dragInput
+		MappingRevision *uint64 `json:"mapping_revision,omitempty"`
+	}{input, dimensions.mappingRevision})
 }

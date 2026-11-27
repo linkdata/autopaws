@@ -765,7 +765,7 @@
           "events": [
             {
               "kind": "frame",
-              "hex": "57ab00040702016400c800003c"
+              "hex": "57ab00040702006400c800003b"
             }
           ],
           "held_buttons_after": 1,
@@ -858,7 +858,7 @@
           "events": [
             {
               "kind": "frame",
-              "hex": "57ab0004070207b80bd00700b0"
+              "hex": "57ab0004070200b80bd00700a9"
             }
           ],
           "held_buttons_after": 7,
@@ -1496,7 +1496,7 @@
           "events": [
             {
               "kind": "frame",
-              "hex": "57ab00040702016400c800003c"
+              "hex": "57ab00040702006400c800003b"
             }
           ],
           "held_buttons_after": 1,
@@ -1788,7 +1788,7 @@
           "events": [
             {
               "kind": "frame",
-              "hex": "57ab00040702016400c800003c"
+              "hex": "57ab00040702006400c800003b"
             }
           ],
           "held_buttons_after": 1,
@@ -2133,7 +2133,7 @@
           "events": [
             {
               "kind": "frame",
-              "hex": "57ab0004070207b80bd00700b0"
+              "hex": "57ab0004070200b80bd00700a9"
             }
           ],
           "held_buttons_after": 7,

@@ -1,3 +1,30 @@
+# v0.7.0
+
+The viewer opens in View only mode. Turn it off to send keyboard/mouse input.
+
+Optional shared display geometry maps captured-image coordinates into the
+target's actual absolute HID input span. Configure signed offset, native display
+size and span through web **Pointer setup → Apply** or API/MCP
+`get_mouse_mapping`, `set_mouse_mapping` and `reset_mouse_mapping`. Geometry
+activates directly after bounds validation; image coordinates remain local.
+It lives in the running daemon and must be reapplied after capture changes.
+Optional `-mouse-mode extended` blocks positioned input until configured;
+default legacy identity behavior remains available for single/mirrored displays
+and the tested Windows captured-primary layout. Geometry cannot redirect input
+to a display outside the target's absolute HID range.
+
+Mouse reports preserve each held button on its absolute or relative report,
+avoiding duplicate presses when dragging across report types.
+
+MCP adds a read-only `setup` checklist for pointer alignment, condition-based
+waiting, keyboard layout and maximizing the working window.
+
+Capture remains usable when the HID adapter is unavailable. Physical Linux
+unplug/replug checks passed with fresh keyboard output and drag selection in
+the same normal terminal, without restarting the terminal or daemon. See the
+[hardware validation](https://github.com/linkdata/autopaws/blob/v0.7.0/docs/hardware-validation.md)
+for tested configurations and limits.
+
 # v0.6.0
 
 Cropping is now **disabled by default**, preserving the full capture frame
@@ -29,7 +56,8 @@ capture-to-MCP-to-HID tests cover dark-content and scaling-bar click mapping.
 
 In the recorded extended-desktop test, pointer commands were acknowledged, but
 the owner reported the cursor on the primary display rather than the captured
-one. Use a single or mirrored target display; see the
+one. That check did not establish absolute input support for a captured secondary
+display; see the
 [hardware validation](https://github.com/linkdata/autopaws/blob/v0.6.0/docs/hardware-validation.md)
 for the extended-4K capture and input limits.
 

@@ -2,6 +2,7 @@ package hid
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -13,13 +14,14 @@ import (
 // owns it; methods must not run concurrently. Complete actions share the same
 // Controller as API keyboard/mouse actions. Concurrent operators are unsupported.
 type Browser struct {
-	controller *Controller
-	mouse      *Mouse
-	generation uint64
-	prepared   bool
-	modifier   byte
-	keys       []byte
-	buttons    byte
+	controller      *Controller
+	mouse           *Mouse
+	generation      uint64
+	prepared        bool
+	modifier        byte
+	keys            []byte
+	buttons         byte
+	mappingRevision uint64
 }
 
 func NewBrowser(controller *Controller, mouse *Mouse) *Browser {
@@ -38,6 +40,10 @@ func (browser *Browser) reconcile() {
 		browser.clear()
 	}
 	browser.prepared, browser.generation = true, browser.controller.generation
+	if revision := browser.mouse.Mapping().Revision; revision != browser.mappingRevision {
+		browser.clear()
+		browser.mappingRevision = revision
+	}
 }
 
 func (browser *Browser) run(ctx context.Context, execute func(*action) error) error {
@@ -108,9 +114,13 @@ func normalizedPoint(x, y int) (Point, error) {
 func (browser *Browser) Move(ctx context.Context, x, y int) error {
 	point, err := normalizedPoint(x, y)
 	if err != nil {
-		return err
+		return browser.mappingFailure(ctx, err)
 	}
-	return browser.run(ctx, func(current *action) error { return browser.mouse.moveAbs(current, point) })
+	points, revision, err := browser.mouse.prepareMapping(ctx, point)
+	if err != nil {
+		return browser.mappingFailure(ctx, err)
+	}
+	return browser.runMapped(ctx, revision, func(current *action) error { return browser.mouse.moveAbs(current, points[0]) })
 }
 
 // Buttons applies the complete left/right/middle mask at normalized coordinates.
@@ -118,13 +128,17 @@ func (browser *Browser) Move(ctx context.Context, x, y int) error {
 func (browser *Browser) Buttons(ctx context.Context, x, y, buttons int) error {
 	point, err := normalizedPoint(x, y)
 	if err != nil {
-		return err
+		return browser.mappingFailure(ctx, err)
 	}
 	if buttons < 0 || buttons > 7 {
-		return fmt.Errorf("%w: mask %d", ErrButton, buttons)
+		return browser.mappingFailure(ctx, fmt.Errorf("%w: mask %d", ErrButton, buttons))
 	}
-	return browser.run(ctx, func(current *action) error {
-		if err := browser.mouse.setButtons(current, byte(buttons), buttonPlan{relative: browser.mouse.relative, positioned: true, position: point}); err != nil {
+	points, revision, err := browser.mouse.prepareMapping(ctx, point)
+	if err != nil {
+		return browser.mappingFailure(ctx, err)
+	}
+	return browser.runMapped(ctx, revision, func(current *action) error {
+		if err := browser.mouse.setButtons(current, byte(buttons), buttonPlan{relative: browser.mouse.relative, positioned: true, position: points[0]}); err != nil {
 			return err
 		}
 		browser.buttons = byte(buttons)
@@ -132,9 +146,35 @@ func (browser *Browser) Buttons(ctx context.Context, x, y, buttons int) error {
 	})
 }
 
+func (browser *Browser) mappingFailure(ctx context.Context, err error) error {
+	if browser.buttons != 0 {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Second)
+		defer cancel()
+		return errors.Join(err, browser.Release(cleanup))
+	}
+	return err
+}
+
+func (browser *Browser) runMapped(ctx context.Context, revision uint64, execute func(*action) error) error {
+	var admitted *action
+	err := browser.mouse.runMappedMask(ctx, revision, releaseBoth, func(current *action) error {
+		admitted = current
+		browser.reconcile()
+		return execute(current)
+	})
+	if err != nil {
+		if admitted != nil && admitted.dirty {
+			browser.clear()
+			return err
+		}
+		return browser.mappingFailure(ctx, err)
+	}
+	return nil
+}
+
 func (browser *Browser) Scroll(ctx context.Context, amount int) error {
 	return browser.run(ctx, func(current *action) error {
-		return current.write(ch9329.MouseRelative(browser.controller.buttons, 0, 0, amount))
+		return current.write(ch9329.MouseRelative(browser.controller.relativeButtons, 0, 0, amount))
 	})
 }
 

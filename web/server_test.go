@@ -41,7 +41,13 @@ func dialViewer(t *testing.T, fixture fixture) *websocket.Conn {
 	}
 	t.Cleanup(func() { _ = conn.CloseNow() })
 	kind, data := readViewer(t, conn)
-	if kind != websocket.MessageText || string(data) != `{"type":"config","audio":{"status":"unavailable","generation":"0"}}` {
+	var config struct {
+		Type    string
+		Audio   audioConfig
+		Mapping mappingConfig
+	}
+	if kind != websocket.MessageText || json.Unmarshal(data, &config) != nil || config.Type != "config" ||
+		config.Audio.Status != "unavailable" || config.Audio.Generation != "0" || config.Mapping.Revision == "" || !config.Mapping.Ready {
 		t.Fatalf("first message was not precise audio config: %d,%s", kind, data)
 	}
 	return conn
@@ -137,8 +143,8 @@ func TestWebSocketOrderedInputAndDisconnectCleanup(t *testing.T) {
 	}{
 		{`{"type":"keydown","code":"KeyA"}`, [][]byte{ch9329.Keyboard(0, 4)}},
 		{`{"type":"mousedown","x":2048,"y":1024,"buttons":1}`, [][]byte{ch9329.MouseAbsolute(0, 2048, 1024, 0), ch9329.MouseRelative(1, 0, 0, 0)}},
-		// A mismatched move mask cannot silently change relative held state.
-		{`{"type":"mousemove","x":4095,"y":0,"buttons":0}`, [][]byte{ch9329.MouseAbsolute(1, 4095, 0, 0)}},
+		// Movement leaves the held button on its relative report, regardless of the event mask.
+		{`{"type":"mousemove","x":4095,"y":0,"buttons":0}`, [][]byte{ch9329.MouseAbsolute(0, 4095, 0, 0)}},
 		{`{"type":"scroll","deltaY":-1000.2}`, [][]byte{ch9329.MouseRelative(1, 0, 0, -127)}},
 	} {
 		sendViewer(t, conn, input.message)
@@ -285,7 +291,7 @@ func TestSlowWriterSkipsFramesAndDoesNotBlockOtherClients(t *testing.T) {
 		}
 		time.Sleep(time.Millisecond)
 		second := receive(t, fast.output)
-		if binary.LittleEndian.Uint64(second.data[16:]) != 2 || second.data[mediaHeaderSize+6] != 3 {
+		if binary.LittleEndian.Uint64(second.data[16:]) != 3 || second.data[mediaHeaderSize+6] != 3 {
 			t.Fatal("fast writer did not take newest queued source frame")
 		}
 		time.Sleep(time.Second)
@@ -297,7 +303,7 @@ func TestSlowWriterSkipsFramesAndDoesNotBlockOtherClients(t *testing.T) {
 		}
 		fixture.source.frames <- sourceFrame(data, 0)
 		third := receive(t, fast.output)
-		if binary.LittleEndian.Uint64(third.data[16:]) != 3 {
+		if binary.LittleEndian.Uint64(third.data[16:]) != 4 {
 			t.Fatal("raw source sequence reset corrupted delivery ordering")
 		}
 		fixture.server.Close()
@@ -414,13 +420,20 @@ func TestVideoUnavailableEventKeepsSubscriptionRepairable(t *testing.T) {
 		defer cancel()
 		conn := newFakeSocket()
 		done := make(chan error, 1)
-		go func() { done <- server.write(ctx, conn, subscription) }()
+		go func() { done <- server.write(ctx, conn, subscription, nil) }()
 		receive(t, conn.output)
 		synctest.Wait() // No repeated unavailable-event spin; writer awaits repair.
 		if err := captures.SetDevice(t.Context(), "/dev/repaired"); err != nil {
 			t.Fatal(err)
 		}
 		fixture.source.frames <- sourceFrame(sourceJPEG(t), 1)
+		message := receive(t, conn.output)
+		var config struct {
+			Mapping mappingConfig `json:"mapping"`
+		}
+		if message.kind != websocket.MessageText || json.Unmarshal(message.data, &config) != nil || config.Mapping.FrameGeneration != "2" {
+			t.Fatalf("repaired capture did not publish its new frame barrier: %s", message.data)
+		}
 		if message := receive(t, conn.output); message.kind != websocket.MessageBinary {
 			t.Fatal("repaired capture did not resume subscription")
 		}

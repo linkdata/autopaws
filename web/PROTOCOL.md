@@ -37,7 +37,8 @@ does not add TLS or a supported reverse-proxy deployment.
 
 ## Configuration and media
 
-The first server application message is JSON text:
+The first server application message is JSON text with `type: "config"`, `audio`
+and `mapping` objects. The audio portion has this shape:
 
 ```json
 {"type":"config","audio":{"status":"unavailable","generation":"0"}}
@@ -68,7 +69,7 @@ All multibyte integers are **unsigned little-endian**:
 |2|uint16|Header length: `64` |
 |4|uint32|Common timestamp flags, below |
 |8|uint64|Video settings/recovery generation, or audio configuration generation |
-|16|uint64|Video connection delivery sequence, or audio source-block sequence |
+|16|uint64|Shared capture delivery sequence for video, or audio source-block sequence |
 |24|uint64|Capture timestamp in nanoseconds on the server's host monotonic clock, or zero if unavailable |
 |32|uint32|Video source JPEG width; zero for audio |
 |36|uint32|Video source JPEG height; zero for audio |
@@ -113,8 +114,9 @@ a full-frame crop represents no border removal. Source
 dimensions describe the JPEG, not the browser canvas or the configured target's
 pixel dimensions.
 
-Video delivery sequences start at 1 and increase for each attempted video
-message on a connection, including across capture restarts and generation changes.
+Video sequences are the capture manager's delivery sequence, shared by web and
+API snapshots. They increase across capture restarts and generation changes;
+each connection can observe gaps from pacing or frames delivered before it joined.
 Generation changes discard queued frames; an in-progress send may still arrive.
 Clients must discard pending image decodes/rendered metadata when a newer
 generation arrives and reject late decode results by generation and sequence.
@@ -141,6 +143,26 @@ preserving the user's audio choice.
 
 ## Browser input
 
+Each opened or reloaded viewer page starts in View only mode. Turn off View only
+and focus the image to send input; reconnects preserve the page's current choice.
+
+`config.mapping` publishes the same mapping used by the API and MCP: `mode`,
+`ready`, optional `geometry` and `transform`, capture context and a status
+`message`. Web uint64 revisions and capture sequences are decimal strings.
+Mode `legacy` provides identity behavior. Mode `extended` blocks positioned
+input until complete geometry is applied. Geometry is activated directly after
+bounds validation; the KVM does not observe the target cursor.
+
+The ordered mapping config also contains `frame_generation` and `after_sequence`.
+Discard queued pointer movement and unfinished image decodes on a revision or
+barrier change. Display only video in that generation with a sequence greater
+than the barrier. Every positioned input from the page carries `revision`,
+`frame_generation` and `frame_sequence` from its displayed image. Stale mappings,
+unconfigured input and mapped coordinates outside the HID range return a nonfatal
+`config.mapping.error` status and release held input; they do not reconnect.
+Existing clients may omit these fields only in legacy mode. `release_all` always
+remains available regardless of mapping readiness.
+
 Send one JSON object per text WebSocket message, up to 32768 bytes. Required
 fields reject null or wrong types. Coordinates and masks must be integer JSON values. Unknown object
 fields, unsupported event types, malformed JSON and binary input end the
@@ -155,14 +177,26 @@ semantics apply. Fields belonging to another recognized event type are ignored.
 |`scroll`|`deltaY` number|Signed wheel amount, clamped to −127…127 then truncated toward zero. Held buttons are preserved. |
 |`release_all`|none|Release this connection's held keyboard and mouse classes; a passive connection sends nothing. |
 |`shortcut`|`keys` nonempty array of physical-code strings|One validated chord: press, 10 ms, restore prior held keyboard state. |
+|`mapping_set`|`mapping` object|Set `mode` or apply complete `geometry` in the shared KVM mapping. |
+|`mapping_reset`|none|Clear geometry and readiness; extended mode stays gated. |
 
-Coordinates range from 0 through 4095 on both axes and go straight to HID reports;
-they are not converted through target-screen pixels. The page maps visible crop
+Geometry uses signed `offset: {x,y}`, native captured-display `width,height`,
+`span: {x,y,width,height}` for the desktop extent reached by HID 0…4095. Use the
+same desktop coordinate system and units for every value; they need not match
+capture resolution. Applying or resetting geometry changes the
+mapping and releases held input. Capture context changes
+invalidate an extended mapping until geometry is reapplied.
+
+Coordinates range from 0 through 4095 on both axes and pass through the shared
+mapping before HID encoding; they are not converted through target-screen pixels. The page maps visible crop
 pixel endpoints exactly to 0 and 4095; a one-pixel axis maps to 0. Buttons use 1=left,
 2=right, 4=middle, and any mask 0…7. In relative button mode, a button event sends
-a button-free absolute position plus the relative button mask. Movement carries
-actual held bits in its absolute report in both modes; `mousemove.buttons`
-does not change held state.
+an absolute position plus the relative button mask. Each held button stays on
+the report that pressed it: absolute motion carries only absolute-owned bits,
+and relative reports carry only relative-owned bits. `mousemove.buttons` does
+not change held state. Origin positioning may first send a nearby `(0,1)` report
+without new button presses, then the requested `(0,0)` report, for targets that
+ignore all-zero absolute motion. Disconnect cleanup sends releases only.
 
 Non-modifier keys stay in press order, at most six. A seventh down is ignored until
 a held key is released and another down can be accepted. Modifier codes use their

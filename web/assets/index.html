@@ -18,7 +18,7 @@
     <span class="divider" aria-hidden="true"></span>
     <button id="ctrl-alt-del" title="Send Ctrl+Alt+Delete to the target" disabled>Ctrl+Alt+Del</button>
     <button id="alt-tab" title="Send Alt+Tab to the target" disabled>Alt+Tab</button>
-    <button id="view-only" aria-pressed="false" title="Stop sending keyboard and mouse input">View only</button>
+    <button id="view-only" aria-pressed="true" title="Enable keyboard and mouse input">View only</button>
     <button id="audio" aria-pressed="false" title="Enable audio" hidden>Audio</button>
     <button id="cursor" aria-pressed="true" title="Show or hide the local cursor">Cursor</button>
     <button id="scaling" aria-pressed="false" title="Switch between fit and original pixel size">Fit</button>
@@ -31,6 +31,26 @@
   <details id="capabilities" class="capabilities" hidden>
     <summary>Browser capabilities</summary>
     <ul id="capability-list"></ul>
+  </details>
+  <details id="mapping" class="mapping">
+    <summary>Pointer setup</summary>
+    <p id="mapping-status" role="status">Waiting for pointer settings…</p>
+    <div class="mapping-row">
+      <label>Mode <select id="mapping-mode"><option value="legacy">Single or mirrored display</option><option value="extended">Extended display mapping</option></select></label>
+      <button id="mapping-reset" type="button">Reset</button>
+    </div>
+    <p id="mapping-instructions">Choose extended display mapping to set the captured display's position and size within the desktop area reached by absolute input. Use the same desktop coordinates for every value; display size can differ from capture resolution.</p>
+    <div class="mapping-fields">
+      <label>Captured display offset X <input id="mapping-offset-x" type="number" step="1"></label>
+      <label>Captured display offset Y <input id="mapping-offset-y" type="number" step="1"></label>
+      <label>Native display width <input id="mapping-width" type="number" min="2" step="1"></label>
+      <label>Native display height <input id="mapping-height" type="number" min="2" step="1"></label>
+      <label>Input span X <input id="mapping-span-x" type="number" step="1"></label>
+      <label>Input span Y <input id="mapping-span-y" type="number" step="1"></label>
+      <label>Input span width <input id="mapping-span-width" type="number" min="2" step="1"></label>
+      <label>Input span height <input id="mapping-span-height" type="number" min="2" step="1"></label>
+    </div>
+    <button id="mapping-apply" type="button">Apply</button>
   </details>
   <script type="module" src="/viewer.mjs"></script>
 </body>
