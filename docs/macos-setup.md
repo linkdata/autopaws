@@ -1,98 +1,79 @@
 # macOS KVM host setup
 
-The daemon and MCP client build for Intel and Apple silicon Macs with
-`CGO_ENABLED=0`. Serial I/O uses macOS termios; video and audio use the external
-[FFmpeg AVFoundation input](https://ffmpeg.org/ffmpeg-devices.html#avfoundation).
-Install FFmpeg separately and ensure it is on the daemon's `PATH`:
+## Install and start
+
+Install the [release binaries](../README.md#install), or follow the
+[source build instructions](../README.md#build-and-develop). Builds are available
+for Intel and Apple silicon Macs. Install FFmpeg separately and put it on the daemon's
+`PATH`:
 
 ```sh
 brew install ffmpeg
-CGO_ENABLED=0 go build -trimpath -o dist/ ./cmd/...
-./dist/autopaws-kvm --version
-./dist/autopaws-kvm --list-devices
 ```
 
-Discovery uses the system `ioreg` command for CH340/CH341 USB serial devices and
-FFmpeg for cameras/capture cards and microphones/audio inputs. Host display
-capture entries are excluded. Listing does not start capture streams. It can
-still be subject to macOS privacy restrictions. Missing FFmpeg or failed discovery
-returns an error. Daemon startup requires FFmpeg on `PATH`, including API-only
-or serial-only use. `--help` and `--version` work without FFmpeg;
-`--list-devices` needs it for AVFoundation discovery.
-
-Connect the capture card's USB and the CH340/CH341 side of the HID board to the
-Mac. Connect target HDMI to the card, and target USB to the CH9329 HID side.
-Use the `/dev/cu.*` serial path shown in the inventory, or leave it empty when
-exactly one supported adapter is attached. Discovery filters USB VID/PID
-`1a86:7523` and `1a86:7522`, rather than guessing from serial filenames.
-
-Single/mirrored displays use the default identity mapping. If the target's
-absolute HID range spans a larger desktop, configure the captured display's
-signed offset, native size and actual input span through web **Pointer setup →
-Apply** or API/MCP `set_mouse_mapping`; see
-[display mapping](../README.md#display-mapping). This concerns the target,
-independently of the Mac host. Geometry is kept only in the running daemon and
-must be reapplied after capture changes. Optional `-mouse-mode extended` blocks
-positioned input until configured. Geometry cannot redirect input to a display
-the target's HID range does not reach.
-
-Copy the exact `avfoundation:NAME` selectors printed by `--list-devices`, quoting
-names containing spaces. For example, substitute your inventory's values here:
+[Connect the hardware](../README.md#hardware), then start the daemon with the viewer:
 
 ```sh
-./dist/autopaws-kvm \
-  -serial-device /dev/cu.REPLACE_WITH_YOUR_ADAPTER \
-  -capture-device 'avfoundation:REPLACE_WITH_YOUR_VIDEO_NAME' \
-  -audio-device 'avfoundation:REPLACE_WITH_YOUR_AUDIO_NAME' \
-  -capture-width 1920 -capture-height 1080 \
-  -screen-width 1920 -screen-height 1080 \
-  -target-layout us104 -web 127.0.0.1:9330
+autopaws-kvm -web
 ```
 
-Open <http://127.0.0.1:9330> and turn off View only to control the target.
-The same API, MCP tools, browser controls, layouts,
-autocrop and shared-token settings work on both hosts. The target's keyboard
-layout determines `-target-layout`, independently of the host OS.
+Open [the viewer](http://127.0.0.1:9330) and turn off **View only** to control the
+target. Serial and video devices are selected automatically; audio requires an
+explicit selection below. Configure the controlled computer using
+[target setup](target-setup.md), independently of the Mac host.
 
 macOS may request Camera access for video and Microphone access for audio.
-Grant access to the application launching the daemon (for example Terminal),
-then restart the daemon if needed. Check System Settings → Privacy & Security
-if access was denied. External HDMI capture does not use host screen recording.
-A launch service or GUI client can have a different `PATH` and privacy identity
-from your terminal; verify FFmpeg availability in that environment.
+Grant access to the application launching the daemon, then restart if needed.
+Check System Settings → Privacy & Security if access was denied. External HDMI
+capture does not use host screen recording. GUI launchers and services can have
+a different `PATH` and privacy identity from your terminal.
 
-Video is selected by exact discovered name. Duplicate names are rejected rather
-than opening an arbitrary card. Names containing a colon, numeric/reserved
-prefixes, or ambiguous name prefixes are also rejected because FFmpeg treats
-those as selectors rather than literal device names.
-For duplicate names, disconnect the duplicate or rename it through
-its vendor's supported tooling. AVFoundation indices can change with device
-attachment, so repeat discovery after reconnecting hardware. The backend
-requests 30 fps at the configured size and encodes MJPEG for the shared pipeline;
-unsupported modes report unavailable. Discovery does not enumerate camera pixel
-formats, so the inventory's format list is empty. The default video selection
-uses the same non-webcam name preference as Linux and falls back to the first
-camera; select the capture card explicitly when several inputs are present.
+## Device selection and troubleshooting
 
-Audio requires an explicit `-audio-device 'avfoundation:NAME'`. Empty audio
-selection reports unavailable on macOS because this backend cannot reliably
-pair video and audio by USB ancestry. Use `-audio-device off` to disable it.
-The output is 48 kHz stereo S16_LE, converted by FFmpeg, with a maximum 100 ms
-per-subscriber application queue and expiry. Video and audio use separate
-processes and have no hardware synchronization guarantee.
+If automatic selection fails or picks the wrong video device, or to choose an
+audio input, inspect the inventory:
 
-Media retries failed opens or reads after one second while demand remains.
-FFmpeg restarts after five seconds without output. Capture stops after ten
-seconds without viewers or pending snapshots. Reselecting the video device
-also reopens media.
+```sh
+autopaws-kvm --list-devices
+```
 
-Video and audio timestamps are **estimated FFmpeg pipe receipt times** on the
-server monotonic clock. The browser protocol marks them estimated. A snapshot
-waits for a frame whose pipe read began after the request, but FFmpeg/OS buffering
-can contain older content. This does not provide Linux V4L2's device capture
-freshness guarantee or establish that preceding input has reached the target.
+Discovery uses `ioreg` for CH340/CH341 devices and FFmpeg's
+[AVFoundation input](https://ffmpeg.org/ffmpeg-devices.html#avfoundation) for
+video/audio. Host display-capture entries are excluded. Listing starts no
+streams but can be subject to privacy restrictions. Daemon startup and listing
+require FFmpeg, including API-only use; `--help` and `--version` do not.
 
-An Apple silicon Mac with an Ubuntu target passed keyboard, pointer, video,
-HDMI channel capture, USB reconnect and shutdown checks. Browser audio playback
-and latency remain unmeasured. See [hardware validation](hardware-validation.md)
-and the [macOS test record](validation/macos-host-2026-11-20.json).
+With multiple serial adapters, use `-serial-device /dev/cu.YOUR_ADAPTER` from the
+inventory. Discovery recognizes USB VID/PID `1a86:7523` and `1a86:7522`.
+Copy exact `avfoundation:NAME` selectors, quoting spaces. For example, to override
+video selection and enable capture audio:
+
+```sh
+autopaws-kvm -web \
+  -capture-device 'avfoundation:REPLACE_WITH_YOUR_VIDEO_NAME' \
+  -audio-device 'avfoundation:REPLACE_WITH_YOUR_AUDIO_NAME'
+```
+
+Video selection prefers non-webcam names, then the first camera. Duplicate names,
+names with colons, numeric/reserved prefixes and ambiguous prefixes are rejected.
+Disconnect duplicate devices or rename them through supported vendor tooling.
+Repeat discovery after reconnecting hardware; AVFoundation indices can change.
+
+The backend requests 30 fps at the configured size and encodes MJPEG. Unsupported
+modes report unavailable. The inventory does not enumerate pixel formats.
+For dimensions and other overrides, see [configuration](configuration.md).
+
+## Audio and recovery
+
+Use `-audio-device 'avfoundation:NAME'` for audio or `-audio-device off` to disable
+it. Empty selection reports audio unavailable because automatic video/audio
+pairing is unsupported. FFmpeg converts audio to 48 kHz stereo S16_LE with a
+100 ms per-subscriber application queue and expiry. Video and audio use separate
+processes without a hardware synchronization guarantee.
+
+Media retries failed opens/reads after one second while demand remains. FFmpeg
+restarts after five seconds without output. Capture stops after ten seconds
+without video demand. Reselecting video also reopens media. See
+[mapping after capture changes](target-setup.md#display-mapping).
+
+See [capture timing limits](browser.md) and [hardware validation](hardware-validation.md).

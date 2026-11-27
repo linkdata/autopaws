@@ -51,8 +51,8 @@ Restart to load a changed secret. Nonempty `token` and `token-file` together
 are rejected. The portable Go client uses `apiclient.NewWithToken(address, secret)`;
 `New(address)` omits it. MCP reads the same secret from the shared YAML file
 or its own `-token-file PATH` flag.
-Use loopback addresses and the SSH tunnel in the README: the token does not encrypt
-plain TCP traffic.
+Use [loopback addresses and SSH forwarding](../docs/security.md): the token does
+not encrypt plain TCP traffic.
 
 ## Connections and cancellation
 
@@ -144,7 +144,7 @@ driver preserves the native hold. Some macOS combined relative/absolute mouse
 interfaces ignore relative buttons or release an absolute hold when coordinates
 change. Positioned `button_mode: "absolute"` clicks are a verified option; a
 successful response or one-hop text selection does not establish sustained
-drag-and-drop support. See [target mouse operation](../README.md#target-mouse-operation)
+drag-and-drop support. See [mouse compatibility](../docs/target-setup.md#mouse-compatibility)
 for validation and the optional USB work mode 2 compatibility setting tested on
 one CH9329 firmware. It is distinct from serial protocol mode 0. Relative counts
 must not be treated as screenshot pixels.
@@ -315,7 +315,7 @@ fail. Extended mapping requires reapplication; legacy mapping retains identity
 with a new revision. If input release or mapping invalidation fails, the setter
 stops before adapter configuration. Capture again and verify pointer alignment
 and actual click/hold/drag behavior after every attempt. Geometry is not
-corrected automatically. See [target mouse operation](../README.md#target-mouse-operation)
+corrected automatically. See [mouse compatibility](../docs/target-setup.md#mouse-compatibility)
 for the measured macOS compatibility limits.
 
 ## Device information and capture

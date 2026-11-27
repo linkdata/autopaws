@@ -1,8 +1,7 @@
 # Example for one Linux KVM host and one mirrored/single-display target.
-# On Windows use COMn for serial-device and copy dshow: selectors from
-# --list-devices for capture-device and audio-device. See docs/windows-setup.md.
-# Replace the serial path and target dimensions with your actual configuration.
-# Defaults shown explicitly: loopback API and relative mouse button reports.
+# Devices are selected automatically; override paths or target settings as needed.
+# For device selectors and audio, see docs/windows-setup.md or docs/macos-setup.md.
+# Loopback API and web viewer, with relative mouse button reports.
 # Both binaries accept this file with -config ./autopaws.yaml.
 # To serve only the web viewer, set api: ""; MCP requires an enabled API.
 api: 127.0.0.1:9329
@@ -13,13 +12,15 @@ token-file: ""
 # Or store it inline, e.g. token: "REPLACE_WITH_A_RANDOM_SECRET".
 # Leaving both empty disables authentication. Set only one to a nonempty value.
 token: ""
-serial-device: /dev/serial/by-id/REPLACE_WITH_YOUR_CH340_OR_CH341
+# Empty auto-detects one CH340/CH341; several adapters need an explicit path.
+serial-device: ""
 serial-baud: 9600
 screen-width: 1920
 screen-height: 1080
 target-layout: us104
 layouts-dir: ""
 mouse-button-mode: relative
+mouse-mode: legacy
 # Opt in for targets that cache unchanged absolute coordinates.
 mouse-absolute-refresh: false
 # Empty selects the discovery default; use a stable /dev/v4l/by-id or by-path

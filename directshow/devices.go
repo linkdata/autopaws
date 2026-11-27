@@ -120,9 +120,16 @@ func parseDevices(output string) ([]Device, bool) {
 	return devices, recognized && !awaitingAlternative && scanner.Err() == nil
 }
 
-func selectDevice(devices []Device, path string, audio bool) (Device, error) {
+func validateSelector(path string) error {
 	if !strings.HasPrefix(path, "dshow:") || len(path) == len("dshow:") {
-		return Device{}, fmt.Errorf("%w: expected dshow: selector", ErrDevice)
+		return fmt.Errorf("%w: expected dshow: selector", ErrDevice)
+	}
+	return nil
+}
+
+func selectDevice(devices []Device, path string, audio bool) (Device, error) {
+	if err := validateSelector(path); err != nil {
+		return Device{}, err
 	}
 	var selected Device
 	count := 0

@@ -12,6 +12,9 @@ type (
 )
 
 func OpenAudio(ctx context.Context, path string) (*Audio, error) {
+	if err := validateSelector(path); err != nil {
+		return nil, err
+	}
 	devices, err := Discover(ctx)
 	if err != nil {
 		return nil, err

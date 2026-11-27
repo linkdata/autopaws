@@ -14,6 +14,9 @@ type (
 // OpenAudio opens one explicitly selected avfoundation:<exact name> input.
 // ctx controls startup; the returned source lives until Close.
 func OpenAudio(ctx context.Context, path string) (*Audio, error) {
+	if err := validateSelector(path); err != nil {
+		return nil, err
+	}
 	devices, err := Discover(ctx)
 	if err != nil {
 		return nil, err
