@@ -82,6 +82,7 @@ for macOS targets.
 
 Serial and video devices are selected automatically. Override paths, dimensions or
 keyboard layout only when needed; see [configuration](docs/configuration.md).
+Audio selection is automatic on Linux; see [host setup](#install) for macOS/Windows audio.
 The API listens on `127.0.0.1:9329` and the viewer on `127.0.0.1:9330`.
 For remote access, use [authentication and SSH forwarding](docs/security.md).
 If Linux audio is busy, follow the [WirePlumber setup](alsa/README.md#exclusive-access-with-wireplumber-05).

@@ -74,7 +74,6 @@ Automatic video/audio pairing is unsupported. FFmpeg converts audio to 48 kHz
 stereo S16_LE; the native device rate may differ. Video and audio use separate
 processes without a hardware synchronization guarantee.
 
-Capture starts on demand and stops after ten seconds without video demand.
 Failed opens/reads retry while demand remains; stalled FFmpeg processes stop and
 join before recovery. Explicit selectors stay fixed. If re-enumeration changes
 a selector, list devices and reselect it. See [mapping after capture changes](target-setup.md#display-mapping).
@@ -83,7 +82,5 @@ Press Ctrl+C to stop and attempt release of held input. Cancellation and
 recovery do not replay interrupted input. Serial reconnect releases input before
 fresh actions. A forcefully terminated process cannot perform normal cleanup.
 
-Timestamps estimate FFmpeg pipe receipt on the host monotonic clock and exclude
-upstream buffering. A fresh frame does not prove preceding input reached the
-target. See [hardware validation](hardware-validation.md) for tested behavior;
+See [capture timing limits](browser.md) and [hardware validation](hardware-validation.md).
 Windows ARM64 is cross-built but has not been hardware-tested.

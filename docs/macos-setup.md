@@ -76,7 +76,4 @@ restarts after five seconds without output. Capture stops after ten seconds
 without video demand. Reselecting video also reopens media. See
 [mapping after capture changes](target-setup.md#display-mapping).
 
-Timestamps estimate FFmpeg pipe receipt on the server monotonic clock. Snapshots
-wait for a frame whose pipe read began after the request, but FFmpeg/OS buffering
-can contain older content. A fresh frame does not prove preceding input reached
-the target. See [hardware validation](hardware-validation.md) for coverage.
+See [capture timing limits](browser.md) and [hardware validation](hardware-validation.md).

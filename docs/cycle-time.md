@@ -107,10 +107,11 @@ provider options; this runs only the two positive scenarios.
 
 For physical scripts, pass `--api 127.0.0.1:9329` to use a default daemon and
 `--mcp /path/to/autopaws-mcp` for MCP checks. Their defaults use port 19329 and
-a `/private/tmp` executable path. Cold capture requires no other video demand.
+a `/private/tmp` executable path. Select `--backend mcp` for MCP action checks.
+The snapshot script's `--cold` option requires no other video demand.
 
 `kvm_bench.py` measures physical snapshots without input. `action_bench.py`
-requires `--allow-read-only-input` and an owner-prepared target where its
+requires `--allow-read-only-input`, `--output PATH` and an owner-prepared target where its
 shortcuts and pointer movements are safe; it does not verify the target OS.
 Keep capture logging disabled and use one operator. Model-only scripts generate
 their own images.

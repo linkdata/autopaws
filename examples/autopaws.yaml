@@ -1,7 +1,7 @@
 # Example for one Linux KVM host and one mirrored/single-display target.
 # Devices are selected automatically; override paths or target settings as needed.
 # For Windows device selectors and audio, see docs/windows-setup.md.
-# Defaults shown explicitly: loopback API and relative mouse button reports.
+# Loopback API and web viewer, with relative mouse button reports.
 # Both binaries accept this file with -config ./autopaws.yaml.
 # To serve only the web viewer, set api: ""; MCP requires an enabled API.
 api: 127.0.0.1:9329
@@ -12,6 +12,7 @@ token-file: ""
 # Or store it inline, e.g. token: "REPLACE_WITH_A_RANDOM_SECRET".
 # Leaving both empty disables authentication. Set only one to a nonempty value.
 token: ""
+# Empty auto-detects one CH340/CH341; several adapters need an explicit path.
 serial-device: ""
 serial-baud: 9600
 screen-width: 1920

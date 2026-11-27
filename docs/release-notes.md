@@ -1,5 +1,13 @@
 # Release notes
 
+## v0.7.3
+
+- Reject malformed Windows/macOS video and audio selectors before device discovery,
+  returning device errors without waiting for FFmpeg.
+- Simplify the README and host quick starts around default settings. Split
+  configuration, target setup, browser, MCP, remote access and development guides.
+- Use automatic serial selection in the example YAML and trim historical notes.
+
 ## v0.7.2
 
 - Add opt-in `-mouse-absolute-refresh` for targets that ignore repeated absolute

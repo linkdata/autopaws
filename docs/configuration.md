@@ -22,8 +22,8 @@ autopaws-kvm -config ./autopaws.yaml -web-fps 30
 autopaws-mcp -config ./autopaws.yaml
 ```
 
-See [the example configuration](../examples/autopaws.yaml). Setting flags and YAML
-keys match, except `token` is YAML-only. `config`, `version` and `list-devices`
+See [the example configuration](../examples/autopaws.yaml). YAML settings use the
+same names as their flags; `token` is YAML-only. `config`, `version` and `list-devices`
 are command-line only. Both binaries accept the same file, sharing
 `api`, `token` and `token-file`.
 Each uses its own remaining settings; see [MCP options](mcp.md#options-and-tools)
