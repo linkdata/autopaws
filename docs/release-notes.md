@@ -2,8 +2,8 @@
 
 ## v0.7.3
 
-- Reject malformed Windows/macOS video and audio selectors before device discovery,
-  returning device errors without waiting for FFmpeg.
+- Reject video/audio selectors with a missing backend prefix or empty name before
+  FFmpeg discovery on Windows/macOS.
 - Simplify the README and host quick starts around default settings. Split
   configuration, target setup, browser, MCP, remote access and development guides.
 - Use automatic serial selection in the example YAML and trim historical notes.
@@ -27,8 +27,8 @@
 
 - Retry Linux capture after USB reconnect. Native capture on all hosts reopens
   after five seconds without a successfully processed frame. Cleanup precedes
-  the one-second retry backoff; recovery
-  advances capture generation and rematches automatic audio.
+  the one-second retry backoff; recovery advances capture generation and rematches
+  automatic audio.
 - Reapply extended geometry after recovery. Prefer stable capture-device paths
   when reconnecting USB can renumber nodes.
 - Document primary/mirrored target display setup and matching output/capture

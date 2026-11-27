@@ -70,11 +70,12 @@ Eight warm checks per cell used unseen generated modal-dialog images:
 
 Small synthetic fixtures do not establish accuracy on arbitrary applications.
 Separate Qwen tests falsely accepted the status condition on 1 of 12 frames
-and falsely rejected one numeric condition on 5 of 12 frames. Verify returned images; extract numbers and compare them
-in code when possible. Model loading, first inference and repeated-image cache
-results are excluded from warm timings. Keep the model loaded for steady-state
-latency measurements. Full-resolution Splash checks can exceed
-the default five-second observation budget.
+and falsely rejected one numeric condition on 5 of 12 frames. Verify returned
+images; extract numbers and compare them in code when possible. Model loading,
+first inference and repeated-image cache results are excluded from warm
+timings. Keep the model loaded for steady-state latency measurements.
+Full-resolution Splash checks can exceed the default five-second observation
+budget.
 
 Standalone fixtures used Lanczos resize/JPEG quality 90; production downsizing
 uses nearest-neighbor/quality 85. The complete-cycle tests preserved original
@@ -104,6 +105,17 @@ also pass `--provider-options-json '{"reasoning_effort":"none"}'`.
 For the helper/controller comparison, keep the Qwen model, add
 `--controller-model qwen3.8-27b-splash`, set timeout to `8000`, and use the same
 provider options; this runs only the two positive scenarios.
+
+On macOS, reproduce the model-check table with:
+
+```sh
+python3 experiments/cycle-time/splash_bench.py --task predicate \
+  --condition modal_visible --samples 8 --fixture-offset 20000 \
+  --out /tmp/model-checks.json
+```
+
+This defaults to Splash; use `--model qwen3-vl-2b-instruct` for Qwen and a new
+fixture offset for each run. The script uses a macOS system font.
 
 For physical scripts, pass `--api 127.0.0.1:9329` to use a default daemon and
 `--mcp /path/to/autopaws-mcp` for MCP checks. Their defaults use port 19329 and

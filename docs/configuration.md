@@ -74,7 +74,7 @@ use Ctrl+C in a Windows console. Kernel device calls can outlast application cle
 ## Troubleshooting device selection
 
 Use device discovery when automatic selection fails, chooses the wrong device,
-or you need capture formats or an explicit audio selector:
+or you need capture formats (Linux) or an explicit audio selector:
 
 ```sh
 autopaws-kvm --list-devices

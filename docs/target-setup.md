@@ -8,10 +8,10 @@ Set `target-layout` to the target's keyboard layout. Set `screen-width` and
 
 Use the highest resolution where HDMI output and the actual capture frame
 match pixel for pixel. A card accepting 4K but capturing 1080p loses detail.
-If capture resolution is wrong on a Linux host, inspect formats with
-`autopaws-kvm --list-devices`. On all hosts, check negotiated dimensions with API
-`get_device_info` and a fresh frame. Desktop
-coordinate units can differ from output pixels when display scaling is enabled.
+On Linux hosts, `autopaws-kvm --list-devices` can confirm the card offers
+MJPG. On all hosts, check negotiated dimensions with API `get_device_info` and
+a fresh frame. Desktop coordinate units can differ from output pixels when
+scaling is enabled.
 
 Start with a single or mirrored display. For an extended desktop, make the
 captured display primary/main and place it at the top-left of the arrangement,
@@ -32,8 +32,7 @@ If it stays on another display or moves by the wrong amount, correct the display
 setup or mapping. Recheck after layout, resolution or scaling changes.
 autopaws does not detect display arrangements. Relative movement across displays
 does not establish the absolute HID range. Selecting a capture device does not
-redirect HID input; geometry cannot reach
-a display outside the target's absolute HID range.
+redirect HID input; geometry cannot reach a display outside that range.
 
 ## Display mapping
 

@@ -26,8 +26,8 @@ channel capture. Records: [input/MCP](validation/source-review-2026-11-20.json),
 
 Automatic capture recovery passed in later
 [Linux-host checks](validation/macos-target-linux-recovery-2026-11-27.json).
-An existing WebSocket resumed without daemon restart or capture reselection. Older records used explicit same-path
-reselection.
+An existing WebSocket resumed without daemon restart or capture reselection.
+Older records used explicit same-path reselection.
 
 ### Browser audio timing
 
@@ -122,6 +122,6 @@ physically retested. Follow [target setup](target-setup.md#mouse-compatibility).
 ## Coverage limits
 
 Broader Windows/macOS target tests, Safari, Intel Mac hardware, 115200-baud
-hardware, BIOS/UEFI and ARM64 host hardware were not tested beyond the Apple
-silicon Mac. Full input, audio and recovery acceptance used the UGREEN card;
-USB Video checks were limited to capture and pointer probes.
+hardware and BIOS/UEFI were not tested. ARM64 hardware coverage is limited to
+the Apple silicon Mac. Full input, audio and recovery acceptance used the
+UGREEN card; USB Video checks were limited to capture and pointer probes.
