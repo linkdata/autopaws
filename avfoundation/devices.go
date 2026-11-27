@@ -91,7 +91,17 @@ func inputArguments(device Device) []string {
 	return []string{"-i", input}
 }
 
+func validateSelector(path string) error {
+	if !strings.HasPrefix(path, "avfoundation:") || len(path) == len("avfoundation:") {
+		return fmt.Errorf("%w: expected avfoundation: selector", ErrDevice)
+	}
+	return nil
+}
+
 func selectDevice(devices []Device, path string, audio bool) (Device, error) {
+	if err := validateSelector(path); err != nil {
+		return Device{}, err
+	}
 	var result Device
 	count := 0
 	for _, device := range devices {

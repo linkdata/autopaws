@@ -16,6 +16,9 @@ func OpenVideo(ctx context.Context, path string, options v4l2.Options) (*Video, 
 	if options.Width == 0 || options.Height == 0 {
 		return nil, v4l2.ErrOptions
 	}
+	if err := validateSelector(path); err != nil {
+		return nil, err
+	}
 	devices, err := Discover(ctx)
 	if err != nil {
 		return nil, err
