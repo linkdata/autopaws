@@ -1,0 +1,1273 @@
+{
+  "date": "2026-11-27",
+  "scope": "Physical macOS target display/input measurements and Linux-host USB reconnect/recovery; manual display setup only.",
+  "method": {
+    "coordinate_units": "Cocoa logical points, primary top-left origin",
+    "api_grid_dimensions": {
+      "width": 1280,
+      "height": 720
+    },
+    "capture_dimensions": {
+      "width": 1920,
+      "height": 1080
+    },
+    "ideal_formula": {
+      "x": "native_width * api_x / (1280 - 1)",
+      "y": "native_height * api_y / (720 - 1)"
+    },
+    "settled_cursor_selection": "Last changed-state sample before the next action starts; every grid sample is after its action completed.",
+    "button_observation": "Global NSEvent.pressedMouseButtons polled by a 100 ms timer and by local event callbacks; changed states only are retained. Native NSView callbacks apply to the probe window, not other applications.",
+    "short_click_limit": "A missing native callback or no sampled nonzero mask for a brief click alone does not establish absence of a short button pulse. Sustained hold/move observations and TextEdit selection were checked separately.",
+    "grid_sample_columns": [
+      "api_x",
+      "api_y",
+      "observed_x",
+      "observed_y",
+      "max_axis_error"
+    ]
+  },
+  "captured_secondary": {
+    "displays": [
+      {
+        "index": 0,
+        "id": 1,
+        "primary": true,
+        "cocoa": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900
+        },
+        "topLeft": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900
+        },
+        "visibleTopLeft": {
+          "x": 0,
+          "y": 30,
+          "width": 1440,
+          "height": 792
+        },
+        "scale": 2
+      },
+      {
+        "index": 1,
+        "id": 2,
+        "primary": false,
+        "cocoa": {
+          "x": 1440,
+          "y": -180,
+          "width": 1920,
+          "height": 1080
+        },
+        "topLeft": {
+          "x": 1440,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "visibleTopLeft": {
+          "x": 1440,
+          "y": 30,
+          "width": 1920,
+          "height": 1050
+        },
+        "scale": 1
+      }
+    ],
+    "full_desktop_span": {
+      "x": 0,
+      "y": 0,
+      "width": 3360,
+      "height": 1080
+    },
+    "observed_absolute_input_bounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900
+    },
+    "conclusion": "The 25 normalized absolute probes stayed on the primary laptop display; the captured display at x=1440 was outside that observed absolute range.",
+    "grid": {
+      "points": 25,
+      "max_error_by_axis": {
+        "x": 0.18337385164181796,
+        "y": 0.0789942628650806
+      },
+      "max_axis_error": 0.18337385164181796,
+      "observed_range": {
+        "x": [
+          0,
+          1439.98046875
+        ],
+        "y": [
+          0,
+          899.98046875
+        ]
+      },
+      "samples": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0.0
+        ],
+        [
+          320,
+          0,
+          360.4375,
+          0,
+          0.156030102
+        ],
+        [
+          640,
+          0,
+          720.5234375,
+          0,
+          0.039502297
+        ],
+        [
+          959,
+          0,
+          1079.53515625,
+          0,
+          0.183373852
+        ],
+        [
+          1279,
+          0,
+          1439.98046875,
+          0,
+          0.01953125
+        ],
+        [
+          0,
+          180,
+          0,
+          225.2734375,
+          0.039497131
+        ],
+        [
+          320,
+          180,
+          360.4375,
+          225.2734375,
+          0.156030102
+        ],
+        [
+          640,
+          180,
+          720.5234375,
+          225.2734375,
+          0.039502297
+        ],
+        [
+          959,
+          180,
+          1079.53515625,
+          225.2734375,
+          0.183373852
+        ],
+        [
+          1279,
+          180,
+          1439.98046875,
+          225.2734375,
+          0.039497131
+        ],
+        [
+          0,
+          360,
+          0,
+          450.546875,
+          0.078994263
+        ],
+        [
+          320,
+          360,
+          360.4375,
+          450.546875,
+          0.156030102
+        ],
+        [
+          640,
+          360,
+          720.5234375,
+          450.546875,
+          0.078994263
+        ],
+        [
+          959,
+          360,
+          1079.53515625,
+          450.546875,
+          0.183373852
+        ],
+        [
+          1279,
+          360,
+          1439.98046875,
+          450.546875,
+          0.078994263
+        ],
+        [
+          0,
+          539,
+          0,
+          674.7109375,
+          0.023872131
+        ],
+        [
+          320,
+          539,
+          360.4375,
+          674.7109375,
+          0.156030102
+        ],
+        [
+          640,
+          539,
+          720.5234375,
+          674.7109375,
+          0.039502297
+        ],
+        [
+          959,
+          539,
+          1079.53515625,
+          674.7109375,
+          0.183373852
+        ],
+        [
+          1279,
+          539,
+          1439.98046875,
+          674.7109375,
+          0.023872131
+        ],
+        [
+          0,
+          719,
+          0,
+          899.98046875,
+          0.01953125
+        ],
+        [
+          320,
+          719,
+          360.4375,
+          899.98046875,
+          0.156030102
+        ],
+        [
+          640,
+          719,
+          720.5234375,
+          899.98046875,
+          0.039502297
+        ],
+        [
+          959,
+          719,
+          1079.53515625,
+          899.98046875,
+          0.183373852
+        ],
+        [
+          1279,
+          719,
+          1439.98046875,
+          899.98046875,
+          0.01953125
+        ]
+      ]
+    }
+  },
+  "captured_primary_extended": {
+    "displays": [
+      {
+        "index": 0,
+        "id": 2,
+        "primary": true,
+        "cocoa": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "topLeft": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "visibleTopLeft": {
+          "x": 0,
+          "y": 30,
+          "width": 1920,
+          "height": 972
+        },
+        "scale": 1
+      },
+      {
+        "index": 1,
+        "id": 1,
+        "primary": false,
+        "cocoa": {
+          "x": -1440,
+          "y": 180,
+          "width": 1440,
+          "height": 900
+        },
+        "topLeft": {
+          "x": -1440,
+          "y": 0,
+          "width": 1440,
+          "height": 900
+        },
+        "visibleTopLeft": {
+          "x": -1440,
+          "y": 30,
+          "width": 1440,
+          "height": 870
+        },
+        "scale": 2
+      }
+    ],
+    "full_desktop_span": {
+      "x": -1440,
+      "y": 0,
+      "width": 3360,
+      "height": 1080
+    },
+    "observed_absolute_input_bounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "grid": {
+      "points": 25,
+      "max_error_by_axis": {
+        "x": 0.2418943021891664,
+        "y": 0.09479311543816493
+      },
+      "max_axis_error": 0.2418943021891664,
+      "observed_range": {
+        "x": [
+          0,
+          1919.98046875
+        ],
+        "y": [
+          0,
+          1079.98046875
+        ]
+      }
+    },
+    "grid_position_pass_within_one_logical_point": true,
+    "repeat_after_relative": {
+      "before": {
+        "x": 960.69921875,
+        "y": 540.65625
+      },
+      "after_relative": {
+        "x": 983.53515625,
+        "y": 522.3828125
+      },
+      "after_same_absolute": {
+        "x": 983.53515625,
+        "y": 522.3828125
+      },
+      "restored": false
+    }
+  },
+  "mirrored": {
+    "displays": [
+      {
+        "index": 0,
+        "id": 2,
+        "primary": true,
+        "cocoa": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "topLeft": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "visibleTopLeft": {
+          "x": 0,
+          "y": 30,
+          "width": 1920,
+          "height": 972
+        },
+        "scale": 1
+      }
+    ],
+    "full_desktop_span": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "grid": {
+      "points": 25,
+      "max_error_by_axis": {
+        "x": 0.2418943021891664,
+        "y": 0.09479311543816493
+      },
+      "max_axis_error": 0.2418943021891664,
+      "observed_range": {
+        "x": [
+          0,
+          1919.98046875
+        ],
+        "y": [
+          0,
+          1079.98046875
+        ]
+      }
+    },
+    "grid_position_pass_within_one_logical_point": true,
+    "repeat_after_relative": {
+      "before": {
+        "x": 960.69921875,
+        "y": 540.65625
+      },
+      "after_relative": {
+        "x": 983.53515625,
+        "y": 522.3828125
+      },
+      "after_same_absolute": {
+        "x": 983.53515625,
+        "y": 522.3828125
+      },
+      "restored": false,
+      "different_absolute_api_x": 641,
+      "different_absolute_observed": {
+        "x": 962.10546875,
+        "y": 540.65625
+      },
+      "return_to_original_api_x": 640,
+      "return_observed": {
+        "x": 960.69921875,
+        "y": 540.65625
+      },
+      "different_then_return_restored_exactly": true
+    },
+    "textedit_diagnostics": [
+      {
+        "label": "default_drag_textedit",
+        "cursor": {
+          "x": 450.5546875,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 2
+      },
+      {
+        "label": "absolute_drag_textedit",
+        "cursor": {
+          "x": 450.5546875,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      },
+      {
+        "label": "relative_only_down",
+        "cursor": {
+          "x": 450.5546875,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      },
+      {
+        "label": "relative_only_move",
+        "cursor": {
+          "x": 452.93359375,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "relative_only_up",
+        "cursor": {
+          "x": 452.93359375,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      }
+    ],
+    "textedit_diagnostic_limit": "Global samples stayed at buttons=0 during these automated diagnostics. The local probe callbacks do not report TextEdit events; selection observations belong to the operator/capture record."
+  },
+  "common_primary_and_mirror_grid_samples": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0.0
+    ],
+    [
+      320,
+      0,
+      480.58203125,
+      0,
+      0.206738052
+    ],
+    [
+      640,
+      0,
+      960.69921875,
+      0,
+      0.051367646
+    ],
+    [
+      959,
+      0,
+      1439.3828125,
+      0,
+      0.241894302
+    ],
+    [
+      1279,
+      0,
+      1919.98046875,
+      0,
+      0.01953125
+    ],
+    [
+      0,
+      180,
+      0,
+      270.328125,
+      0.047396558
+    ],
+    [
+      320,
+      180,
+      480.58203125,
+      270.328125,
+      0.206738052
+    ],
+    [
+      640,
+      180,
+      960.69921875,
+      270.328125,
+      0.051367646
+    ],
+    [
+      959,
+      180,
+      1439.3828125,
+      270.328125,
+      0.241894302
+    ],
+    [
+      1279,
+      180,
+      1919.98046875,
+      270.328125,
+      0.047396558
+    ],
+    [
+      0,
+      360,
+      0,
+      540.65625,
+      0.094793115
+    ],
+    [
+      320,
+      360,
+      480.58203125,
+      540.65625,
+      0.206738052
+    ],
+    [
+      640,
+      360,
+      960.69921875,
+      540.65625,
+      0.094793115
+    ],
+    [
+      959,
+      360,
+      1439.3828125,
+      540.65625,
+      0.241894302
+    ],
+    [
+      1279,
+      360,
+      1919.98046875,
+      540.65625,
+      0.094793115
+    ],
+    [
+      0,
+      539,
+      0,
+      809.65234375,
+      0.027865308
+    ],
+    [
+      320,
+      539,
+      480.58203125,
+      809.65234375,
+      0.206738052
+    ],
+    [
+      640,
+      539,
+      960.69921875,
+      809.65234375,
+      0.051367646
+    ],
+    [
+      959,
+      539,
+      1439.3828125,
+      809.65234375,
+      0.241894302
+    ],
+    [
+      1279,
+      539,
+      1919.98046875,
+      809.65234375,
+      0.027865308
+    ],
+    [
+      0,
+      719,
+      0,
+      1079.98046875,
+      0.01953125
+    ],
+    [
+      320,
+      719,
+      480.58203125,
+      1079.98046875,
+      0.206738052
+    ],
+    [
+      640,
+      719,
+      960.69921875,
+      1079.98046875,
+      0.051367646
+    ],
+    [
+      959,
+      719,
+      1439.3828125,
+      1079.98046875,
+      0.241894302
+    ],
+    [
+      1279,
+      719,
+      1919.98046875,
+      1079.98046875,
+      0.01953125
+    ]
+  ],
+  "mcp_primary": {
+    "default_relative_button_click": {
+      "label": "mcp_click_relative",
+      "cursor": {
+        "x": 600.61328125,
+        "y": 401.125
+      },
+      "global_buttons_at_end": 0,
+      "global_button_masks_seen": [
+        0
+      ],
+      "native_event_counts": {
+        "mouseMoved": 1
+      },
+      "new_cursor_or_button_samples": 1
+    },
+    "default_relative_button_drag": {
+      "label": "mcp_drag_relative",
+      "cursor": {
+        "x": 1400.4765625,
+        "y": 699.94921875
+      },
+      "global_buttons_at_end": 0,
+      "global_button_masks_seen": [
+        0
+      ],
+      "native_event_counts": {
+        "mouseMoved": 2
+      },
+      "new_cursor_or_button_samples": 2
+    },
+    "default_relative_sustained_hold_sequence": [
+      {
+        "label": "relative_hold_down",
+        "cursor": {
+          "x": 600.61328125,
+          "y": 450.7109375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "relative_hold_abs_move",
+        "cursor": {
+          "x": 1200.7578125,
+          "y": 630.84765625
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "relative_hold_rel_move",
+        "cursor": {
+          "x": 1214.70703125,
+          "y": 637.8203125
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "relative_hold_scroll",
+        "cursor": {
+          "x": 1214.70703125,
+          "y": 637.8203125
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "scrollWheel": 1
+        },
+        "new_cursor_or_button_samples": 0
+      },
+      {
+        "label": "relative_hold_abs_return",
+        "cursor": {
+          "x": 900.671875,
+          "y": 570.71484375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "relative_hold_up",
+        "cursor": {
+          "x": 900.671875,
+          "y": 570.71484375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      }
+    ],
+    "observation": "MCP calls returned success and cursor movement occurred, but the default drag recorded no down/up/drag callback or nonzero global button state. The separate sustained default relative hold sequence also remained at global buttons=0.",
+    "absolute_mode_diagnostics": [
+      {
+        "label": "mcp_click_absolute",
+        "cursor": {
+          "x": 600.61328125,
+          "y": 600.7734375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseDown": 1,
+          "mouseUp": 1,
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "mcp_drag_absolute",
+        "cursor": {
+          "x": 1400.4765625,
+          "y": 800.6875
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseDown": 1,
+          "mouseUp": 1,
+          "mouseMoved": 2
+        },
+        "new_cursor_or_button_samples": 2
+      },
+      {
+        "label": "absolute_hold_down",
+        "cursor": {
+          "x": 600.61328125,
+          "y": 450.7109375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseDown": 1,
+          "mouseUp": 1,
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_hold_abs_move",
+        "cursor": {
+          "x": 1200.7578125,
+          "y": 630.84765625
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_hold_rel_move",
+        "cursor": {
+          "x": 1214.70703125,
+          "y": 637.8203125
+        },
+        "global_buttons_at_end": 1,
+        "global_button_masks_seen": [
+          0,
+          1
+        ],
+        "native_event_counts": {
+          "mouseDown": 1,
+          "mouseDragged": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_hold_scroll",
+        "cursor": {
+          "x": 1214.70703125,
+          "y": 637.8203125
+        },
+        "global_buttons_at_end": 1,
+        "global_button_masks_seen": [
+          1
+        ],
+        "native_event_counts": {
+          "scrollWheel": 1
+        },
+        "new_cursor_or_button_samples": 0
+      },
+      {
+        "label": "absolute_hold_abs_return",
+        "cursor": {
+          "x": 900.671875,
+          "y": 570.71484375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0,
+          1
+        ],
+        "native_event_counts": {
+          "mouseUp": 1,
+          "mouseMoved": 1
+        },
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_hold_up",
+        "cursor": {
+          "x": 900.671875,
+          "y": 570.71484375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      }
+    ]
+  },
+  "firefox_primary": {
+    "new_page": {
+      "status": "Connected",
+      "viewOnly": "true",
+      "width": 1920
+    },
+    "click": {
+      "label": "firefox_click",
+      "cursor": {
+        "x": 650.30078125,
+        "y": 399.80859375
+      },
+      "global_buttons_at_end": 0,
+      "global_button_masks_seen": [
+        0
+      ],
+      "native_event_counts": {
+        "mouseMoved": 1
+      },
+      "new_cursor_or_button_samples": 1
+    },
+    "click_expected": {
+      "x": 650.199203187251,
+      "y": 399.82978723404256
+    },
+    "drag": {
+      "label": "firefox_drag",
+      "cursor": {
+        "x": 1401.4140625,
+        "y": 750.58984375
+      },
+      "global_buttons_at_end": 0,
+      "global_button_masks_seen": [
+        0
+      ],
+      "native_event_counts": {
+        "mouseMoved": 13
+      },
+      "new_cursor_or_button_samples": 13
+    },
+    "drag_expected": {
+      "expected_down": {
+        "x": 800.1274900398406,
+        "y": 450.3829787234042
+      },
+      "expected_up": {
+        "x": 1401.370517928287,
+        "y": 750.6382978723404
+      }
+    },
+    "observation": "Real Firefox pointer input moved the cursor through the intended image positions. The drag recorded 13 mouseMoved callbacks, zero down/up/drag callbacks, and global buttons=0.",
+    "release_checks": {
+      "attempted": [
+        "blur",
+        "view-only",
+        "pointercancel",
+        "disconnect"
+      ],
+      "held_release_result": "inconclusive: no initial held button was established",
+      "new_page_view_only_pass": true
+    }
+  },
+  "prepositioned_absolute_hold": {
+    "actions": [
+      {
+        "label": "preposition",
+        "cursor": {
+          "x": 250.8359375,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_same_position_down",
+        "cursor": {
+          "x": 250.8359375,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 1,
+        "global_button_masks_seen": [
+          0,
+          1
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_held_move",
+        "cursor": {
+          "x": 450.5546875,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0,
+          1
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 1
+      },
+      {
+        "label": "absolute_same_position_up",
+        "cursor": {
+          "x": 450.5546875,
+          "y": 213.359375
+        },
+        "global_buttons_at_end": 0,
+        "global_button_masks_seen": [
+          0
+        ],
+        "native_event_counts": {},
+        "new_cursor_or_button_samples": 0
+      }
+    ],
+    "observation": "After moving first, a same-position absolute down established global left-button mask=1. The following absolute move changed the global mask to 0 before the explicit up. This is global polling evidence while TextEdit was foreground; the absent local probe callbacks are not treated as evidence of absent TextEdit events.",
+    "hold_survived_absolute_move": false
+  },
+  "physical_textedit_drag_baseline": {
+    "selection_confirmed_by_user": true,
+    "selection_visually_observed_in_capture": true,
+    "screenshots_or_text_contents_retained": false,
+    "global_held_button_samples": 11,
+    "first_held_cursor": {
+      "x": 374.79296875,
+      "y": 219.04296875
+    },
+    "last_held_cursor": {
+      "x": 431.70703125,
+      "y": 209.640625
+    },
+    "first_to_last_held_sample_ms": 1298,
+    "released_global_buttons": 0,
+    "local_probe_callbacks": "Not expected while the physical drag operated TextEdit; global button/cursor samples independently show a real sustained drag and release."
+  },
+  "limits": [
+    "No root cause is assigned from these hardware observations.",
+    "The grid pass covers position mapping, not click/drag or repeat-after-relative correctness.",
+    "Recorded telemetry contains numerical display, cursor, button and event metadata only.",
+    "One adapter and capture card; these OS-specific ranges are observations, not universal OS guarantees.",
+    "Video/audio progress is numerical transport evidence, not acoustic playback or a latency guarantee.",
+    "Changed raw capture device paths require reselection; stable V4L paths are recommended.",
+    "Native kernel operations may outlast cancellation/cleanup deadlines.",
+    "The extended captured-primary Mac measurement retained the laptop at negative X; the README recommends placing the capture display top-left for best operation, but that rearrangement was not separately measured.",
+    "A connected viewer keeps retries active when the target produces no usable video, including display sleep; successful reopens advance generation and invalidate extended mapping."
+  ],
+  "result": "Primary-display absolute range confirmed; input defects tracked separately; released Linux recovery baseline and candidate results separated.",
+  "issue": "https://github.com/linkdata/autopaws/issues/103",
+  "base_commit": "9de59c6",
+  "released_binaries": {
+    "version": "v0.7.0",
+    "sha256": {
+      "autopaws-kvm": "ee6eda79e534139dc62e44c442514607f2493b9d06b120eb5381f4539b578734",
+      "autopaws-mcp": "f3f3e8eed1a44e763919a423b00e637692e8443f4f0c1c2658f39c8b005020c0"
+    }
+  },
+  "host": {
+    "os": "Ubuntu 26.04.1 LTS",
+    "architecture": "amd64",
+    "kernel": "Linux-7.0.0-44-generic-x86_64-with-glibc2.43"
+  },
+  "target": {
+    "os": "macOS 27.2.1",
+    "build": "26B131",
+    "input_coordinate_units": "Cocoa logical points, primary top-left origin"
+  },
+  "capture": {
+    "card": "UGREEN 15389 / MACROSILICON",
+    "usb_vid": "2b89",
+    "usb_pid": "5389",
+    "backend": "Linux V4L2",
+    "format": "MJPG",
+    "frame_size": [
+      1920,
+      1080
+    ],
+    "autocrop": false
+  },
+  "input": {
+    "adapter": "CH9329 via CH340",
+    "usb_vid": "1a86",
+    "usb_pid": "7523",
+    "baud": 9600,
+    "default_button_mode": "relative",
+    "api_planning_grid": [
+      1280,
+      720
+    ],
+    "planning_grid_is_native_pixels": false
+  },
+  "followups": {
+    "buttons": "https://github.com/linkdata/autopaws/issues/106",
+    "repeat_after_relative": "https://github.com/linkdata/autopaws/issues/107"
+  },
+  "released_linux_serial_recovery": {
+    "serial_nodes_missing": true,
+    "unplugged_input_error": "unavailable",
+    "capture_while_hid_missing": [
+      1920,
+      1080
+    ],
+    "capture_setters_succeeded": true,
+    "passive_video_continued": true,
+    "passive_audio_blocks_during_check": 98,
+    "same_daemon_after_replug": true,
+    "fresh_keyboard_marker_visually_confirmed": true,
+    "same_unsaved_textedit_window": true,
+    "button_defect_persisted": true
+  },
+  "released_linux_capture_recovery": {
+    "unplugged_capture_error": "unavailable",
+    "keyboard_rpc_while_missing_succeeded": true,
+    "missing_period_keyboard_marker_visually_confirmed": true,
+    "ocr_search_matched_markers": false,
+    "marker_verification_note": "Fresh captures visually showed both expected keyboard markers; OCR string matching did not establish them. Only booleans retained.",
+    "usb_absence_ms": 16836.404,
+    "passive_observation_after_return_seconds": 10,
+    "passive_video_resumed": false,
+    "passive_audio_resumed": false,
+    "manual_same_path_selection_succeeded": true,
+    "generation_before": 3,
+    "generation_after": 4,
+    "fresh_capture_size": [
+      1920,
+      1080
+    ],
+    "video_frames_after_selection": 46,
+    "audio_blocks_after_selection": 129,
+    "same_websocket_stayed_open": true,
+    "same_daemon": true,
+    "same_unsaved_textedit_window": true
+  },
+  "shutdown": {
+    "precondition_button_mode": "absolute, positioned at the current point",
+    "held_buttons_before": 1,
+    "buttons_after": 0,
+    "cursor_before": {
+      "x": 900.671875,
+      "y": 525.61328125
+    },
+    "cursor_after": {
+      "x": 900.671875,
+      "y": 525.61328125
+    },
+    "cursor_jump": false,
+    "fresh_capture_after_restart": [
+      1920,
+      1080
+    ],
+    "limit": "A prior disconnected V4L2 close retained ENODEV and the old daemon exited 1 after cleanup; the service restarted successfully."
+  },
+  "recovery_candidate": {
+    "version": "v0.7.0+linux-recovery-test2",
+    "binary_sha256": "505948c073e7b9764f412955c7449d94e72994dbe304bc3975599679e0d71b14",
+    "source_sha256": {
+      "capture/manager.go": "c64d56d738c7fc5b9a547f6de2c1a71373b4f079abc87f2998016fdc8482d17e",
+      "capture/source_linux.go": "cd2685ef29d2fba1c8b69ac3c2aae442943f3f5ef8f756bd1f13b9999aebf9cd"
+    },
+    "initial_candidate_limit": "Enabling retries alone briefly resumed video, then publication stalled while the manager delivery sequence kept advancing, consistent with frames being rejected before publication. Explicit reselection restored sustained video. The final candidate detects five seconds without a processed frame before retrying; regressions cover corrupt JPEGs and blocked reads.",
+    "physical_result": "PASS: sustained automatic video/audio recovery on the existing passive WebSocket, without snapshots/reselection or daemon restart during recovery",
+    "usb_absence_ms": 19551.252,
+    "first_media_resume_ms_after_device_return": 1202.306,
+    "sustained_fresh_video_audio_seconds": 30.039,
+    "generation_transitions": [
+      {
+        "at": 1795782575533.407,
+        "generation": "1"
+      },
+      {
+        "at": 1795782576735.4587,
+        "generation": "2"
+      },
+      {
+        "at": 1795782585756.064,
+        "generation": "3"
+      }
+    ],
+    "same_daemon": true,
+    "same_websocket": true,
+    "explicit_capture_calls_during_recovery": false,
+    "fresh_capture_after_sustained_proof": [
+      1920,
+      1080
+    ],
+    "video_frames_during_check": 659,
+    "audio_blocks_during_check": 1978,
+    "audio_sample_rate": 48000,
+    "audio_channels": 2,
+    "source_note": "The physical USB run preceded a behavior-preserving cleanup that removed identical platform retry-policy constants. The tested source hashes are preserved above; final source hashes are recorded separately.",
+    "final_source_sha256": {
+      "capture/manager.go": "fb36323dad44bf22673acc629d63244b8990f251f780f62fefc5ba2370792dc8",
+      "capture/source_linux.go": "e2f3a2b32c84d6c737774460b7d0852d5054e8960b150f26c7745ad68fc6c140",
+      "capture/source_darwin.go": "d570ff43e687df9e6f8d9066f355cf7e56fdb75ba712b9ef085380349ebedb33",
+      "capture/source_windows.go": "e778fb5f89c846e7837ded1ebd3a67c7f150293dac3039e319ea1f89fa95398f"
+    }
+  },
+  "cleanup": {
+    "target_probe_stopped": true,
+    "target_temporary_directory_removed": true,
+    "transfer_gist_removed": true,
+    "new_unsaved_textedit_documents_removed": true,
+    "textedit_cleanup_verification": "Owner confirmed discarding the temporary document and closing the blank test window."
+  }
+}
