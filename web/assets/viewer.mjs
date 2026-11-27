@@ -1,6 +1,7 @@
 import {mapPointer, decodeMediaMessage, createFrameGuard, createInputController, tokenBootstrap}
   from "./viewer-helpers.mjs";
 import {createAudioPlayback} from "./audio-playback.mjs";
+import {createMappingControls} from "./mapping.mjs";
 
 let secret = "";
 try { secret = sessionStorage.getItem("autopaws_token") ?? ""; } catch {}
@@ -37,6 +38,8 @@ let renderedFrames = 0;
 let fpsSince = performance.now();
 let hideTimer = null;
 let dragging = null;
+let pointerConfig = null;
+let displayedRevision = null;
 const capabilityMessages = new Map();
 const audio = createAudioPlayback({
   AudioContext: window.AudioContext ?? window.webkitAudioContext,
@@ -62,7 +65,8 @@ function showMessage(text) {
 const frames = createFrameGuard({onReset() {
   // Coordinates disappear during a stream change. Release ownership without
   // needing a replacement image or guessing coordinates for a later mouseup.
-  input.release();
+  input.discard();
+  displayedRevision = null;
   canvas.width = 1;
   canvas.height = 1;
   context?.clearRect(0, 0, 1, 1);
@@ -76,13 +80,37 @@ function send(event) {
     socket.close(1013, "Input connection is backlogged");
     return false;
   }
+  if (["mousemove", "mousedown", "mouseup"].includes(event.type) && pointerConfig !== null) {
+    if (!pointerReady()) return true;
+    event = {...event, revision: displayedRevision,
+      frame_sequence: frames.visible.sequence.toString(), frame_generation: frames.visible.generation.toString()};
+  }
   socket.send(JSON.stringify(event));
   return true;
 }
 
 const input = createInputController({send});
+input.setViewOnly(true);
 input.setFocused(document.hasFocus());
 input.setVisible(!document.hidden);
+const mapping = createMappingControls({get: byID, send, discard: () => input.discard()});
+
+function pointerReady() {
+  return pointerConfig === null || frames.visible !== null && pointerConfig.ready &&
+    displayedRevision === pointerConfig.revision;
+}
+
+function configureMapping(config) {
+  mapping.configure(config);
+  if (pointerConfig === null || config.revision !== pointerConfig.revision ||
+    config.frame_generation !== pointerConfig.frame_generation || config.after_sequence !== pointerConfig.after_sequence ||
+    config.ready !== pointerConfig.ready) {
+    input.discard();
+    pendingVideo = null;
+    frames.reset();
+  }
+  pointerConfig = config;
+}
 
 function updateControls() {
   byID("view-only").setAttribute("aria-pressed", String(input.viewOnly));
@@ -91,7 +119,7 @@ function updateControls() {
   byID("scaling").setAttribute("aria-pressed", String(nativeSize));
   byID("scaling").textContent = nativeSize ? "1:1" : "Fit";
   for (const button of shortcutButtons) button.disabled = !input.enabled;
-  canvas.style.cursor = input.enabled ? (localCursor ? "crosshair" : "none") : "default";
+  canvas.style.cursor = input.enabled && pointerReady() ? (localCursor ? "crosshair" : "none") : "default";
 }
 
 function updateLayout() {
@@ -155,6 +183,7 @@ async function decodePending() {
       throw new Error("JPEG dimensions differ from frame metadata");
     }
     if (document.hidden || !frames.commit(token)) return;
+    displayedRevision = item.mappingRevision;
     const crop = item.frame.crop;
     if (canvas.width !== crop.width) canvas.width = crop.width;
     if (canvas.height !== crop.height) canvas.height = crop.height;
@@ -176,6 +205,8 @@ async function decodePending() {
 }
 
 function videoFrame(frame) {
+  if (pointerConfig !== null && (frame.generation !== BigInt(pointerConfig.frame_generation) ||
+    frame.sequence <= BigInt(pointerConfig.after_sequence))) return;
   if (frames.generation !== null && (frame.generation < frames.generation ||
     frame.sequence <= frames.sequence)) return;
   let token = null;
@@ -185,7 +216,7 @@ function videoFrame(frame) {
   }
   if (pendingVideo !== null && pendingVideo.frame.generation === frame.generation &&
     pendingVideo.frame.sequence >= frame.sequence) return;
-  pendingVideo = {frame, token};
+  pendingVideo = {frame, token, mappingRevision: pointerConfig?.revision ?? null};
   void decodePending();
 }
 
@@ -194,6 +225,8 @@ function connect() {
   clearTimeout(reconnectTimer);
   reconnectTimer = null;
   input.setConnected(false);
+  pointerConfig = null;
+  mapping.reset();
   void audio.reset();
   pendingVideo = null;
   frames.reset();
@@ -220,6 +253,8 @@ function connect() {
         const config = JSON.parse(event.data);
         if (config.type !== "config") throw new Error("Unexpected configuration");
         void audio.configure(config.audio);
+        if (config.mapping !== undefined) configureMapping(config.mapping);
+        updateControls();
         return;
       }
       const data = event.data instanceof ArrayBuffer ? event.data : await event.data.arrayBuffer();
@@ -281,19 +316,19 @@ canvas.addEventListener("pointerdown", event => {
 window.addEventListener("mousedown", event => {
   if (!input.enabled || (event.target !== canvas && input.held.buttons === 0)) return;
   event.preventDefault();
-  const point = pointerPosition(event);
-  if (point) input.button("mousedown", point.x, point.y, event.buttons & 7);
+  const position = pointerPosition(event);
+  if (position && pointerReady()) input.button("mousedown", position.x, position.y, event.buttons & 7);
 });
 window.addEventListener("mousemove", event => {
   if (!input.enabled || (event.target !== canvas && input.held.buttons === 0)) return;
   const point = pointerPosition(event);
-  if (point) input.move(point.x, point.y, event.buttons & 7);
+  if (point && pointerReady()) input.move(point.x, point.y, event.buttons & 7);
 });
 window.addEventListener("mouseup", event => {
   if (!input.enabled || input.held.buttons === 0) return;
   event.preventDefault();
   const point = pointerPosition(event);
-  if (point) input.button("mouseup", point.x, point.y, event.buttons & 7);
+  if (point && pointerReady()) input.button("mouseup", point.x, point.y, event.buttons & 7);
   else input.release(); // Layout may be temporarily empty even on the same stream.
 });
 canvas.addEventListener("pointercancel", () => input.release());

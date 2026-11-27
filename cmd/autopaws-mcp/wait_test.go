@@ -427,10 +427,10 @@ func TestWaitCaptureChangeCannotCommitCheckedCoordinates(t *testing.T) {
 		result, err := session.client.CallTool(ctx, &mcp.CallToolParams{Name: "send_key", Arguments: map[string]any{"key": "enter", "wait_for": "condition"}})
 		done <- outcome{result, err}
 	}()
-	<-entered
+	sdkReceive(t, entered)
 	sdkTool(t, session, "set_capture_resolution", map[string]any{"width": 640, "height": 480}, false)
 	unblock()
-	finished := <-done
+	finished := sdkReceive(t, done)
 	if finished.err != nil || finished.result.IsError {
 		t.Fatalf("observation call = %+v, %v", finished.result, finished.err)
 	}
@@ -495,7 +495,7 @@ func TestWaitSerializesSessionInputAndCancelsQueuedAction(t *testing.T) {
 		}
 		initial <- err
 	}()
-	<-entered
+	sdkReceive(t, entered)
 	queuedCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	queuedDone := make(chan error, 1)
@@ -503,16 +503,16 @@ func TestWaitSerializesSessionInputAndCancelsQueuedAction(t *testing.T) {
 		_, err := first.client.CallTool(queuedCtx, &mcp.CallToolParams{Name: "send_key", Arguments: map[string]any{"key": "b"}})
 		queuedDone <- err
 	}()
-	<-queued
+	sdkReceive(t, queued)
 	// Another session can still act while the first session waits on its model.
 	sdkTool(t, independent, "send_key", map[string]any{"key": "c"}, false)
 	cancel()
-	if err := <-queuedDone; err == nil {
+	if err := sdkReceive(t, queuedDone); err == nil {
 		t.Fatal("queued action ignored cancellation")
 	}
-	<-queueFinished
+	sdkReceive(t, queueFinished)
 	unblock()
-	if err := <-initial; err != nil {
+	if err := sdkReceive(t, initial); err != nil {
 		t.Fatalf("initial observation = %v", err)
 	}
 	sdkTool(t, first, "send_key", map[string]any{"key": "d"}, false)
@@ -591,13 +591,9 @@ func TestWaitActiveCancellationPreservesScreenshotState(t *testing.T) {
 					stop()
 				}
 				for _, signal := range []<-chan struct{}{canceled, finished} {
-					select {
-					case <-signal:
-					case <-t.Context().Done():
-						t.Fatal("active wait cancellation did not finish")
-					}
+					sdkReceive(t, signal)
 				}
-				completed := <-done
+				completed := sdkReceive(t, done)
 				if mode == "request" && !errors.Is(completed.err, context.Canceled) {
 					t.Fatalf("request cancellation = %+v, %v", completed.result, completed.err)
 				}
@@ -608,7 +604,7 @@ func TestWaitActiveCancellationPreservesScreenshotState(t *testing.T) {
 				defer owner.mu.Unlock()
 				for _, state := range owner.sessions {
 					dimensions, err := state.snapshot()
-					if priorImage && (err != nil || dimensions != (screenDimensions{5, 3, 9, 7})) {
+					if priorImage && (err != nil || dimensions != (screenDimensions{5, 3, 9, 7, nil})) {
 						t.Fatalf("cancellation changed prior coordinates: %+v, %v", dimensions, err)
 					}
 					if !priorImage && err == nil {

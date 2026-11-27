@@ -166,10 +166,16 @@ func TestAudioWriterDropsOldReadinessImmediatelyWhileVideoSwitchRetainsClose(t *
 		if len(opened) != 1 {
 			t.Fatal("source reopened before retained close completed")
 		}
-		select {
-		case message := <-conn.output:
-			t.Fatalf("old source remained deliverable: %x", message.data)
-		default:
+		for len(conn.output) != 0 {
+			message := <-conn.output
+			var config struct {
+				Type  string      `json:"type"`
+				Audio audioConfig `json:"audio"`
+			}
+			if message.kind != websocket.MessageText || json.Unmarshal(message.data, &config) != nil ||
+				config.Type != "config" || config.Audio.Status != "unavailable" {
+				t.Fatalf("old source remained deliverable: %x", message.data)
+			}
 		}
 		unblock()
 		if config := receiveAudioConfig(t, conn, "available"); config.Generation != "2" {

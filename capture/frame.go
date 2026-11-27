@@ -20,6 +20,7 @@ type Metadata struct {
 	Generation               uint64
 	TimestampNS              int64
 	TimestampFlags, Sequence uint32
+	DeliverySequence         uint64 // Manager-wide order; survives idle source reopen.
 }
 
 // Snapshot contains the cropped JPEG when a crop is active, or the normalized
@@ -28,6 +29,8 @@ type Snapshot struct {
 	JPEG          []byte
 	Width, Height int
 	Generation    uint64
+	Sequence      uint64
+	Metadata      Metadata
 }
 
 // Frame holds immutable bytes and metadata plus lazily cached decode and encode
@@ -66,7 +69,7 @@ func (frame *Frame) Snapshot() (Snapshot, error) {
 			frame.encodeErr = err
 			return
 		}
-		result := Snapshot{JPEG: frame.jpeg, Width: frame.metadata.Width, Height: frame.metadata.Height, Generation: frame.metadata.Generation}
+		result := Snapshot{JPEG: frame.jpeg, Width: frame.metadata.Width, Height: frame.metadata.Height, Generation: frame.metadata.Generation, Sequence: frame.metadata.DeliverySequence, Metadata: frame.metadata}
 		if !frame.metadata.Crop.Empty() {
 			crop := frame.metadata.Crop
 			if !crop.In(img.Bounds()) {

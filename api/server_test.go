@@ -221,7 +221,11 @@ func TestDisconnectAndExtraByteCancelStartedHandler(t *testing.T) {
 			address, _ := serveForTest(t, server, controller)
 			conn := dialTest(t, address)
 			writeTest(t, conn, "{\"id\":1,\"method\":\"block\"}\n")
-			<-started
+			select {
+			case <-started:
+			case <-time.After(3 * time.Second):
+				t.Fatal("handler did not start")
+			}
 			switch kind {
 			case "full close":
 				_ = conn.Close()
@@ -281,7 +285,11 @@ func TestFatalAcceptReturnsBeforeHandlersDrain(t *testing.T) {
 	go func() { served <- server.Serve(context.Background(), listener) }()
 	conn := dialTest(t, listener.Addr().String())
 	writeTest(t, conn, "{\"method\":\"slow\"}\n")
-	<-started
+	select {
+	case <-started:
+	case <-time.After(3 * time.Second):
+		t.Fatal("slow handler did not start")
+	}
 	waited := make(chan struct{})
 	go func() { server.Wait(); close(waited) }()
 	_ = listener.Close()
@@ -302,7 +310,11 @@ func TestFatalAcceptReturnsBeforeHandlersDrain(t *testing.T) {
 	default:
 	}
 	unblock()
-	<-waited
+	select {
+	case <-waited:
+	case <-time.After(3 * time.Second):
+		t.Fatal("owned handler did not finish after release")
+	}
 }
 
 type functionListener struct {

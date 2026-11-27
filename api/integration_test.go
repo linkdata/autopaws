@@ -181,13 +181,18 @@ func TestClientServerM1RoundTrips(t *testing.T) {
 		{"absolute_move", "mouse_move", `{"x":1919,"y":1079,"relative":null}`, `{"position":{"x":1919,"y":1079,"relative":false}}`, [][]byte{ch9329.MouseAbsolute(0, 4095, 4095, 0)}},
 		{"relative_move", "mouse_move", `{"x":-127,"y":127,"relative":true}`, `{"position":{"x":-127,"y":127,"relative":true}}`, [][]byte{ch9329.MouseRelative(0, -127, 127, 0)}},
 		{"click", "mouse_click", `{"button":null,"button_mode":null}`, `{"clicked":true}`, [][]byte{ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseRelative(0, 0, 0, 0)}},
-		{"positioned_click_override", "mouse_click", `{"x":0,"y":0,"button_mode":"absolute"}`, `{"clicked":true}`, [][]byte{ch9329.MouseAbsolute(1, 0, 0, 0), ch9329.MouseAbsolute(0, 0, 0, 0)}},
-		{"down", "mouse_down", `{"button":"right","x":0,"y":0}`, `{"pressed":true,"button":"right"}`, [][]byte{ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(2, 0, 0, 0)}},
+		{"positioned_click_override", "mouse_click", `{"x":0,"y":0,"button_mode":"absolute"}`, `{"clicked":true}`, [][]byte{
+			ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(1, 0, 0, 0),
+			ch9329.MouseAbsolute(1, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0),
+		}},
+		{"down", "mouse_down", `{"button":"right","x":0,"y":0}`, `{"pressed":true,"button":"right"}`, [][]byte{
+			ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(2, 0, 0, 0),
+		}},
 		{"up", "mouse_up", `{"button":"right","x":1919,"y":1079,"button_mode":"absolute"}`, `{"released":true,"button":"right"}`, [][]byte{ch9329.MouseAbsolute(0, 4095, 4095, 0)}},
 		{"scroll", "mouse_scroll", `{"amount":1000}`, `{"scrolled":true}`, [][]byte{ch9329.MouseRelative(0, 0, 0, 127)}},
 		{"drag", "mouse_drag", `{"start_x":0,"start_y":0,"end_x":1919,"end_y":1079}`, `{"dragged":true}`, [][]byte{
-			ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0),
-			ch9329.MouseAbsolute(1, 4095, 4095, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
+			ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0),
+			ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
 		}},
 		{"device_info", "get_device_info", `{}`, `{"serial":{"device":"/dev/fixture","baud":9600,"auto_detect":false},"config":{"screen_width":1920,"screen_height":1080,"keyboard_layout":"us104","serial_baud":9600,"mouse_button_mode":"relative"},"capture":{"error":"unavailable"}}`, nil},
 	} {
@@ -246,7 +251,7 @@ func TestClientServerPreservesHeldButtonsAcrossCalls(t *testing.T) {
 	}
 	requireFrames(t, fixture.transport,
 		ch9329.MouseRelative(2, 0, 0, 0),
-		ch9329.MouseAbsolute(2, 4095, 4095, 0),
+		ch9329.MouseAbsolute(0, 4095, 4095, 0),
 		ch9329.MouseRelative(3, 0, 0, 0),
 		ch9329.MouseRelative(1, 0, 0, 0),
 		ch9329.MouseRelative(1, 0, 0, -127),
@@ -342,13 +347,15 @@ func TestClientServerActionsShareTheControllerGate(t *testing.T) {
 		{"type_text", `{"text":"ab","char_delay_ms":0}`, [][]byte{ch9329.Keyboard(0, 4), release, ch9329.Keyboard(0, 5), release}},
 		{"send_key_sequence", `{"steps":[{"key":"a"},{"key":"b"}],"default_delay_ms":0}`, [][]byte{ch9329.Keyboard(0, 4), release, ch9329.Keyboard(0, 5), release}},
 		{"mouse_drag", `{"start_x":0,"start_y":0,"end_x":1919,"end_y":1079}`, [][]byte{
-			ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseAbsolute(1, 4095, 4095, 0),
+			ch9329.MouseAbsolute(0, 0, 1, 0), ch9329.MouseAbsolute(0, 0, 0, 0), ch9329.MouseRelative(1, 0, 0, 0), ch9329.MouseAbsolute(0, 4095, 4095, 0),
 			ch9329.MouseAbsolute(0, 4095, 4095, 0), ch9329.MouseRelative(0, 0, 0, 0),
 		}},
 	} {
 		t.Run(test.method, func(t *testing.T) {
 			fixture := newIntegrationFixture(t)
 			firstFrame, proceed := make(chan struct{}), make(chan struct{})
+			unblock := sync.OnceFunc(func() { close(proceed) })
+			defer unblock()
 			var first sync.Once
 			fixture.transport.setHook(func(ctx context.Context, _ []byte) error {
 				var err error
@@ -377,7 +384,7 @@ func TestClientServerActionsShareTheControllerGate(t *testing.T) {
 			case <-time.After(20 * time.Millisecond):
 			}
 			requireFrames(t, fixture.transport, test.frames[0])
-			close(proceed)
+			unblock()
 			if err := receive(t, apiDone); err != nil {
 				t.Fatal(err)
 			}
@@ -398,6 +405,8 @@ func TestClientCancellationReleasesBeforeNextAction(t *testing.T) {
 	press := ch9329.Keyboard(0, 4)
 	release := ch9329.Keyboard(0)
 	pressed, releasing, finishRelease := make(chan struct{}), make(chan struct{}), make(chan struct{})
+	finish := sync.OnceFunc(func() { close(finishRelease) })
+	defer finish()
 	var cleanup sync.Once
 	fixture.transport.setHook(func(ctx context.Context, frame []byte) error {
 		if bytes.Equal(frame, press) {
@@ -438,7 +447,7 @@ func TestClientCancellationReleasesBeforeNextAction(t *testing.T) {
 	case <-time.After(20 * time.Millisecond):
 	}
 	requireFrames(t, fixture.transport, press, release)
-	close(finishRelease)
+	finish()
 	if err := receive(t, next); err != nil {
 		t.Fatal(err)
 	}

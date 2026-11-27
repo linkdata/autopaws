@@ -71,7 +71,7 @@ func TestEnvelopePrecisionAndErrorIdentity(t *testing.T) {
 		apiwire.ErrUnauthorized, apiwire.ErrInvalidRequest, apiwire.ErrRequestTooLarge, apiwire.ErrUnknownMethod,
 		apiwire.ErrInvalidParams, apiwire.ErrUnsupported, apiwire.ErrCanceled,
 		apiwire.ErrTimeout, apiwire.ErrUnavailable, apiwire.ErrBusy,
-		apiwire.ErrCaptureChanged, apiwire.ErrProtocol,
+		apiwire.ErrCaptureChanged, apiwire.ErrMappingChanged, apiwire.ErrMappingUnavailable, apiwire.ErrProtocol,
 	} {
 		if !errors.Is(code, code) || code.Error() != string(code) {
 			t.Fatalf("invalid error code identity: %q", code)

@@ -20,18 +20,20 @@ type Code string
 func (code Code) Error() string { return string(code) }
 
 const (
-	ErrUnauthorized    Code = "unauthorized"
-	ErrInvalidRequest  Code = "invalid request"
-	ErrRequestTooLarge Code = "request too large"
-	ErrUnknownMethod   Code = "unknown method"
-	ErrInvalidParams   Code = "invalid params"
-	ErrUnsupported     Code = "unsupported character"
-	ErrCanceled        Code = "canceled"
-	ErrTimeout         Code = "timeout"
-	ErrUnavailable     Code = "unavailable"
-	ErrBusy            Code = "device busy"
-	ErrCaptureChanged  Code = "capture changed"
-	ErrProtocol        Code = "protocol error"
+	ErrUnauthorized       Code = "unauthorized"
+	ErrInvalidRequest     Code = "invalid request"
+	ErrRequestTooLarge    Code = "request too large"
+	ErrUnknownMethod      Code = "unknown method"
+	ErrInvalidParams      Code = "invalid params"
+	ErrUnsupported        Code = "unsupported character"
+	ErrCanceled           Code = "canceled"
+	ErrTimeout            Code = "timeout"
+	ErrUnavailable        Code = "unavailable"
+	ErrBusy               Code = "device busy"
+	ErrCaptureChanged     Code = "capture changed"
+	ErrMappingChanged     Code = "mouse mapping changed"
+	ErrMappingUnavailable Code = "mouse mapping unavailable"
+	ErrProtocol           Code = "protocol error"
 )
 
 // Request is one request on a fresh TCP connection. ID preserves JSON precision.

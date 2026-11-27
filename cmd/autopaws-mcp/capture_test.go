@@ -119,7 +119,7 @@ func TestCaptureUsesSnapshotTargetDimensionsAndLegacyFallback(t *testing.T) {
 				return unitAssign(output, map[string]any{"config": map[string]int{"screen_width": 1920, "screen_height": 1080}})
 			})}
 			frame, err := owner.capture(t.Context(), "capture_screen")
-			if err != nil || !bytes.Equal(frame.jpeg, jpegData) || frame.dimensions != (screenDimensions{5, 3, 1920, 1080}) {
+			if err != nil || !bytes.Equal(frame.jpeg, jpegData) || frame.dimensions != (screenDimensions{5, 3, 1920, 1080, nil}) {
 				t.Fatalf("capture = %+v, %v", frame, err)
 			}
 			want := []string{"capture_frame"}

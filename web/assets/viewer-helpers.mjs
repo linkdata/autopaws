@@ -212,6 +212,8 @@ export function createInputController({send, schedule = setTimeout, cancel = cle
     setFocused(value) { setGate(value, focused, next => { focused = next; }); },
     setVisible(value) { setGate(value, visible, next => { visible = next; }); },
     release,
+    // A mapping change must drop queued coordinates before releasing ownership.
+    discard() { clearPending(); return release(); },
     flush,
     // Optional animation-loop tick. The single timer also flushes a due move
     // when requestAnimationFrame is unavailable or throttled.

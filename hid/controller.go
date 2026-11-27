@@ -2,6 +2,7 @@ package hid
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"sync"
@@ -11,7 +12,8 @@ import (
 )
 
 // Transport prepares/resets the target before an action and transmits its frames.
-// A changed generation means Prepare released all keyboard and mouse input.
+// A changed generation resets keyboard/relative input; Controller also releases
+// remembered absolute holds before admitting fresh input.
 type Transport interface {
 	Prepare(context.Context) (uint64, error)
 	WriteFrame(context.Context, []byte) error
@@ -37,9 +39,12 @@ type Controller struct {
 	shutdown *cleanupAttempt
 
 	// The action gate protects transport generation and held mouse buttons.
-	prepared   bool
-	generation uint64
-	buttons    byte
+	prepared                         bool
+	generation                       uint64
+	buttons                          byte
+	absoluteButtons, relativeButtons byte
+	absolutePending, relativePending byte
+	absolutePosition                 Point
 }
 
 // NewController creates a controller without opening hardware. A nil transport
@@ -130,6 +135,15 @@ func (controller *Controller) prepare(ctx context.Context) (bool, error) {
 	}
 	changed := !controller.prepared || controller.generation != generation
 	if changed {
+		// Transport preparation resets keyboard and relative reports. An absolute
+		// hold survives that reset and must be released on its own report ID.
+		controller.relativeButtons, controller.relativePending = 0, 0
+		if controller.absoluteButtons|controller.absolutePending != 0 {
+			point := controller.absolutePosition
+			if err := controller.writeReport(ctx, ch9329.MouseAbsolute(0, point.X, point.Y, 0)); err != nil {
+				return false, fmt.Errorf("prepare absolute mouse release: %w", err)
+			}
+		}
 		controller.buttons = 0
 	}
 	controller.prepared, controller.generation = true, generation
@@ -141,17 +155,55 @@ func (current *action) write(frame []byte) error {
 		return err
 	}
 	current.dirty = true // A failed send may already have reached the target.
-	return current.controller.transport.WriteFrame(current.ctx, frame)
+	return current.controller.writeFrame(current.ctx, frame)
+}
+
+// Failed writes may already have reached the chip. Retain both the previous
+// and attempted holds until that report ID is successfully updated or reset.
+func (controller *Controller) writeFrame(ctx context.Context, frame []byte) error {
+	if len(frame) >= 12 && frame[3] == 0x04 && binary.LittleEndian.Uint16(frame[7:9]) == 0 && binary.LittleEndian.Uint16(frame[9:11]) == 0 {
+		// Some targets ignore all-zero absolute motion. Preposition without
+		// pressing new buttons, then send the exact requested coordinates.
+		held := controller.absoluteButtons &^ controller.absolutePending
+		if err := controller.writeReport(ctx, ch9329.MouseAbsolute(held, 0, 1, 0)); err != nil {
+			return err
+		}
+	}
+	return controller.writeReport(ctx, frame)
+}
+
+func (controller *Controller) writeReport(ctx context.Context, frame []byte) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var held, pending *byte
+	if len(frame) >= 12 && frame[3] == 0x04 {
+		held, pending = &controller.absoluteButtons, &controller.absolutePending
+		controller.absolutePosition = Point{int(binary.LittleEndian.Uint16(frame[7:9])), int(binary.LittleEndian.Uint16(frame[9:11]))}
+	} else if len(frame) >= 11 && frame[3] == 0x05 {
+		held, pending = &controller.relativeButtons, &controller.relativePending
+	}
+	if held != nil {
+		*pending |= *held | frame[6]
+	}
+	err := controller.transport.WriteFrame(ctx, frame)
+	if err == nil && held != nil {
+		*held = frame[6]
+		*pending = 0
+		controller.buttons = controller.absoluteButtons | controller.relativeButtons
+	}
+	return err
 }
 
 type cleanupAttempt struct {
-	ctx      context.Context
-	cancel   context.CancelFunc
-	prepared bool
-	failed   bool
-	keyboard bool
-	mouse    bool
-	err      error
+	ctx           context.Context
+	cancel        context.CancelFunc
+	prepared      bool
+	failed        bool
+	keyboard      bool
+	mouseAbsolute bool
+	mouseRelative bool
+	err           error
 }
 
 func (controller *Controller) beginCleanup(ctx context.Context) *cleanupAttempt {
@@ -214,7 +266,7 @@ func (controller *Controller) cleanup(attempt *cleanupAttempt, release releaseMa
 			attempt.failed = true
 			attempt.err = fmt.Errorf("prepare release: %w", err)
 		} else if changed {
-			attempt.keyboard, attempt.mouse = true, true
+			attempt.keyboard, attempt.mouseAbsolute, attempt.mouseRelative = true, true, true
 		}
 	}
 	if attempt.failed {
@@ -227,13 +279,21 @@ func (controller *Controller) cleanup(attempt *cleanupAttempt, release releaseMa
 			attempt.err = errors.Join(attempt.err, fmt.Errorf("release keyboard: %w", err))
 		}
 	}
-	if release&releaseMouse != 0 && !attempt.mouse {
-		attempt.mouse = true
-		err := controller.transport.WriteFrame(attempt.ctx, ch9329.MouseRelative(0, 0, 0, 0))
+	if release&releaseMouse != 0 && !attempt.mouseAbsolute {
+		attempt.mouseAbsolute = true
+		if controller.absoluteButtons|controller.absolutePending != 0 {
+			point := controller.absolutePosition
+			// Release-only cleanup must never preposition with a held mask.
+			if err := controller.writeReport(attempt.ctx, ch9329.MouseAbsolute(0, point.X, point.Y, 0)); err != nil {
+				attempt.err = errors.Join(attempt.err, fmt.Errorf("release absolute mouse: %w", err))
+			}
+		}
+	}
+	if release&releaseMouse != 0 && !attempt.mouseRelative {
+		attempt.mouseRelative = true
+		err := controller.writeFrame(attempt.ctx, ch9329.MouseRelative(0, 0, 0, 0))
 		if err != nil {
 			attempt.err = errors.Join(attempt.err, fmt.Errorf("release mouse: %w", err))
-		} else {
-			controller.buttons = 0
 		}
 	}
 	return attempt.err

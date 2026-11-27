@@ -88,6 +88,25 @@ A [replacement-card check](validation/macos-capture-2026-11-26.json) with FFmpeg
 verified the fix by opening capture and reading three 1920×1080 frames; audio
 and browser playback were not checked.
 
+A [Linux display-mapping check](validation/linux-display-mapping-2026-11-27.json)
+on this macOS host used 2560×1440 capture with a native 1920×1080 Linux display
+at desktop offset `(1920,0)` in a 3840×1200 absolute-input span. The configured
+mapping passed 25 API points within one native pixel, exact MCP click/drag
+endpoints, and actual Firefox viewer clicks/drags with one down/up pair per
+action. A separate mirrored baseline passed on November 26. The original mirror
+layout was restored and the display-test helper was removed. This does not
+establish Windows secondary-display support; macOS target validation remains
+[follow-up #103](https://github.com/linkdata/autopaws/issues/103).
+
+A [Linux recovery check](validation/linux-recovery-2026-11-27.json) confirmed
+that video and both capture setters keep working with HID unplugged, and exact
+MCP clicks/drags resume after HID reconnect. Two capture unplug/replug cycles
+recovered without restarting the daemon; the second retained the same normal
+terminal, fresh keyboard output and drag selection. One passive WebSocket stayed
+open throughout, and mapping geometry required reapplication after recovery.
+The record retains an initial Tk-probe anomaly and an unvalidated absolute-button
+diagnostic as limits. Default relative buttons passed, and cleanup is verified.
+
 ## Windows host
 
 Windows 11 Pro build 26300 on amd64 used a CH340/CH9329 (`1a86:7523`) and UGREEN
@@ -150,13 +169,24 @@ Windows ARM64 is cross-built; ARM64 hardware has not been tested. See
 
 ## Windows target checks
 
+A [captured-primary check](validation/windows-primary-2026-11-26.json) used the
+UGREEN 15389 at 2560×1440 with the captured Windows display primary and the
+laptop display still extended to its left. The fixed input path passed a
+25-point absolute grid, API clicks/drags, and actual Firefox fit-view image
+clicks/drags with one button-down/up pair per action. Origin clicks in both
+button modes, held-button scrolling/movement and release on web disconnect
+also passed. The temporary test process and public helper were cleaned up;
+no screenshots/OCR were retained. This does not establish macOS target behavior
+or a capture-rate/latency guarantee.
+
 The [extended-4K check](validation/windows-extended-4k-2026-11-26.json) received
 fresh 1920×1080 capture frames with owner-reported 4K Windows output and
 3840×2160 host target coordinates. This card advertised no 4K capture mode on
 macOS and rejected 4K capture at both 30 and 5 fps. Pointer commands were
 acknowledged. The owner reported the cursor was on the primary display
-rather than the captured extended display. Use the documented single or mirrored
-target setup; this check does not establish extended-display absolute input support.
+rather than the captured extended display. This check does not establish absolute
+input support for a captured secondary display. Use the documented
+[target display setup](../README.md#hardware-and-wiring).
 
 A [read-only autocrop check](validation/autocrop-windows-readonly-2026-11-26.json)
 verified that the new default and explicit opt-in preserve full 1920×1080

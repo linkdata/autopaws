@@ -170,6 +170,70 @@ func TestManagerColdFreshSnapshotAndIdle(t *testing.T) {
 	})
 }
 
+func TestFrameObserverIsLazyAndRunsOutsideManagerLock(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		source := newManagerSource()
+		opened := make(chan struct{}, 1)
+		observed := make(chan Metadata, 1)
+		options := managerOptions(source, opened)
+		var manager *Manager
+		options.OnFrame = func(device string, metadata Metadata) {
+			if info := manager.Info(); device != options.Device || info.Generation != metadata.Generation {
+				t.Errorf("observer device/generation mismatch: %s %+v %+v", device, info, metadata)
+			}
+			observed <- metadata
+		}
+		manager = mustManager(t, options)
+		synctest.Wait()
+		select {
+		case <-opened:
+			t.Fatal("frame observer opened an idle capture")
+		default:
+		}
+		done := snapshotAsync(manager, t.Context())
+		<-opened
+		<-source.reading
+		source.reads <- managerRead{frame: managerFrame(managerJPEG(t, true), 2, 7)}
+		metadata := <-observed
+		result := <-done
+		if result.err != nil || metadata.Width != 128 || metadata.Height != 96 || metadata.Crop != image.Rect(0, 12, 128, 84) || metadata.DeliverySequence == 0 || result.snapshot.Sequence != metadata.DeliverySequence || result.snapshot.Metadata != metadata {
+			t.Fatalf("observer and snapshot metadata disagree: %+v %+v", metadata, result)
+		}
+	})
+}
+
+func TestDeliverySequenceSurvivesIdleSourceReopen(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		sources := []*managerSource{newManagerSource(), newManagerSource()}
+		options := managerOptions(sources[0], nil)
+		opened := 0
+		options.OpenSource = func(context.Context, string, v4l2.Options) (Source, error) {
+			source := sources[opened]
+			opened++
+			return source, nil
+		}
+		manager := mustManager(t, options)
+		data := managerJPEG(t, false)
+		var previous uint64
+		for index, source := range sources {
+			done := snapshotAsync(manager, t.Context())
+			<-source.reading
+			// A reopened driver may restart its own frame counter at zero.
+			source.reads <- managerRead{frame: managerFrame(data, 2, 0)}
+			result := <-done
+			if result.err != nil || result.snapshot.Generation != 1 || result.snapshot.Sequence <= previous || result.snapshot.Metadata.Sequence != 0 {
+				t.Fatalf("reopen %d lost delivery ordering: %+v", index, result)
+			}
+			previous = result.snapshot.Sequence
+			time.Sleep(options.IdleTimeout)
+			synctest.Wait()
+			if source.closes.Load() != 1 {
+				t.Fatal("source did not close after becoming idle")
+			}
+		}
+	})
+}
+
 func TestManagerSnapshotTotalDeadline(t *testing.T) {
 	for _, corrupt := range []bool{false, true} {
 		t.Run(map[bool]string{false: "no frames", true: "only corrupt frames"}[corrupt], func(t *testing.T) {
