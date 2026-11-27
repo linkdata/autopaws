@@ -13,6 +13,16 @@ For a release, run `git checkout YOUR_INSTALLED_TAG`. Source builds can use thei
 existing checkout. The README's foreground quick start needs neither service
 installation nor custom udev rules.
 
+Single/mirrored displays use the default identity mapping. The tested GNOME
+Wayland target mapped absolute HID input across its full virtual desktop, even
+with the captured display primary. For that layout, configure the captured
+display's signed offset, native size and actual absolute input span through web
+**Pointer setup → Apply** or API/MCP `set_mouse_mapping`; see
+[display mapping](../README.md#display-mapping) for a numeric example.
+This concerns the target, independently of the Linux host. Geometry lives in
+the running daemon; capture changes require reapplying it. Optional
+`-mouse-mode extended` blocks positioned input until geometry is configured.
+
 ## Device access
 
 Serial normally uses `dialout`, video uses `video`, and ALSA PCM capture uses

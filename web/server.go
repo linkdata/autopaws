@@ -156,14 +156,15 @@ func (server *Server) serveConnection(conn socket) {
 	}
 	defer subscription.Close()
 	browser := hid.NewBrowser(server.controller, server.mouse)
+	input := server.newBrowserInput(browser)
 	written := make(chan error, 1)
 	go func() {
-		err := server.write(ctx, conn, subscription)
+		err := server.write(ctx, conn, subscription, input)
 		cancel()
 		_ = conn.CloseNow() // Wake Read even while the client sends no input.
 		written <- err
 	}()
-	readErr := server.read(ctx, conn, browser)
+	readErr := server.read(ctx, conn, input)
 	cancel()
 	_ = conn.CloseNow()
 	writeErr := <-written
@@ -199,6 +200,7 @@ func (server *Server) Wait() {
 
 //go:embed assets/index.html assets/viewer.mjs assets/viewer-helpers.mjs assets/viewer.css
 //go:embed assets/manifest.json assets/sw.js assets/icon.svg assets/audio-playback.mjs assets/audio-worklet.mjs
+//go:embed assets/mapping.mjs
 var pageAssets embed.FS
 
 func serveAsset(output http.ResponseWriter, request *http.Request) {
@@ -209,7 +211,7 @@ func serveAsset(output http.ResponseWriter, request *http.Request) {
 	}
 	path, contentType := request.URL.Path, "text/html; charset=utf-8"
 	switch path {
-	case "/viewer.mjs", "/viewer-helpers.mjs", "/sw.js", "/audio-playback.mjs", "/audio-worklet.mjs":
+	case "/viewer.mjs", "/viewer-helpers.mjs", "/mapping.mjs", "/sw.js", "/audio-playback.mjs", "/audio-worklet.mjs":
 		contentType = "text/javascript; charset=utf-8"
 	case "/viewer.css":
 		contentType = "text/css; charset=utf-8"

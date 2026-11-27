@@ -23,6 +23,10 @@ func classifyError(err error) (apiwire.Code, string) {
 		code = apiwire.ErrTimeout
 	case errors.Is(err, capture.ErrCaptureChanged):
 		code = apiwire.ErrCaptureChanged
+	case errors.Is(err, hid.ErrMappingChanged):
+		code = apiwire.ErrMappingChanged
+	case errors.Is(err, hid.ErrMappingUnavailable):
+		code = apiwire.ErrMappingUnavailable
 	case errors.Is(err, hid.ErrUnsupported):
 		code = apiwire.ErrUnsupported
 	case errors.Is(err, hid.ErrLayout):
@@ -36,6 +40,8 @@ func classifyError(err error) (apiwire.Code, string) {
 		errors.Is(err, hid.ErrDelay), errors.Is(err, hid.ErrSequence),
 		errors.Is(err, hid.ErrCoordinates), errors.Is(err, hid.ErrMovement),
 		errors.Is(err, hid.ErrButton), errors.Is(err, hid.ErrButtonMode), errors.Is(err, capture.ErrOptions):
+		code = apiwire.ErrInvalidParams
+	case errors.Is(err, hid.ErrMapping):
 		code = apiwire.ErrInvalidParams
 	case errors.Is(err, serial.ErrBusy):
 		code = apiwire.ErrBusy

@@ -7,17 +7,22 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"net"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/linkdata/autopaws/apiclient"
+	"github.com/linkdata/autopaws/apiwire"
+	"github.com/linkdata/autopaws/capture"
 	"github.com/linkdata/autopaws/ch9329"
 	"github.com/linkdata/autopaws/hid"
 	"github.com/linkdata/autopaws/internal/config"
 	"github.com/linkdata/autopaws/serial"
+	"github.com/linkdata/autopaws/v4l2"
 )
 
 type runtimeTransport struct {
@@ -166,6 +171,190 @@ func TestRuntimeInfoIsLazyAndShutdownClosesIdleConnection(t *testing.T) {
 	}
 }
 
+func TestRuntimeMouseModeAndCaptureBindingWithoutDemand(t *testing.T) {
+	for _, mode := range []string{"legacy", "extended"} {
+		t.Run(mode, func(t *testing.T) {
+			cfg := runtimeConfig()
+			cfg.MouseMode, cfg.CaptureDevice = mode, "/dev/test-capture"
+			port := &runtimeTransport{}
+			var opens atomic.Int32
+			var observe func(string, capture.Metadata)
+			run := startCaptureRuntime(t, cfg, port, func(options capture.Options) (*capture.Manager, error) {
+				observe = options.OnFrame
+				options.OpenSource = func(context.Context, string, v4l2.Options) (capture.Source, error) {
+					opens.Add(1)
+					return nil, errors.New("unexpected capture demand")
+				}
+				return capture.New(options)
+			}, nil)
+			var mapping hid.MappingState
+			if err := runtimeCall(run.client, "get_mouse_mapping", nil, &mapping); err != nil || mapping.Mode != mode || mapping.Ready != (mode == "legacy") || mapping.Revision != 1 {
+				t.Fatalf("startup mapping=%+v error=%v", mapping, err)
+			}
+			if mode == "extended" {
+				if err := runtimeCall(run.client, "mouse_move", map[string]int{"x": 10, "y": 10}, nil); !errors.Is(err, apiwire.ErrMappingUnavailable) {
+					t.Fatalf("unconfigured extended movement=%v", err)
+				}
+			}
+			if observe == nil {
+				t.Fatal("runtime omitted the frame observer")
+			}
+			metadata := capture.Metadata{Width: 128, Height: 96, Generation: 1, DeliverySequence: 10}
+			observe(cfg.CaptureDevice, metadata)
+			if err := runtimeCall(run.client, "get_mouse_mapping", nil, &mapping); err != nil || mapping.Capture.Width != 128 || mapping.Capture.Height != 96 || mapping.Capture.Sequence != 10 || mapping.Mode != mode {
+				t.Fatalf("frame context not shared with API: %+v %v", mapping, err)
+			}
+			revision := mapping.Revision
+			metadata.DeliverySequence++
+			observe(cfg.CaptureDevice, metadata)
+			if err := runtimeCall(run.client, "get_mouse_mapping", nil, &mapping); err != nil || mapping.Revision != revision || mapping.Capture.Sequence != 11 || mapping.Capture.Width != 128 {
+				t.Fatalf("ordinary frame or metadata watcher invalidated context: %+v %v", mapping, err)
+			}
+			if err := stopCaptureRuntime(t, run); err != nil {
+				t.Fatal(err)
+			}
+			if prepares, closes, frames := port.snapshot(); prepares != 0 || closes != 1 || len(frames) != 0 || opens.Load() != 0 {
+				t.Fatalf("passive mapping opened hardware or lost ownership: prepares%d closes%d frames%x opens%d", prepares, closes, frames, opens.Load())
+			}
+		})
+	}
+}
+
+func TestMouseMappingWatcherInvalidatesSettingsWithoutCaptureDemand(t *testing.T) {
+	port := &runtimeTransport{}
+	controller := hid.NewController(port)
+	t.Cleanup(func() { _ = controller.Close() })
+	mouse, err := hid.NewMouse(controller, hid.MouseOptions{Width: 128, Height: 96, MappingMode: "extended"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var opens atomic.Int32
+	video, err := capture.New(capture.Options{
+		Device: "/dev/first", Width: 128, Height: 96,
+		OpenSource: func(context.Context, string, v4l2.Options) (capture.Source, error) {
+			opens.Add(1)
+			return nil, errors.New("unexpected capture demand")
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = video.Close() })
+	ctx, cancel := context.WithCancel(t.Context())
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		watchMouseMapping(ctx, mouse, video, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}()
+	t.Cleanup(func() { cancel(); receiveRuntime(t, stopped) })
+	await := func(generation uint64, width int) hid.MappingState {
+		t.Helper()
+		for {
+			state, changed := mouse.WatchMapping()
+			if state.Capture.Generation == generation && state.Capture.Width == width {
+				return state
+			}
+			receiveRuntime(t, changed)
+		}
+	}
+	await(1, 0)
+	frame := hid.MappingCapture{Device: "/dev/first", Width: 128, Height: 96, Generation: 1, Sequence: 10}
+	if err := mouse.SetMappingCapture(t.Context(), frame); err != nil {
+		t.Fatal(err)
+	}
+	before := await(1, 128)
+	if err := video.SetDevice(t.Context(), "/dev/second"); err != nil {
+		t.Fatal(err)
+	}
+	changed := await(2, 0)
+	if changed.Capture.Device != "/dev/second" || changed.Mode != "extended" || changed.Ready || changed.Revision <= before.Revision {
+		t.Fatalf("idle device change retained old mapping: %+v", changed)
+	}
+	// A late old-source observer must not replace the new selection barrier.
+	frame.Sequence++
+	if err := mouse.SetMappingCapture(t.Context(), frame); err != nil {
+		t.Fatal(err)
+	}
+	if got := mouse.Mapping(); got.Capture != changed.Capture || got.Revision != changed.Revision {
+		t.Fatalf("old-source frame replaced the selection barrier: %+v", got)
+	}
+	frame.Device, frame.Generation = "/dev/second", 2
+	if err := mouse.SetMappingCapture(t.Context(), frame); err != nil {
+		t.Fatal(err)
+	}
+	formatted := await(2, 128)
+	if formatted.Capture.Sequence != 11 || formatted.Revision != changed.Revision {
+		t.Fatalf("formatted frame did not complete the new context: %+v", formatted)
+	}
+	cancel()
+	receiveRuntime(t, stopped)
+	if opens.Load() != 0 {
+		t.Fatal("metadata watcher subscribed to capture")
+	}
+	if prepares, _, frames := port.snapshot(); prepares != 0 || len(frames) != 0 {
+		t.Fatal("passive context changes opened input hardware")
+	}
+}
+
+func TestMouseMappingWatcherBindsContextDespiteReleaseFailure(t *testing.T) {
+	port := &runtimeTransport{}
+	controller := hid.NewController(port)
+	t.Cleanup(func() { _ = controller.Close() })
+	mouse, err := hid.NewMouse(controller, hid.MouseOptions{Width: 128, Height: 96})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var opens atomic.Int32
+	video, err := capture.New(capture.Options{
+		Device: "/dev/first", Width: 128, Height: 96,
+		OpenSource: func(context.Context, string, v4l2.Options) (capture.Source, error) {
+			opens.Add(1)
+			return nil, errors.New("unexpected capture demand")
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = video.Close() })
+	if err := mouse.SetMappingCapture(t.Context(), hid.MappingCapture{Device: "/dev/first", Width: 128, Height: 96, Generation: 1, Sequence: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if err := mouse.Down(t.Context(), "left", hid.ButtonOptions{}); err != nil {
+		t.Fatal(err)
+	}
+	failure := errors.New("transient release failure")
+	var failed atomic.Bool
+	port.write = func(ctx context.Context, frame []byte) error {
+		if bytes.Equal(frame, ch9329.Keyboard(0)) && failed.CompareAndSwap(false, true) {
+			return failure
+		}
+		return ctx.Err()
+	}
+	ctx, cancel := context.WithCancel(t.Context())
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		watchMouseMapping(ctx, mouse, video, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}()
+	t.Cleanup(func() { cancel(); receiveRuntime(t, stopped) })
+	if err := video.SetDevice(t.Context(), "/dev/second"); err != nil {
+		t.Fatal(err)
+	}
+	for {
+		state, changed := mouse.WatchMapping()
+		if state.Capture.Generation == 2 {
+			if state.Capture.Device != "/dev/second" || !state.Ready || state.Message == "" || !failed.Load() {
+				t.Fatalf("watcher did not recover the selection: %+v", state)
+			}
+			break
+		}
+		receiveRuntime(t, changed)
+	}
+	if video.Info().Running || opens.Load() != 0 {
+		t.Fatal("retry opened capture without demand")
+	}
+}
+
 func TestRuntimeShutdownReleasesKeyboardAndEarlierMouseDown(t *testing.T) {
 	port := &runtimeTransport{}
 	pressed := make(chan struct{})
@@ -205,11 +394,13 @@ func TestRuntimeShutdownSharesInFlightCleanupBudget(t *testing.T) {
 	pressed, cleaning := make(chan struct{}), make(chan struct{})
 	var pressOnce, cleanOnce sync.Once
 	var deadlines []time.Time
+	var cleanupStarted time.Time
 	port.write = func(ctx context.Context, frame []byte) error {
 		if bytes.Equal(frame, ch9329.Keyboard(0, 4)) {
 			pressOnce.Do(func() { close(pressed) })
 		} else if bytes.Equal(frame, ch9329.Keyboard(0)) {
 			if deadline, cleanup := ctx.Deadline(); cleanup {
+				cleanupStarted = time.Now()
 				deadlines = append(deadlines, deadline)
 				cleanOnce.Do(func() { close(cleaning) })
 				<-ctx.Done()
@@ -238,11 +429,11 @@ func TestRuntimeShutdownSharesInFlightCleanupBudget(t *testing.T) {
 	if err := receiveRuntime(t, request); !errors.Is(err, context.Canceled) {
 		t.Fatalf("client cancellation identity lost: %v", err)
 	}
-	if len(deadlines) != 2 || deadlines[0].IsZero() || deadlines[0] != deadlines[1] {
+	if len(deadlines) != 1 || !deadlines[0].After(cleanupStarted) || deadlines[0].Sub(cleanupStarted) > time.Second || time.Now().Before(deadlines[0]) {
 		t.Fatalf("runtime introduced another cleanup budget: %v", deadlines)
 	}
-	if _, closes, _ := port.snapshot(); closes != 1 {
-		t.Fatalf("transport closed %d times", closes)
+	if _, closes, frames := port.snapshot(); closes != 1 || len(frames) != 2 || !bytes.Equal(frames[1], ch9329.Keyboard(0)) {
+		t.Fatalf("expired cleanup retried input or lost transport ownership: closes=%d frames=%x", closes, frames)
 	}
 }
 

@@ -77,13 +77,17 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 	controller := hid.NewController(transport)
 	keyboard := hid.NewKeyboard(controller, layout)
 	mouse, err := hid.NewMouse(controller, hid.MouseOptions{
-		Width: cfg.ScreenWidth, Height: cfg.ScreenHeight, ButtonMode: cfg.MouseButtonMode,
+		Width: cfg.ScreenWidth, Height: cfg.ScreenHeight, ButtonMode: cfg.MouseButtonMode, MappingMode: cfg.MouseMode,
 	})
 	if err != nil {
 		return errors.Join(err, controller.Close())
 	}
+	runtimeCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	var video *capture.Manager
+	var mappingStopped <-chan struct{}
 	closeOwners := func() error {
+		cancel()
 		// Launch both owners before waiting for either synchronous kernel call.
 		videoClosed := make(chan error, 1)
 		go func() {
@@ -93,7 +97,11 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 				videoClosed <- nil
 			}
 		}()
-		return errors.Join(controller.Close(), <-videoClosed)
+		err := errors.Join(controller.Close(), <-videoClosed)
+		if mappingStopped != nil {
+			<-mappingStopped
+		}
+		return err
 	}
 	if factories.newCapture != nil {
 		selected := cfg.CaptureDevice
@@ -108,13 +116,27 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		video, err = factories.newCapture(capture.Options{
 			Device: selected, Width: uint32(cfg.CaptureWidth), Height: uint32(cfg.CaptureHeight), Autocrop: cfg.Autocrop,
 			ScreenWidth: cfg.ScreenWidth, ScreenHeight: cfg.ScreenHeight,
+			OnFrame: func(device string, metadata capture.Metadata) {
+				observe, stop := context.WithTimeout(runtimeCtx, time.Second)
+				defer stop()
+				if err := mouse.SetMappingCapture(observe, hid.MappingCapture{
+					Device: device, Width: metadata.Width, Height: metadata.Height, Crop: metadata.Crop,
+					Generation: metadata.Generation, Sequence: metadata.DeliverySequence,
+				}); err != nil && runtimeCtx.Err() == nil {
+					logger.Warn("mouse capture mapping update failed", "error", err)
+				}
+			},
 		})
 		if err != nil {
 			return errors.Join(fmt.Errorf("create capture manager: %w", err), closeOwners())
 		}
+		stopped := make(chan struct{})
+		mappingStopped = stopped
+		go func() {
+			defer close(stopped)
+			watchMouseMapping(runtimeCtx, mouse, video, logger)
+		}()
 	}
-	runtimeCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
 	var apiServer *api.Server
 	if cfg.API != "" {
 		apiServer = api.New(keyboard, mouse, api.Options{
@@ -220,6 +242,39 @@ func serveWith(ctx context.Context, cfg config.Config, output io.Writer, factori
 		apiServer.Wait()
 	}
 	return errors.Join(serveErr, closeErr)
+}
+
+// Watch metadata without subscribing: idle daemons must not open capture hardware.
+func watchMouseMapping(ctx context.Context, mouse *hid.Mouse, video *capture.Manager, logger *slog.Logger) {
+	for {
+		info, captureChanged := video.Watch()
+		mapping, mappingChanged := mouse.WatchMapping()
+		var retry <-chan time.Time
+		if info.Generation > mapping.Capture.Generation {
+			observe, stop := context.WithTimeout(ctx, time.Second)
+			err := mouse.SetMappingCapture(observe, hid.MappingCapture{Device: info.Device, Generation: info.Generation})
+			stop()
+			if err != nil {
+				if ctx.Err() != nil {
+					return
+				}
+				logger.Warn("mouse capture mapping update failed", "error", err)
+				// The failed transition notified its own revision. Wait on the new
+				// notification or retry later, rather than spin on that notification.
+				_, mappingChanged = mouse.WatchMapping()
+				retry = time.After(time.Second)
+			} else {
+				continue
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-captureChanged:
+		case <-mappingChanged:
+		case <-retry:
+		}
+	}
 }
 
 // Inspect the address actually bound by Listen, without another DNS lookup.

@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/linkdata/autopaws/apiwire"
+	"github.com/linkdata/autopaws/capture"
+	"github.com/linkdata/autopaws/hid"
 )
 
 type captureFormat struct {
@@ -115,13 +117,34 @@ func (server *Server) captureFrame(ctx context.Context, data json.RawMessage) (a
 	if err != nil {
 		return nil, err
 	}
+	info := server.options.Capture.Info()
+	if info.Generation != frame.Generation {
+		return nil, capture.ErrCaptureChanged
+	}
+	bindingErr := server.mouse.SetMappingCapture(ctx, hid.MappingCapture{
+		Device: info.Device, Width: frame.Metadata.Width, Height: frame.Metadata.Height,
+		Crop: frame.Metadata.Crop, Generation: frame.Generation, Sequence: frame.Sequence,
+	})
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	mapping := server.mouse.Mapping()
+	bound := mapping.Capture
+	if server.options.Capture.Info().Generation != frame.Generation || bound.Generation != frame.Generation || bound.Device != info.Device || bound.Width != frame.Metadata.Width || bound.Height != frame.Metadata.Height || bound.Crop != frame.Metadata.Crop {
+		return nil, capture.ErrCaptureChanged
+	}
+	if bindingErr != nil && server.options.Logger != nil {
+		server.options.Logger.Warn("mouse release failed while binding capture", "error", bindingErr)
+	}
 	return struct {
-		JPEG         []byte `json:"jpeg_b64"`
-		Width        int    `json:"width"`
-		Height       int    `json:"height"`
-		TargetWidth  int    `json:"target_width"`
-		TargetHeight int    `json:"target_height"`
-	}{frame.JPEG, frame.Width, frame.Height, server.options.ScreenWidth, server.options.ScreenHeight}, nil
+		JPEG            []byte `json:"jpeg_b64"`
+		Width           int    `json:"width"`
+		Height          int    `json:"height"`
+		TargetWidth     int    `json:"target_width"`
+		TargetHeight    int    `json:"target_height"`
+		MappingRevision uint64 `json:"mapping_revision"`
+		FrameSequence   uint64 `json:"frame_sequence"`
+	}{frame.JPEG, frame.Width, frame.Height, server.options.ScreenWidth, server.options.ScreenHeight, mapping.Revision, frame.Sequence}, nil
 }
 
 func (server *Server) listCaptureDevices(ctx context.Context, data json.RawMessage) (any, error) {
@@ -157,6 +180,12 @@ func (server *Server) setCaptureDevice(ctx context.Context, data json.RawMessage
 	if server.options.Capture == nil {
 		return nil, apiwire.ErrUnavailable
 	}
+	if errors.Is(server.options.Capture.Info().Err, capture.ErrClosed) {
+		return nil, capture.ErrClosed
+	}
+	if err := server.mouse.InvalidateMapping(ctx); err != nil && ctx.Err() == nil && server.options.Logger != nil {
+		server.options.Logger.Warn("mouse release failed during capture change", "error", err)
+	}
 	if err := server.options.Capture.SetDevice(ctx, *request.Device); err != nil {
 		return nil, err
 	}
@@ -175,6 +204,16 @@ func (server *Server) setCaptureResolution(ctx context.Context, data json.RawMes
 	}
 	if server.options.Capture == nil {
 		return nil, apiwire.ErrUnavailable
+	}
+	info := server.options.Capture.Info()
+	if errors.Is(info.Err, capture.ErrClosed) {
+		return nil, capture.ErrClosed
+	}
+	if info.Device == "" {
+		return nil, capture.ErrUnavailable
+	}
+	if err := server.mouse.InvalidateMapping(ctx); err != nil && ctx.Err() == nil && server.options.Logger != nil {
+		server.options.Logger.Warn("mouse release failed during capture change", "error", err)
 	}
 	if err := server.options.Capture.SetResolution(ctx, *request.Width, *request.Height); err != nil {
 		return nil, err

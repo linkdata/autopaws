@@ -181,7 +181,7 @@ func startAudioWriter(t *testing.T, fixture fixture, conn *fakeSocket) {
 	}
 	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan error, 1)
-	go func() { done <- fixture.server.write(ctx, conn, subscription) }()
+	go func() { done <- fixture.server.write(ctx, conn, subscription, nil) }()
 	t.Cleanup(func() {
 		cancel()
 		if err := receive(t, done); !errors.Is(err, context.Canceled) {

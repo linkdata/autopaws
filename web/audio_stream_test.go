@@ -256,7 +256,7 @@ func TestAudioWriteFailurePreservesErrorIdentity(t *testing.T) {
 		subscription, _ := fixture.capture.Subscribe()
 		defer subscription.Close()
 		done := make(chan error, 1)
-		go func() { done <- fixture.server.write(t.Context(), conn, subscription) }()
+		go func() { done <- fixture.server.write(t.Context(), conn, subscription, nil) }()
 		receiveAudioConfig(t, conn, "available")
 		source.publish(1)
 		if err := receive(t, done); !errors.Is(err, failure) {

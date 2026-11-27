@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-27",
+  "result": "PASS: HID/capture independence and recovery on a Linux target; stated probe limits retained",
+  "tested_binary_sha256": "939783982128147db9351395e0d7dce9788110affae47e411712b684b6914ca6",
+  "host": {
+    "os": "macOS 27.2.1",
+    "architecture": "arm64",
+    "ffmpeg_version": "9.1"
+  },
+  "target": {
+    "os": "Linux",
+    "display_mode": "mirrored",
+    "native_size": [
+      1920,
+      1080
+    ]
+  },
+  "capture": {
+    "name": "UGREEN 15389",
+    "backend": "AVFoundation",
+    "frame_size": [
+      2560,
+      1440
+    ],
+    "autocrop": false
+  },
+  "input": {
+    "adapter": "CH9329 via CH340",
+    "baud": 9600,
+    "button_mode": "relative (default)",
+    "test_coordinate_grid": [
+      4096,
+      4096
+    ],
+    "coordinate_note": "The host grid maps directly to normalized HID 0..4095; it is not the native display resolution."
+  },
+  "mcp_baseline": {
+    "mapping_revision": 2,
+    "click": {
+      "downs": 1,
+      "ups": 1,
+      "buttons": 0,
+      "max_error_px": 0,
+      "pass": true
+    },
+    "drag": {
+      "downs": 1,
+      "ups": 1,
+      "buttons": 0,
+      "max_error_px": 0,
+      "pass": true
+    }
+  },
+  "hid_unplugged": {
+    "at_utc": "2026-11-27T10:28:41.757015+00:00",
+    "serial_path_present": false,
+    "positioned_input_error": "unavailable",
+    "successful_capture_frames": 8,
+    "capture_setters": [
+      {
+        "method": "set_capture_resolution",
+        "succeeded": true,
+        "generation": 2,
+        "round_trip_ms": 2388.33
+      },
+      {
+        "method": "set_capture_device",
+        "succeeded": true,
+        "generation": 3,
+        "round_trip_ms": 1009.49
+      }
+    ],
+    "post_setter_revision": 6,
+    "revision_stayed_stable_during_later_frames": true,
+    "extended_ready": false,
+    "hid_diagnostic_retained": true,
+    "web_video_continued": true,
+    "web_errors": 0,
+    "web_closed": false,
+    "pass": true
+  },
+  "hid_reconnected_mcp": {
+    "mapping_revision": 7,
+    "click": {
+      "downs": 1,
+      "ups": 1,
+      "buttons": 0,
+      "max_error_px": 0,
+      "pass": true
+    },
+    "drag": {
+      "downs": 1,
+      "ups": 1,
+      "buttons": 0,
+      "max_error_px": 0,
+      "pass": true
+    }
+  },
+  "first_capture_unplug": {
+    "at_utc": "2026-11-27T10:30:51.683399+00:00",
+    "capture_error": "unavailable",
+    "capture_error_ms": 1105.87,
+    "relative_input_rpc_succeeded": true,
+    "relative_input_rpc_ms": 14.12,
+    "web_frames_before": 4441,
+    "web_frames_after": 4441,
+    "web_closed": false,
+    "pass": true
+  },
+  "first_capture_reconnect": {
+    "at_utc": "2026-11-27T10:32:00.383570+00:00",
+    "daemon_restarted": false,
+    "generation": 4,
+    "revision_before_reapply": 8,
+    "ready_before_reapply": false,
+    "revision_after_reapply": 9,
+    "ready_after_reapply": true,
+    "fresh_frame_size": [
+      2560,
+      1440
+    ],
+    "pass": true
+  },
+  "normal_terminal_second_capture_cycle": {
+    "same_terminal_window": true,
+    "terminal_reopened": false,
+    "daemon_restarted": false,
+    "keyboard_rpc_succeeded_while_capture_missing": true,
+    "fresh_keyboard_output_after_reconnect": "visually confirmed",
+    "generation_before": 4,
+    "generation_after": 5,
+    "revision_before": 9,
+    "revision_after_reconnect": 10,
+    "ready_before_reapply": false,
+    "revision_after_reapply": 11,
+    "ready_after_reapply": true,
+    "drag_image_points": {
+      "from": {
+        "x": 150,
+        "y": 823
+      },
+      "to": {
+        "x": 850,
+        "y": 823
+      }
+    },
+    "selection_roi_pixels": 23360,
+    "baseline_bright_pixels": [
+      1684,
+      15087
+    ],
+    "recovered_bright_pixels": [
+      1534,
+      15286
+    ],
+    "baseline_drag_pass": true,
+    "recovered_drag_pass": true,
+    "pass": true
+  },
+  "continuous_passive_websocket": {
+    "opened_utc": "2026-11-27T10:26:31.014Z",
+    "last_video_utc": "2026-11-27T10:49:42.374Z",
+    "received_frames": 25021,
+    "last_generation": 5,
+    "errors": 0,
+    "closed": false,
+    "input_sent": false
+  },
+  "limits": [
+    "After the first capture hotplug, the existing Tk probe reported stale pointer positions/missed click observations. Reopening only that probe restored default-relative click/drag with the same KVM process and mapping revision 9. The cause is unproven; a Tk/XWayland input-region explanation is an inference, not an established product defect.",
+    "Recovery acceptance uses the second capture cycle with the same normal terminal and daemon, fresh keyboard output, and drag selection before/after reconnect. The probe anomaly is retained as a limit.",
+    "An optional absolute-button diagnostic did not pass on Linux. No pre-change Linux baseline exists for it, so this is not classified as a new regression. Default relative button mode is the validated path.",
+    "API completion timings are observed round trips, not target acknowledgements or general latency bounds. This record does not establish other target OS or hardware combinations."
+  ],
+  "cleanup": {
+    "verified": true,
+    "owned_target_script_paths_removed": 5,
+    "python_autopaws_helpers_remaining": 0,
+    "public_gist_deleted": true,
+    "passive_web_monitor_exited_normally": true,
+    "daemon_exit_code": 0,
+    "input_released": true,
+    "original_mirrored_layout_preserved": true
+  },
+  "artifacts": {
+    "screenshots_committed": false,
+    "ocr_text_committed": false,
+    "note": "Linux captures were viewed temporarily during validation; this record contains metadata and numeric observations only."
+  }
+}

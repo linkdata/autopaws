@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 
 	"github.com/coder/websocket"
 	"github.com/linkdata/autopaws/hid"
@@ -18,13 +17,17 @@ import (
 var ErrInput = errors.New("invalid web input")
 
 type inputEvent struct {
-	Type    string    `json:"type"`
-	Code    *string   `json:"code,omitempty"`
-	X       *int      `json:"x,omitempty"`
-	Y       *int      `json:"y,omitempty"`
-	Buttons *int      `json:"buttons,omitempty"`
-	DeltaY  *float64  `json:"deltaY,omitempty"`
-	Keys    *[]string `json:"keys,omitempty"`
+	Type            string          `json:"type"`
+	Code            *string         `json:"code,omitempty"`
+	X               *int            `json:"x,omitempty"`
+	Y               *int            `json:"y,omitempty"`
+	Buttons         *int            `json:"buttons,omitempty"`
+	DeltaY          *float64        `json:"deltaY,omitempty"`
+	Keys            *[]string       `json:"keys,omitempty"`
+	Revision        string          `json:"revision,omitempty"`
+	FrameSequence   string          `json:"frame_sequence,omitempty"`
+	FrameGeneration string          `json:"frame_generation,omitempty"`
+	Mapping         *hid.MappingSet `json:"mapping,omitempty"`
 }
 
 func decodeInput(data []byte) (inputEvent, error) {
@@ -44,7 +47,7 @@ func decodeInput(data []byte) (inputEvent, error) {
 	return event, nil
 }
 
-func (server *Server) read(ctx context.Context, conn socket, browser *hid.Browser) error {
+func (server *Server) read(ctx context.Context, conn socket, input *browserInput) error {
 	for {
 		kind, data, err := conn.Read(ctx)
 		if err != nil {
@@ -60,40 +63,12 @@ func (server *Server) read(ctx context.Context, conn socket, browser *hid.Browse
 		if server.options.KeyLogger != nil {
 			server.options.KeyLogger.Debug("Web input", "message", string(data))
 		}
-		if err := applyInput(ctx, browser, event); err != nil {
-			return err
+		if err := input.apply(ctx, event); err != nil {
+			if err := input.recover(ctx, err); err != nil {
+				return err
+			}
+		} else {
+			input.setStatus("")
 		}
-	}
-}
-
-func applyInput(ctx context.Context, browser *hid.Browser, event inputEvent) error {
-	switch event.Type {
-	case "keydown", "keyup":
-		if event.Code == nil {
-			return ErrInput
-		}
-		return browser.Key(ctx, *event.Code, event.Type == "keydown")
-	case "mousemove", "mousedown", "mouseup":
-		if event.X == nil || event.Y == nil || event.Buttons == nil || *event.Buttons < 0 || *event.Buttons > 7 {
-			return ErrInput
-		}
-		if event.Type == "mousemove" {
-			return browser.Move(ctx, *event.X, *event.Y)
-		}
-		return browser.Buttons(ctx, *event.X, *event.Y, *event.Buttons)
-	case "scroll":
-		if event.DeltaY == nil {
-			return ErrInput
-		}
-		return browser.Scroll(ctx, int(math.Max(-127, math.Min(127, *event.DeltaY))))
-	case "release_all":
-		return browser.Release(ctx)
-	case "shortcut":
-		if event.Keys == nil {
-			return ErrInput
-		}
-		return browser.Shortcut(ctx, *event.Keys)
-	default:
-		return ErrInput
 	}
 }

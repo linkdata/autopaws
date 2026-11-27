@@ -115,19 +115,81 @@ strokes. Sequences may contain at most 4096 steps; an empty array is valid.
 Absolute coordinates are **configured target-screen pixels**:
 `0 <= x < screen_width`, `0 <= y < screen_height`. Both position fields must be
 supplied together, including when both are zero. Their first and last pixels map
-exactly onto HID 0 and 4095; a one-pixel axis maps to zero. Screenshot pixels may
+exactly onto HID 0 and 4095 in legacy mode; a one-pixel axis maps to zero. Extended
+mode applies the configured shared mapping after normalization. Screenshot pixels may
 have different dimensions: MCP performs that conversion using its latest screenshot.
 
 Relative `mouse_move` uses unscaled signed deltas from −127 through 127 per axis;
 larger deltas are rejected. Scroll is clamped to −127…127 and preserves held buttons.
 Movement preserves held buttons in both button modes. Clicks preserve other held
-buttons and finish with the selected button released. Relative button mode sends
-positioned button changes as a button-free absolute move plus a relative report.
+buttons and finish with the selected button released. Each held button stays on
+the absolute or relative report that pressed it. Movement and scrolling preserve
+that ownership; changing `button_mode` does not move an already held button to
+another report. Positioned relative presses send the absolute position before
+the relative button report.
+
+Releasing an absolute-report button without coordinates, including during
+cleanup, uses its last absolute position. That position can be stale after raw
+relative or physical mouse movement; supply release coordinates to avoid a jump.
+The default relative button mode supports current-position release.
 
 `mouse_drag` is one server-side HID action: down at start, 50 ms, move to end,
 50 ms, up at end. Both endpoints, button and mode are checked before input. Clients
 must call this method rather than composing down/move/up requests when they need
 one complete drag action.
+
+Positioned requests also accept optional integer `mapping_revision`, copied
+automatically from `capture_frame` by MCP. Stale revisions fail before input.
+Relative moves and position-free button actions do not use this freshness token.
+
+## Shared mouse mapping
+
+| Method | Parameters | Successful result |
+|---|---|---|
+| `get_mouse_mapping` | none | Current mapping state |
+| `set_mouse_mapping` | `mode?`, `geometry?` | Updated mapping state |
+| `reset_mouse_mapping` | none | Updated mapping state |
+
+The daemon owns one mapping shared by API, MCP and web connections. Regular
+positioned coordinates remain local to the captured display; callers do not add
+desktop offsets to individual mouse actions. State includes `mode` (`legacy` or
+`extended`), `revision`, `ready`, capture binding, optional `geometry` and an
+effective transform. An unset display offset differs from a configured zero.
+
+Legacy retains the original identity mapping. Setting complete geometry enters
+extended mode and activates the mapping immediately after structural bounds
+validation. The caller supplies the target geometry; readiness does not establish
+that absolute HID input can reach that display. Extended mode without configured
+geometry blocks positioned actions. Reset clears geometry while retaining the
+current mode, so extended becomes not ready. Explicitly set `mode: "legacy"`
+to restore identity. Runtime state survives reconnects; restart clears geometry
+and follows the startup mode.
+
+Complete geometry uses this shape:
+
+```json
+{"geometry":{"offset":{"x":1920,"y":0},"width":1920,"height":1080,"span":{"x":0,"y":0,"width":3840,"height":1200}}}
+```
+
+`offset` is the captured display's signed desktop origin on either axis. `span`
+is the range actually addressed by absolute HID, which can differ from the
+virtual desktop on Windows. Dimensions and offsets must use the same desktop units; do not mix logical
+and physical coordinates.
+Widths/heights must each be at least two and the display must fit in the span.
+Configured screen dimensions remain the API's local coordinate grid,
+independently of these desktop bounds.
+
+An offset cannot make an unreachable display accessible to absolute HID. Use a
+captured primary where supported, or single/mirrored output, in that case. Raw
+relative movements and current-position clicks remain available for screenshot
+feedback. No target software or automatic cursor tracker is required.
+
+Mapping changes release held input. Complete finite actions prepare all points
+against one revision before input, including both drag endpoints. Capture
+identity, generation, dimensions and crop changes invalidate extended readiness;
+reapply the geometry after checking it. Ordinary frames and viewer resizing
+preserve readiness. A target layout/DPI change may leave HDMI dimensions
+unchanged, so inspect mismatches and update/reset the mapping explicitly.
 
 ## Keyboard layout selection
 
@@ -245,6 +307,12 @@ does not enumerate devices. Older daemons omit both fields; clients may read
 fallback. A partially present pair or nonpositive/noninteger dimensions is an
 invalid snapshot response, rather than a signal to fall back.
 
+`mapping_revision` binds positioned input to the shared mapping for this capture.
+`frame_sequence` is a manager-wide frame delivery token retained across idle
+source reopen. It is not a target acknowledgement or a
+guarantee against capture-card buffering. MCP threads the revision automatically
+without exposing it as a mouse-tool option.
+
 Every device or resolution change accepted by a setter increments the settings
 generation, flushes queued old frames and resets crop detection. Pending
 old-generation snapshots fail with `capture changed`; callers retry explicitly.
@@ -312,6 +380,8 @@ minimal `{"error":"unavailable"}` capture object.
 | `unavailable` | Service/device unavailable, disconnected or closing; selected layout cannot be read |
 | `device busy` | Another cooperating process owns the serial port |
 | `capture changed` | Pending snapshot cancelled by a capture selection/resolution change |
+| `mouse mapping changed` | Positioned input refers to an obsolete mapping revision |
+| `mouse mapping unavailable` | Extended positioned input has no configured absolute mapping |
 
 The optional `detail` contains diagnostics, including the unsupported rune's
 position and cleanup errors. Match the stable code, not the detail text.

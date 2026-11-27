@@ -20,6 +20,8 @@ func (server *Server) methods() map[string]handler {
 		"mouse_move": server.mouseMove, "mouse_click": server.mouseClick,
 		"mouse_down": server.mouseDown, "mouse_up": server.mouseUp,
 		"mouse_scroll": server.mouseScroll, "mouse_drag": server.mouseDrag,
+		"get_mouse_mapping": server.getMouseMapping, "set_mouse_mapping": server.setMouseMapping,
+		"reset_mouse_mapping":   server.resetMouseMapping,
 		"get_device_info":       server.deviceInfo,
 		"set_keyboard_layout":   server.setKeyboardLayout,
 		"list_keyboard_layouts": server.listKeyboardLayouts,
@@ -181,8 +183,9 @@ func (server *Server) sendKeySequence(ctx context.Context, data json.RawMessage)
 
 func (server *Server) mouseMove(ctx context.Context, data json.RawMessage) (any, error) {
 	var request struct {
-		X, Y     *int
-		Relative bool `json:"relative"`
+		X, Y            *int
+		Relative        bool    `json:"relative"`
+		MappingRevision *uint64 `json:"mapping_revision"`
 	}
 	if err := params(data, &request); err != nil {
 		return nil, err
@@ -191,6 +194,9 @@ func (server *Server) mouseMove(ctx context.Context, data json.RawMessage) (any,
 		return nil, required("x and y")
 	}
 	var err error
+	if request.MappingRevision != nil && !request.Relative {
+		ctx = hid.WithMappingRevision(ctx, *request.MappingRevision)
+	}
 	if request.Relative {
 		err = server.mouse.MoveRel(ctx, *request.X, *request.Y)
 	} else {
@@ -203,18 +209,19 @@ func (server *Server) mouseMove(ctx context.Context, data json.RawMessage) (any,
 }
 
 type buttonParams struct {
-	Button string `json:"button"`
-	X, Y   *int
-	Mode   string `json:"button_mode"`
+	Button          string `json:"button"`
+	X, Y            *int
+	Mode            string  `json:"button_mode"`
+	MappingRevision *uint64 `json:"mapping_revision"`
 }
 
-func buttonRequest(data json.RawMessage) (string, hid.ButtonOptions, error) {
+func buttonRequest(data json.RawMessage) (string, hid.ButtonOptions, *uint64, error) {
 	var request buttonParams
 	if err := params(data, &request); err != nil {
-		return "", hid.ButtonOptions{}, err
+		return "", hid.ButtonOptions{}, nil, err
 	}
 	if (request.X == nil) != (request.Y == nil) {
-		return "", hid.ButtonOptions{}, fmt.Errorf("%w: x and y must be supplied together", apiwire.ErrInvalidParams)
+		return "", hid.ButtonOptions{}, nil, fmt.Errorf("%w: x and y must be supplied together", apiwire.ErrInvalidParams)
 	}
 	options := hid.ButtonOptions{Mode: request.Mode}
 	if request.X != nil {
@@ -223,13 +230,16 @@ func buttonRequest(data json.RawMessage) (string, hid.ButtonOptions, error) {
 	if request.Button == "" {
 		request.Button = "left"
 	}
-	return request.Button, options, nil
+	return request.Button, options, request.MappingRevision, nil
 }
 
 func (server *Server) mouseClick(ctx context.Context, data json.RawMessage) (any, error) {
-	button, options, err := buttonRequest(data)
+	button, options, revision, err := buttonRequest(data)
 	if err != nil {
 		return nil, err
+	}
+	if revision != nil && options.Position != nil {
+		ctx = hid.WithMappingRevision(ctx, *revision)
 	}
 	if err := server.mouse.Click(ctx, button, options); err != nil {
 		return nil, err
@@ -238,9 +248,12 @@ func (server *Server) mouseClick(ctx context.Context, data json.RawMessage) (any
 }
 
 func (server *Server) mouseDown(ctx context.Context, data json.RawMessage) (any, error) {
-	button, options, err := buttonRequest(data)
+	button, options, revision, err := buttonRequest(data)
 	if err != nil {
 		return nil, err
+	}
+	if revision != nil && options.Position != nil {
+		ctx = hid.WithMappingRevision(ctx, *revision)
 	}
 	if err := server.mouse.Down(ctx, button, options); err != nil {
 		return nil, err
@@ -249,9 +262,12 @@ func (server *Server) mouseDown(ctx context.Context, data json.RawMessage) (any,
 }
 
 func (server *Server) mouseUp(ctx context.Context, data json.RawMessage) (any, error) {
-	button, options, err := buttonRequest(data)
+	button, options, revision, err := buttonRequest(data)
 	if err != nil {
 		return nil, err
+	}
+	if revision != nil && options.Position != nil {
+		ctx = hid.WithMappingRevision(ctx, *revision)
 	}
 	if err := server.mouse.Up(ctx, button, options); err != nil {
 		return nil, err
@@ -277,18 +293,22 @@ func (server *Server) mouseScroll(ctx context.Context, data json.RawMessage) (an
 
 func (server *Server) mouseDrag(ctx context.Context, data json.RawMessage) (any, error) {
 	var request struct {
-		StartX *int   `json:"start_x"`
-		StartY *int   `json:"start_y"`
-		EndX   *int   `json:"end_x"`
-		EndY   *int   `json:"end_y"`
-		Button string `json:"button"`
-		Mode   string `json:"button_mode"`
+		StartX          *int    `json:"start_x"`
+		StartY          *int    `json:"start_y"`
+		EndX            *int    `json:"end_x"`
+		EndY            *int    `json:"end_y"`
+		Button          string  `json:"button"`
+		Mode            string  `json:"button_mode"`
+		MappingRevision *uint64 `json:"mapping_revision"`
 	}
 	if err := params(data, &request); err != nil {
 		return nil, err
 	}
 	if request.StartX == nil || request.StartY == nil || request.EndX == nil || request.EndY == nil {
 		return nil, required("start_x, start_y, end_x and end_y")
+	}
+	if request.MappingRevision != nil {
+		ctx = hid.WithMappingRevision(ctx, *request.MappingRevision)
 	}
 	if err := server.mouse.Drag(ctx, hid.Point{X: *request.StartX, Y: *request.StartY}, hid.Point{X: *request.EndX, Y: *request.EndY}, request.Button, request.Mode); err != nil {
 		return nil, err

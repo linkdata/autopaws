@@ -171,7 +171,8 @@ func TestMouseCoordinates(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, _, _, events := transport.snapshot()
-		got := [2]int{int(binary.LittleEndian.Uint16(events[0].Frame[7:9])), int(binary.LittleEndian.Uint16(events[0].Frame[9:11]))}
+		last := events[len(events)-1].Frame
+		got := [2]int{int(binary.LittleEndian.Uint16(last[7:9])), int(binary.LittleEndian.Uint16(last[9:11]))}
 		if got != vector.HID {
 			t.Fatalf("%dx%d (%d,%d) maps to %v; want %v", vector.Width, vector.Height, vector.X, vector.Y, got, vector.HID)
 		}
@@ -332,7 +333,7 @@ func TestMouseDragModesAndTiming(t *testing.T) {
 					want = []frameEvent{
 						{ch9329.MouseAbsolute(0, 10, 20, 0), 0},
 						{ch9329.MouseRelative(1, 0, 0, 0), 0},
-						{ch9329.MouseAbsolute(1, 100, 200, 0), 50 * time.Millisecond},
+						{ch9329.MouseAbsolute(0, 100, 200, 0), 50 * time.Millisecond},
 						{ch9329.MouseAbsolute(0, 100, 200, 0), 100 * time.Millisecond},
 						{ch9329.MouseRelative(0, 0, 0, 0), 100 * time.Millisecond},
 					}
@@ -385,28 +386,29 @@ func TestMouseDefaultRelativeAndExplicitAbsoluteReports(t *testing.T) {
 
 func TestMouseTransportFailuresReleaseMouseOnly(t *testing.T) {
 	cases := []struct {
-		name   string
-		failAt int
-		call   func(*Mouse) error
+		name     string
+		failAt   int
+		releases int
+		call     func(*Mouse) error
 	}{
-		{"move", 1, func(mouse *Mouse) error { return mouse.MoveAbs(context.Background(), 1, 2) }},
-		{"relative move", 1, func(mouse *Mouse) error { return mouse.MoveRel(context.Background(), 1, 2) }},
-		{"scroll", 1, func(mouse *Mouse) error { return mouse.Scroll(context.Background(), 1) }},
-		{"relative positioned down", 2, func(mouse *Mouse) error {
+		{"move", 1, 1, func(mouse *Mouse) error { return mouse.MoveAbs(context.Background(), 1, 2) }},
+		{"relative move", 1, 1, func(mouse *Mouse) error { return mouse.MoveRel(context.Background(), 1, 2) }},
+		{"scroll", 1, 1, func(mouse *Mouse) error { return mouse.Scroll(context.Background(), 1) }},
+		{"relative positioned down", 2, 1, func(mouse *Mouse) error {
 			return mouse.Down(context.Background(), "left", ButtonOptions{Position: &Point{1, 2}, Mode: "relative"})
 		}},
-		{"up", 1, func(mouse *Mouse) error { return mouse.Up(context.Background(), "left", ButtonOptions{}) }},
-		{"click down", 1, func(mouse *Mouse) error {
+		{"up", 1, 1, func(mouse *Mouse) error { return mouse.Up(context.Background(), "left", ButtonOptions{}) }},
+		{"click down", 1, 2, func(mouse *Mouse) error {
 			return mouse.Click(context.Background(), "left", ButtonOptions{Position: &Point{1, 2}})
 		}},
-		{"click up", 2, func(mouse *Mouse) error { return mouse.Click(context.Background(), "left", ButtonOptions{}) }},
-		{"drag down", 1, func(mouse *Mouse) error {
+		{"click up", 2, 1, func(mouse *Mouse) error { return mouse.Click(context.Background(), "left", ButtonOptions{}) }},
+		{"drag down", 2, 2, func(mouse *Mouse) error {
 			return mouse.Drag(context.Background(), Point{}, Point{1, 2}, "left", "")
 		}},
-		{"drag move", 2, func(mouse *Mouse) error {
+		{"drag move", 3, 2, func(mouse *Mouse) error {
 			return mouse.Drag(context.Background(), Point{}, Point{1, 2}, "left", "")
 		}},
-		{"drag up", 3, func(mouse *Mouse) error {
+		{"drag up", 4, 2, func(mouse *Mouse) error {
 			return mouse.Drag(context.Background(), Point{}, Point{1, 2}, "left", "")
 		}},
 	}
@@ -425,7 +427,7 @@ func TestMouseTransportFailuresReleaseMouseOnly(t *testing.T) {
 					t.Fatalf("lost send failure: %v", err)
 				}
 				prepares, writes, _, events := transport.snapshot()
-				if prepares != 2 || writes != test.failAt+1 || controller.buttons != 0 || !bytes.Equal(events[writes-1].Frame, ch9329.MouseRelative(0, 0, 0, 0)) {
+				if prepares != 2 || writes != test.failAt+test.releases || controller.buttons != 0 || !bytes.Equal(events[writes-1].Frame, ch9329.MouseRelative(0, 0, 0, 0)) {
 					t.Fatalf("mouse release failed or emitted keyboard input: %d/%d buttons=%d %v", prepares, writes, controller.buttons, events)
 				}
 				if err := mouse.MoveRel(context.Background(), 0, 0); err != nil {

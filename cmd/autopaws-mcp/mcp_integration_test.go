@@ -305,11 +305,11 @@ func TestSDKToolsGolden(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.SortFunc(result.Tools, func(a, b *mcp.Tool) int { return cmp.Compare(a.Name, b.Name) })
-	wantNames := []string{"capture_screen", "get_device_info", "list_capture_devices", "list_keyboard_layouts", "mouse_click", "mouse_drag", "mouse_move", "mouse_scroll", "send_key", "send_key_sequence", "set_capture_device", "set_capture_resolution", "set_keyboard_layout", "type_text"}
+	wantNames := []string{"capture_screen", "get_device_info", "get_mouse_mapping", "list_capture_devices", "list_keyboard_layouts", "mouse_click", "mouse_drag", "mouse_move", "mouse_scroll", "reset_mouse_mapping", "send_key", "send_key_sequence", "set_capture_device", "set_capture_resolution", "set_keyboard_layout", "set_mouse_mapping", "setup", "type_text"}
 	var names []string
 	for _, tool := range result.Tools {
 		names = append(names, tool.Name)
-		readOnly := slices.Contains([]string{"capture_screen", "get_device_info", "list_capture_devices", "list_keyboard_layouts"}, tool.Name)
+		readOnly := slices.Contains([]string{"capture_screen", "get_device_info", "get_mouse_mapping", "list_capture_devices", "list_keyboard_layouts", "setup"}, tool.Name)
 		if (tool.Annotations != nil && tool.Annotations.ReadOnlyHint) != readOnly {
 			t.Errorf("%s readOnlyHint is wrong: %+v", tool.Name, tool.Annotations)
 		}

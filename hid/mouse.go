@@ -18,14 +18,18 @@ var (
 	ErrMovement    = errors.New("relative mouse movement out of range")
 )
 
-// Point is a zero-based target-screen pixel position.
-type Point struct{ X, Y int }
+// Point is an X/Y coordinate pair.
+type Point struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+}
 
 // MouseOptions defines the target size and default button-report mode.
 // ButtonMode is "relative" (also the empty default) or "absolute".
 type MouseOptions struct {
 	Width, Height int
 	ButtonMode    string
+	MappingMode   string
 }
 
 // ButtonOptions optionally positions a button action and overrides its mode.
@@ -40,6 +44,7 @@ type Mouse struct {
 	controller    *Controller
 	width, height int
 	relative      bool
+	mapping       *mouseMapping
 }
 
 // NewMouse validates target dimensions and mode without opening hardware.
@@ -55,7 +60,17 @@ func NewMouse(controller *Controller, options MouseOptions) (*Mouse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Mouse{controller: controller, width: options.Width, height: options.Height, relative: relative}, nil
+	if options.MappingMode != "" && options.MappingMode != "legacy" && options.MappingMode != "extended" {
+		return nil, ErrMapping
+	}
+	mapping := newMouseMapping()
+	if options.MappingMode == "extended" {
+		mapping.state.Mode = "extended"
+		mapping.state.Ready = false
+		mapping.state.Transform = nil
+		mapping.state.Message = "apply display geometry"
+	}
+	return &Mouse{controller: controller, width: options.Width, height: options.Height, relative: relative, mapping: mapping}, nil
 }
 
 func buttonMode(mode string) (bool, error) {
@@ -92,6 +107,7 @@ type buttonPlan struct {
 	position   Point
 	positioned bool
 	relative   bool
+	revision   uint64
 }
 
 func (mouse *Mouse) planButton(button string, options ButtonOptions) (buttonPlan, error) {
@@ -130,13 +146,37 @@ func (mouse *Mouse) MoveAbs(ctx context.Context, x, y int) error {
 	if err != nil {
 		return err
 	}
-	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
-		return mouse.moveAbs(current, position)
+	points, revision, err := mouse.prepareMapping(ctx, position)
+	if err != nil {
+		return err
+	}
+	return mouse.runMapped(ctx, revision, func(current *action) error {
+		return mouse.moveAbs(current, points[0])
 	})
 }
 
+func (mouse *Mouse) mappedButton(ctx context.Context, button string, options ButtonOptions) (buttonPlan, error) {
+	plan, err := mouse.planButton(button, options)
+	if err != nil || !plan.positioned {
+		return plan, err
+	}
+	points, revision, err := mouse.prepareMapping(ctx, plan.position)
+	if err != nil {
+		return buttonPlan{}, err
+	}
+	plan.position, plan.revision = points[0], revision
+	return plan, nil
+}
+
+func (mouse *Mouse) runButton(ctx context.Context, plan buttonPlan, execute func(*action) error) error {
+	if plan.positioned {
+		return mouse.runMapped(ctx, plan.revision, execute)
+	}
+	return mouse.controller.run(ctx, releaseMouse, execute)
+}
+
 func (mouse *Mouse) moveAbs(current *action, position Point) error {
-	return current.write(ch9329.MouseAbsolute(mouse.controller.buttons, position.X, position.Y, 0))
+	return current.write(ch9329.MouseAbsolute(mouse.controller.absoluteButtons, position.X, position.Y, 0))
 }
 
 // MoveRel moves by -127..127 on each axis, preserving held buttons.
@@ -145,56 +185,67 @@ func (mouse *Mouse) MoveRel(ctx context.Context, dx, dy int) error {
 		return fmt.Errorf("%w: (%d,%d)", ErrMovement, dx, dy)
 	}
 	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
-		return current.write(ch9329.MouseRelative(mouse.controller.buttons, dx, dy, 0))
+		return current.write(ch9329.MouseRelative(mouse.controller.relativeButtons, dx, dy, 0))
 	})
 }
 
 // Scroll preserves held buttons and clamps wheel movement to -127..127.
 func (mouse *Mouse) Scroll(ctx context.Context, amount int) error {
 	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
-		return current.write(ch9329.MouseRelative(mouse.controller.buttons, 0, 0, amount))
+		return current.write(ch9329.MouseRelative(mouse.controller.relativeButtons, 0, 0, amount))
 	})
 }
 
 func (mouse *Mouse) setButtons(current *action, buttons byte, plan buttonPlan) error {
+	controller := mouse.controller
+	absOld := controller.absoluteButtons | controller.absolutePending
+	relOld := controller.relativeButtons | controller.relativePending
+	absNew, relNew := absOld&buttons, relOld&buttons
+	newButtons := buttons &^ (absOld | relOld)
+	if plan.positioned && !plan.relative {
+		absNew |= newButtons
+	} else {
+		relNew |= newButtons
+	}
+	absSent := false
 	if plan.positioned {
-		absoluteButtons := buttons
-		if plan.relative {
-			absoluteButtons = 0
-		}
-		if err := current.write(ch9329.MouseAbsolute(absoluteButtons, plan.position.X, plan.position.Y, 0)); err != nil {
+		if err := current.write(ch9329.MouseAbsolute(absNew, plan.position.X, plan.position.Y, 0)); err != nil {
 			return err
 		}
-		if !plan.relative {
-			mouse.controller.buttons = buttons
-			return nil
+		absSent = true
+	} else if absNew != absOld {
+		// No target cursor feedback exists: release at the last absolute report.
+		// Raw relative or external movement can make that position stale.
+		point := controller.absolutePosition
+		if err := current.write(ch9329.MouseAbsolute(absNew, point.X, point.Y, 0)); err != nil {
+			return err
 		}
+		absSent = true
 	}
-	if err := current.write(ch9329.MouseRelative(buttons, 0, 0, 0)); err != nil {
-		return err
+	if !absSent || plan.relative || relNew != relOld {
+		return current.write(ch9329.MouseRelative(relNew, 0, 0, 0))
 	}
-	mouse.controller.buttons = buttons
 	return nil
 }
 
 // Down holds button, optionally moving first. Empty button means left.
 func (mouse *Mouse) Down(ctx context.Context, button string, options ButtonOptions) error {
-	plan, err := mouse.planButton(button, options)
+	plan, err := mouse.mappedButton(ctx, button, options)
 	if err != nil {
 		return err
 	}
-	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
+	return mouse.runButton(ctx, plan, func(current *action) error {
 		return mouse.setButtons(current, mouse.controller.buttons|plan.bit, plan)
 	})
 }
 
 // Up releases only button, preserving any other held buttons.
 func (mouse *Mouse) Up(ctx context.Context, button string, options ButtonOptions) error {
-	plan, err := mouse.planButton(button, options)
+	plan, err := mouse.mappedButton(ctx, button, options)
 	if err != nil {
 		return err
 	}
-	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
+	return mouse.runButton(ctx, plan, func(current *action) error {
 		return mouse.setButtons(current, mouse.controller.buttons&^plan.bit, plan)
 	})
 }
@@ -202,11 +253,11 @@ func (mouse *Mouse) Up(ctx context.Context, button string, options ButtonOptions
 // Click presses, holds for 10ms and releases button as one action. Other held
 // buttons are preserved. Clicking an already held button ends with it released.
 func (mouse *Mouse) Click(ctx context.Context, button string, options ButtonOptions) error {
-	plan, err := mouse.planButton(button, options)
+	plan, err := mouse.mappedButton(ctx, button, options)
 	if err != nil {
 		return err
 	}
-	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
+	return mouse.runButton(ctx, plan, func(current *action) error {
 		if err := mouse.setButtons(current, mouse.controller.buttons|plan.bit, plan); err != nil {
 			return err
 		}
@@ -228,7 +279,12 @@ func (mouse *Mouse) Drag(ctx context.Context, start, end Point, button, mode str
 	if err != nil {
 		return err
 	}
-	return mouse.controller.run(ctx, releaseMouse, func(current *action) error {
+	points, revision, err := mouse.prepareMapping(ctx, plan.position, endPosition)
+	if err != nil {
+		return err
+	}
+	plan.position, endPosition = points[0], points[1]
+	return mouse.runMapped(ctx, revision, func(current *action) error {
 		if err := mouse.setButtons(current, mouse.controller.buttons|plan.bit, plan); err != nil {
 			return err
 		}
